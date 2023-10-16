@@ -17,6 +17,7 @@ type GatewayLocalProcessAPI interface {
 	//CalculateReward()
 	Authorize() error
 	Terminate() error
+	Close() error
 }
 
 // Blockchain related. Mainly relate to smart contract.

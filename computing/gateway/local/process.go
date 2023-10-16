@@ -39,3 +39,7 @@ func (glp *GatewayLocalProcess) Authorize() error {
 func (glp *GatewayLocalProcess) Terminate() error {
 	return nil
 }
+
+func (glp *GatewayLocalProcess) Close() error {
+	return glp.db.Close()
+}

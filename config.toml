@@ -1,0 +1,8 @@
+[Grpc]
+Listen = "localhost:12345"
+
+[Local]
+DBPath = "./testdb"
+
+[Remote]
+Wallet = "0x123456"

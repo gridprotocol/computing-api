@@ -26,7 +26,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	res1, err := c.Greet(ctx, &proto.GreetFromClient{Input: "test1"})
+	res1, err := c.Greet(ctx, &proto.GreetFromClient{Input: "test1", MsgType: 1})
 	if err != nil {
 		log.Fatalf("fail to greet: %v", err)
 	}
