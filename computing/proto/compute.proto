@@ -1,0 +1,30 @@
+syntax = "proto3";
+package compute;
+
+option go_package = "/proto";
+
+// Apply for / check authority 
+message GreetFromClient {
+    int32 msg_type = 1;
+    string input = 2;
+}
+
+message GreetFromServer {
+    string result = 1;
+}
+
+// Process (Deploy & Compute)
+message Request {
+    string input = 1;
+    string api_key = 2;
+    string address = 3;
+}
+
+message Response {
+    string result = 1;
+}
+
+service ComputeService {
+    rpc Greet(GreetFromClient) returns (GreetFromServer);
+    rpc Process(Request) returns (Response);
+}
