@@ -22,6 +22,7 @@ func InitEntranceService(gw gateway.ComputingGatewayAPI) *EntranceService {
 	}
 }
 
+// Greet for service setup
 func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient) (*proto.GreetFromServer, error) {
 	switch gfc.MsgType {
 	case 0: // contract
@@ -46,16 +47,19 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 		logger.Debug("Greet - check authority")
 		es.gw.VerifyAccessibility(gfc.GetInput(), "")
 		return &proto.GreetFromServer{Result: "[ACK] already authorized"}, nil
+	case 3: // deploy
+		// TODO: deploy (flexiable, enable image change in the future)
+		return &proto.GreetFromServer{Result: "[ACK] already deployed"}, nil
 	default:
 		logger.Debug("Greet - unsupported type")
 		return &proto.GreetFromServer{Result: fmt.Sprintf("[Fail] Unsupported message type: %d", gfc.MsgType)}, nil
 	}
 }
 
+// Process for service usage
 func (es *EntranceService) Process(ctx context.Context, gfc *proto.Request) (*proto.Response, error) {
 	logger.Debug("Process")
 	es.gw.VerifyAccessibility(gfc.GetAddress(), gfc.GetApiKey())
-	// TODO: deploy (flexiable, enable image change in the future)
-	es.gw.Compute(nil, nil)
+	es.gw.Compute("<lan-ip>:port", nil, nil)
 	return &proto.Response{Result: "[Process] ok"}, nil
 }

@@ -6,7 +6,7 @@ type ComputingGatewayAPI interface {
 	GatewayLocalProcessAPI
 	GatewayRemoteProcessAPI
 
-	Compute(input *model.ComputingInput, output *model.ComputingOutput) error
+	Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error
 }
 
 // Local function. Processing locally without having to connect to blockchain.

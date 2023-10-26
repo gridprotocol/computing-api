@@ -48,5 +48,6 @@ func main() {
 	<-quit
 
 	log.Println("Shutting down gateway...")
+	s.GracefulStop()
 	gw.Close()
 }

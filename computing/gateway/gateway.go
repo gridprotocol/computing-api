@@ -15,7 +15,7 @@ func NewComputingGateway(glp GatewayLocalProcessAPI, grp GatewayRemoteProcessAPI
 	}
 }
 
-func (*ComputingGateway) Compute(input *model.ComputingInput, output *model.ComputingOutput) error {
+func (*ComputingGateway) Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error {
 	return nil
 }
 
