@@ -24,6 +24,7 @@ func NewGatewayLocalProcess() *GatewayLocalProcess {
 	return glp
 }
 
+// TODO: api_key is required
 func (glp *GatewayLocalProcess) VerifyAccessibility(address string, api_key string) bool {
 	if len(address) == 0 && len(api_key) == 0 {
 		return false

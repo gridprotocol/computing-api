@@ -2,6 +2,7 @@ package server
 
 import (
 	"computing-api/computing/gateway"
+	"computing-api/computing/model"
 	"computing-api/computing/proto"
 	"computing-api/lib/logs"
 	"context"
@@ -59,7 +60,19 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 // Process for service usage
 func (es *EntranceService) Process(ctx context.Context, gfc *proto.Request) (*proto.Response, error) {
 	logger.Debug("Process")
+
+	// check authority
 	es.gw.VerifyAccessibility(gfc.GetAddress(), gfc.GetApiKey())
-	es.gw.Compute("<lan-ip>:port", nil, nil)
-	return &proto.Response{Result: "[Process] ok"}, nil
+
+	// acquire entrance from recording
+	entrance := "baidu.com" // temp for test
+	in := model.ComputingInput{Request: gfc.Request}
+	out := model.ComputingOutput{Response: nil}
+	err := es.gw.Compute(entrance, &in, &out)
+	if err != nil {
+		logger.Error("Bad request: ", err)
+		return &proto.Response{Response: nil}, err
+	}
+
+	return &proto.Response{Response: out.Response}, nil
 }

@@ -32,9 +32,9 @@ func main() {
 	}
 	log.Printf("[Greet] %v\n", res1.GetResult())
 
-	res2, err := c.Process(ctx, &proto.Request{Input: "test2"})
+	res2, err := c.Process(ctx, &proto.Request{ApiKey: "no"})
 	if err != nil {
-		log.Fatalf("fail to greet: %v", err)
+		log.Fatalf("fail to process: %v", err)
 	}
-	log.Printf("[Process] %s\n", res2.GetResult())
+	log.Printf("[Process] %v\n", res2.GetResponse())
 }

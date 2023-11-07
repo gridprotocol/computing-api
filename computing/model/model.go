@@ -5,13 +5,11 @@ import (
 )
 
 type ComputingInput struct {
-	Prompt  string
-	Options map[string]string
+	Request []byte
 }
 
 type ComputingOutput struct {
-	Result string
-	Extra  map[string]string
+	Response []byte
 }
 
 type Lease struct {

@@ -15,13 +15,13 @@ message GreetFromServer {
 
 // Process (Deploy & Compute)
 message Request {
-    string input = 1;
-    string api_key = 2;
-    string address = 3;
+    string api_key = 1;
+    string address = 2;
+    bytes request = 3;
 }
 
 message Response {
-    string result = 1;
+    bytes response = 1;
 }
 
 service ComputeService {
