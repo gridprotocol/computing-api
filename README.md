@@ -4,7 +4,19 @@
 
 与传统云平台不同的关键点：用户、计算节点都不可信，结算和验证也不能依赖有信任要求的第三方。
 
+## 系统结构
+
+整体三层：
+
+![fig01](./NewComputeStructure.png)
+
+计算层：
+
+![fig02](./GatewayInterface.png)
+
 ## 工作流
+
+![fig03](./NewComputeWorkflow.png)
 
 对于用户：
 
