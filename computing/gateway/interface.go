@@ -12,10 +12,12 @@ type ComputingGatewayAPI interface {
 // Local function. Processing locally without having to connect to blockchain.
 type GatewayLocalProcessAPI interface {
 	// verify address and api_key
-	VerifyAccessibility(address string, api_key string) bool
+	VerifyAccessibility(address string, api_key string, needKey bool) bool
 	AssessPower() model.Resources
 	//CalculateReward()
-	Authorize() error
+	Authorize(user string, lease model.Lease) error
+	Deploy(user string, task string) error
+	GetEntrance(user string) (string, error)
 	Terminate() error
 	Close() error
 }

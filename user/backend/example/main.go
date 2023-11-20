@@ -17,7 +17,8 @@ import (
 var (
 	addr     = flag.String("addr", "localhost:12345", "remote address of the server")
 	contract = "0xd46e8dd67c5d32be8058bb8eb970870f07244567"
-	account  = "0x683642c22feDE752415D4793832Ab75EFdF6223c"
+	// account  = "0x683642c22feDE752415D4793832Ab75EFdF6223c"
+	entrance = "baidu.com"
 )
 
 func main() {
@@ -29,26 +30,37 @@ func main() {
 	defer conn.Close()
 	c := proto.NewComputeServiceClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	// 1. check lease contract
-	res1, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 0})
-	if err != nil {
-		log.Fatalf("fail to greet: %v", err)
+
+	once := false
+
+	if once {
+		// 1. check lease contract
+		res1, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 0})
+		if err != nil {
+			log.Fatalf("fail to greet: %v", err)
+		}
+		log.Printf("[Greet] %v\n", res1.GetResult())
+		// 2. check payee and apply for authority
+		res2, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 1})
+		if err != nil {
+			log.Fatalf("fail to greet: %v", err)
+		}
+		log.Printf("[Greet] %v\n", res2.GetResult())
+		// 3. check authority
+		res3, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 2})
+		if err != nil {
+			log.Fatalf("fail to greet: %v", err)
+		}
+		log.Printf("[Greet] %v\n", res3.GetResult())
+		// 4. deploy (set entrance)
+		res4, err := c.Greet(ctx, &proto.GreetFromClient{Input: entrance, Opts: map[string]string{"address": contract}, MsgType: 3})
+		if err != nil {
+			log.Fatalf("fail to greet: %v", err)
+		}
+		log.Printf("[Greet] %v\n", res4.GetResult())
 	}
-	log.Printf("[Greet] %v\n", res1.GetResult())
-	// 2. check payee and apply for authority
-	res2, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 1})
-	if err != nil {
-		log.Fatalf("fail to greet: %v", err)
-	}
-	log.Printf("[Greet] %v\n", res2.GetResult())
-	// 3. check authority
-	res3, err := c.Greet(ctx, &proto.GreetFromClient{Input: account, MsgType: 2})
-	if err != nil {
-		log.Fatalf("fail to greet: %v", err)
-	}
-	log.Printf("[Greet] %v\n", res3.GetResult())
 
 	// process
 	testReq, err := http.NewRequest("GET", "https://example/", nil)
@@ -57,7 +69,7 @@ func main() {
 	}
 	buf := new(bytes.Buffer)
 	testReq.WriteProxy(buf)
-	resP, err := c.Process(ctx, &proto.Request{Address: account, Request: buf.Bytes()})
+	resP, err := c.Process(ctx, &proto.Request{Address: contract, Request: buf.Bytes()})
 	if err != nil {
 		log.Fatalf("fail to process: %v", err)
 	}
