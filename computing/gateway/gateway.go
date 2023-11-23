@@ -30,7 +30,7 @@ func (cg *ComputingGateway) Compute(entrance string, input *model.ComputingInput
 	if err != nil {
 		return err
 	}
-	// redirect
+	// redirect entrance
 	req.URL.Host = entrance
 	req.Host = entrance
 	req.RequestURI = ""

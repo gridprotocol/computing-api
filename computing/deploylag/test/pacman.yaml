@@ -1,0 +1,11 @@
+version: "2.0"
+services:
+  super:
+    image: sxk1633/game-pacman:latest
+    expose:
+      - port: 80 
+        as: 80
+deployment:
+  super:
+    lagrange:
+      count: 1

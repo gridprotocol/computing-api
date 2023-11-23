@@ -28,7 +28,7 @@ var clientSet *kubernetes.Clientset
 var k8sOnce sync.Once
 
 type K8sService struct {
-	k8sClient *kubernetes.Clientset
+	Clientset *kubernetes.Clientset
 	Version   string
 }
 
@@ -65,33 +65,33 @@ func NewK8sService() *K8sService {
 	})
 
 	return &K8sService{
-		k8sClient: clientSet,
+		Clientset: clientSet,
 		Version:   version,
 	}
 }
 
 func (s *K8sService) CreateDeployment(ctx context.Context, nameSpace string, deploy *appV1.Deployment) (result *appV1.Deployment, err error) {
-	return s.k8sClient.AppsV1().Deployments(nameSpace).Create(ctx, deploy, metaV1.CreateOptions{})
+	return s.Clientset.AppsV1().Deployments(nameSpace).Create(ctx, deploy, metaV1.CreateOptions{})
 }
 
 func (s *K8sService) DeleteDeployment(ctx context.Context, namespace, deploymentName string) error {
-	return s.k8sClient.AppsV1().Deployments(namespace).Delete(ctx, deploymentName, metaV1.DeleteOptions{})
+	return s.Clientset.AppsV1().Deployments(namespace).Delete(ctx, deploymentName, metaV1.DeleteOptions{})
 }
 
 func (s *K8sService) DeletePod(ctx context.Context, namespace, spaceName string) error {
-	return s.k8sClient.CoreV1().Pods(namespace).DeleteCollection(ctx, *metaV1.NewDeleteOptions(0), metaV1.ListOptions{
+	return s.Clientset.CoreV1().Pods(namespace).DeleteCollection(ctx, *metaV1.NewDeleteOptions(0), metaV1.ListOptions{
 		LabelSelector: fmt.Sprintf("lad_app=%s", spaceName),
 	})
 }
 
 func (s *K8sService) DeleteDeployRs(ctx context.Context, namespace, spaceName string) error {
-	return s.k8sClient.AppsV1().ReplicaSets(namespace).DeleteCollection(ctx, *metaV1.NewDeleteOptions(0), metaV1.ListOptions{
+	return s.Clientset.AppsV1().ReplicaSets(namespace).DeleteCollection(ctx, *metaV1.NewDeleteOptions(0), metaV1.ListOptions{
 		LabelSelector: fmt.Sprintf("lad_app=%s", spaceName),
 	})
 }
 
 func (s *K8sService) GetDeploymentImages(ctx context.Context, namespace, deploymentName string) ([]string, error) {
-	deployment, err := s.k8sClient.AppsV1().Deployments(namespace).Get(ctx, deploymentName, metaV1.GetOptions{})
+	deployment, err := s.Clientset.AppsV1().Deployments(namespace).Get(ctx, deploymentName, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (s *K8sService) GetDeploymentImages(ctx context.Context, namespace, deploym
 }
 
 func (s *K8sService) GetServiceByName(ctx context.Context, namespace, serviceName string, opts metaV1.GetOptions) (result *coreV1.Service, err error) {
-	return s.k8sClient.CoreV1().Services(namespace).Get(ctx, serviceName, opts)
+	return s.Clientset.CoreV1().Services(namespace).Get(ctx, serviceName, opts)
 }
 
 func (s *K8sService) CreateService(ctx context.Context, nameSpace, spaceName string, containerPort int32) (result *coreV1.Service, err error) {
@@ -125,15 +125,48 @@ func (s *K8sService) CreateService(ctx context.Context, nameSpace, spaceName str
 				},
 			},
 			Selector: map[string]string{
-				"lad_app": spaceName,
+				"app": spaceName,
 			},
 		},
 	}
-	return s.k8sClient.CoreV1().Services(nameSpace).Create(ctx, service, metaV1.CreateOptions{})
+	return s.Clientset.CoreV1().Services(nameSpace).Create(ctx, service, metaV1.CreateOptions{})
+}
+
+// create a nodeport service
+func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appName string, containerPort int32) (result *coreV1.Service, err error) {
+	service := &coreV1.Service{
+		TypeMeta: metaV1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      model.K8S_SERVICE_NAME_PREFIX + appName,
+			Namespace: nameSpace,
+		},
+		Spec: coreV1.ServiceSpec{
+			Type: coreV1.ServiceTypeNodePort,
+			Ports: []coreV1.ServicePort{
+				{
+					Name: "http",
+					Port: containerPort,
+				},
+			},
+			Selector: map[string]string{
+				"app": appName,
+			},
+		},
+	}
+	// call api to create service
+	res, err := s.Clientset.CoreV1().Services(nameSpace).Create(ctx, service, metaV1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (s *K8sService) DeleteService(ctx context.Context, namespace, serviceName string) error {
-	return s.k8sClient.CoreV1().Services(namespace).Delete(ctx, serviceName, metaV1.DeleteOptions{})
+	return s.Clientset.CoreV1().Services(namespace).Delete(ctx, serviceName, metaV1.DeleteOptions{})
 }
 
 func (s *K8sService) CreateIngress(ctx context.Context, k8sNameSpace, spaceName, hostName string, port int32) (*networkingv1.Ingress, error) {
@@ -173,11 +206,11 @@ func (s *K8sService) CreateIngress(ctx context.Context, k8sNameSpace, spaceName,
 		},
 	}
 
-	return s.k8sClient.NetworkingV1().Ingresses(k8sNameSpace).Create(ctx, ingress, metaV1.CreateOptions{})
+	return s.Clientset.NetworkingV1().Ingresses(k8sNameSpace).Create(ctx, ingress, metaV1.CreateOptions{})
 }
 
 func (s *K8sService) DeleteIngress(ctx context.Context, nameSpace, ingressName string) error {
-	return s.k8sClient.NetworkingV1().Ingresses(nameSpace).Delete(ctx, ingressName, metaV1.DeleteOptions{})
+	return s.Clientset.NetworkingV1().Ingresses(nameSpace).Delete(ctx, ingressName, metaV1.DeleteOptions{})
 }
 
 func (s *K8sService) CreateConfigMap(ctx context.Context, k8sNameSpace, spaceName, basePath, configName string) (*coreV1.ConfigMap, error) {
@@ -198,7 +231,8 @@ func (s *K8sService) CreateConfigMap(ctx context.Context, k8sNameSpace, spaceNam
 			configName: string(iniData),
 		},
 	}
-	return s.k8sClient.CoreV1().ConfigMaps(k8sNameSpace).Create(ctx, configMap, metaV1.CreateOptions{})
+
+	return s.Clientset.CoreV1().ConfigMaps(k8sNameSpace).Create(ctx, configMap, metaV1.CreateOptions{})
 }
 
 func (s *K8sService) GetPods(namespace, spaceName string) (bool, error) {
@@ -208,7 +242,7 @@ func (s *K8sService) GetPods(namespace, spaceName string) (bool, error) {
 			LabelSelector: fmt.Sprintf("lad_app=%s", spaceName),
 		}
 	}
-	podList, err := s.k8sClient.CoreV1().Pods(namespace).List(context.TODO(), listOption)
+	podList, err := s.Clientset.CoreV1().Pods(namespace).List(context.TODO(), listOption)
 	if err != nil {
 		logger.Error(err)
 		return false, err
@@ -243,23 +277,23 @@ func (s *K8sService) CreateNetworkPolicy(ctx context.Context, namespace string) 
 		},
 	}
 
-	return s.k8sClient.NetworkingV1().NetworkPolicies(namespace).Create(ctx, networkPolicy, metaV1.CreateOptions{})
+	return s.Clientset.NetworkingV1().NetworkPolicies(namespace).Create(ctx, networkPolicy, metaV1.CreateOptions{})
 }
 
 func (s *K8sService) CreateNameSpace(ctx context.Context, nameSpace *coreV1.Namespace, opts metaV1.CreateOptions) (result *coreV1.Namespace, err error) {
-	return s.k8sClient.CoreV1().Namespaces().Create(ctx, nameSpace, opts)
+	return s.Clientset.CoreV1().Namespaces().Create(ctx, nameSpace, opts)
 }
 
 func (s *K8sService) GetNameSpace(ctx context.Context, nameSpace string, opts metaV1.GetOptions) (result *coreV1.Namespace, err error) {
-	return s.k8sClient.CoreV1().Namespaces().Get(ctx, nameSpace, opts)
+	return s.Clientset.CoreV1().Namespaces().Get(ctx, nameSpace, opts)
 }
 
 func (s *K8sService) DeleteNameSpace(ctx context.Context, nameSpace string) error {
-	return s.k8sClient.CoreV1().Namespaces().Delete(ctx, nameSpace, metaV1.DeleteOptions{})
+	return s.Clientset.CoreV1().Namespaces().Delete(ctx, nameSpace, metaV1.DeleteOptions{})
 }
 
 func (s *K8sService) ListUsedImage(ctx context.Context, nameSpace string) ([]string, error) {
-	list, err := s.k8sClient.CoreV1().Pods(nameSpace).List(ctx, metaV1.ListOptions{})
+	list, err := s.Clientset.CoreV1().Pods(nameSpace).List(ctx, metaV1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +308,7 @@ func (s *K8sService) ListUsedImage(ctx context.Context, nameSpace string) ([]str
 }
 
 func (s *K8sService) ListNamespace(ctx context.Context) ([]string, error) {
-	list, err := s.k8sClient.CoreV1().Namespaces().List(ctx, metaV1.ListOptions{})
+	list, err := s.Clientset.CoreV1().Namespaces().List(ctx, metaV1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -287,13 +321,13 @@ func (s *K8sService) ListNamespace(ctx context.Context) ([]string, error) {
 }
 
 // func (s *K8sService) StatisticalSources(ctx context.Context) ([]*models.NodeResource, error) {
-// 	activePods, err := allActivePods(s.k8sClient)
+// 	activePods, err := allActivePods(s.Clientset)
 // 	if err != nil {
 // 		return nil, err
 // 	}
 // 	var nodeList []*models.NodeResource
 
-// 	nodes, err := s.k8sClient.CoreV1().Nodes().List(ctx, metaV1.ListOptions{})
+// 	nodes, err := s.Clientset.CoreV1().Nodes().List(ctx, metaV1.ListOptions{})
 // 	if err != nil {
 // 		logger.Error(err)
 // 		return nil, err
@@ -381,7 +415,8 @@ func (s *K8sService) GetPodLog(ctx context.Context) (map[string]*strings.Builder
 		Timestamps: false,
 	}
 
-	podList, err := s.k8sClient.CoreV1().Pods("kube-system").List(ctx, metaV1.ListOptions{
+	// get all pods in ns 'kube-system'
+	podList, err := s.Clientset.CoreV1().Pods("kube-system").List(ctx, metaV1.ListOptions{
 		LabelSelector: "app=resource-exporter",
 	})
 	if err != nil {
@@ -391,7 +426,7 @@ func (s *K8sService) GetPodLog(ctx context.Context) (map[string]*strings.Builder
 
 	result := make(map[string]*strings.Builder)
 	for _, pod := range podList.Items {
-		req := s.k8sClient.CoreV1().Pods("kube-system").GetLogs(pod.Name, &podLogOptions)
+		req := s.Clientset.CoreV1().Pods("kube-system").GetLogs(pod.Name, &podLogOptions)
 		buf, err := readLog(req)
 		if err != nil {
 			return nil, err
@@ -404,13 +439,13 @@ func (s *K8sService) GetPodLog(ctx context.Context) (map[string]*strings.Builder
 func (s *K8sService) AddNodeLabel(nodeName, key string) error {
 	key = strings.ReplaceAll(key, " ", "-")
 
-	node, err := s.k8sClient.CoreV1().Nodes().Get(context.Background(), nodeName, metaV1.GetOptions{})
+	node, err := s.Clientset.CoreV1().Nodes().Get(context.Background(), nodeName, metaV1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	node.Labels[key] = "true"
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		_, updateErr := s.k8sClient.CoreV1().Nodes().Update(context.Background(), node, metaV1.UpdateOptions{})
+		_, updateErr := s.Clientset.CoreV1().Nodes().Update(context.Background(), node, metaV1.UpdateOptions{})
 		return updateErr
 	})
 	if retryErr != nil {
@@ -433,7 +468,8 @@ func readLog(req *rest.Request) (*strings.Builder, error) {
 	return buf, nil
 }
 
-func generateLabel(name string) map[string]string {
+// generate a label from name
+func GenerateLabel(name string) map[string]string {
 	if name != "" {
 		key := strings.ReplaceAll(name, " ", "-")
 		return map[string]string{
