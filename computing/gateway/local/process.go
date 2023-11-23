@@ -2,9 +2,12 @@ package local
 
 import (
 	"computing-api/computing/config"
+	"computing-api/computing/deploy"
 	"computing-api/computing/model"
 	"computing-api/lib/kv"
 	"computing-api/lib/logs"
+	"fmt"
+	"log"
 )
 
 var logger = logs.Logger("local")
@@ -80,12 +83,22 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 	return nil
 }
 
-// TODO: deploy
 // (flexiable, enable image change in the future, describe in the task file)
-func (glp *GatewayLocalProcess) Deploy(user string, task string) error {
+func (glp *GatewayLocalProcess) Deploy(user string, yamlfile string) error {
 	// k8s deploy service
+
+	// deploy with yaml and create NodePort service
+	ep, err := deploy.Deploy(yamlfile)
+	if err != nil {
+		log.Fatalf("fail to greet: %v", err)
+	}
+
+	// use the NodePort to make an entrance
+	entrance := fmt.Sprintf("localhost:%d", ep.NodePort)
+	fmt.Println("entrance:", entrance)
+
 	// record entrance
-	glp.db.Put(prefixKey(user, entrancePrefix), []byte(task))
+	glp.db.Put(prefixKey(user, entrancePrefix), []byte(entrance))
 	return nil
 }
 

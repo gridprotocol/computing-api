@@ -6,6 +6,7 @@ import (
 	"computing-api/computing/proto"
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -15,10 +16,11 @@ import (
 )
 
 var (
+	// rpc server address
 	addr     = flag.String("addr", "localhost:12345", "remote address of the server")
 	contract = "0xd46e8dd67c5d32be8058bb8eb970870f07244567"
 	// account  = "0x683642c22feDE752415D4793832Ab75EFdF6223c"
-	entrance = "baidu.com"
+	//entrance = "baidu.com"
 )
 
 func main() {
@@ -33,29 +35,37 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	once := false
+	once := true
 
 	if once {
 		// 1. check lease contract
+		fmt.Println("Greet 0")
 		res1, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 0})
 		if err != nil {
 			log.Fatalf("fail to greet: %v", err)
 		}
 		log.Printf("[Greet] %v\n", res1.GetResult())
+
 		// 2. check payee and apply for authority
+		fmt.Println("Greet 1")
 		res2, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 1})
 		if err != nil {
 			log.Fatalf("fail to greet: %v", err)
 		}
 		log.Printf("[Greet] %v\n", res2.GetResult())
+
 		// 3. check authority
+		fmt.Println("Greet 2")
 		res3, err := c.Greet(ctx, &proto.GreetFromClient{Input: contract, MsgType: 2})
 		if err != nil {
 			log.Fatalf("fail to greet: %v", err)
 		}
 		log.Printf("[Greet] %v\n", res3.GetResult())
+
 		// 4. deploy (set entrance)
-		res4, err := c.Greet(ctx, &proto.GreetFromClient{Input: entrance, Opts: map[string]string{"address": contract}, MsgType: 3})
+		fmt.Println("Greet 3")
+		yamlUrl := "./hello.yaml"
+		res4, err := c.Greet(ctx, &proto.GreetFromClient{Input: yamlUrl, Opts: map[string]string{"address": contract}, MsgType: 3})
 		if err != nil {
 			log.Fatalf("fail to greet: %v", err)
 		}

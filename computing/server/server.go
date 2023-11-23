@@ -28,6 +28,7 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 	switch gfc.MsgType {
 	case 0: // contract
 		logger.Debug("Greet - contract")
+		// check contract address
 		if es.gw.CheckContract(gfc.GetInput()) {
 			return &proto.GreetFromServer{Result: "[ACK] the contract is acceptable"}, nil
 		} else {
@@ -55,8 +56,8 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 		return &proto.GreetFromServer{Result: "[ACK] already authorized"}, nil
 	case 3: // deploy
 		logger.Debug("Greet - deploy")
-		in := gfc.GetInput()
-		if len(in) == 0 {
+		yamlUrl := gfc.GetInput()
+		if len(yamlUrl) == 0 {
 			return &proto.GreetFromServer{Result: "[Fail] empty deployment"}, nil
 		}
 		addr, ok := gfc.GetOpts()["address"]
@@ -64,7 +65,7 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 			return &proto.GreetFromServer{Result: "[Fail] user's address is required"}, nil
 		}
 		// TODO: api_key verify
-		es.gw.Deploy(addr, in)
+		es.gw.Deploy(addr, yamlUrl)
 		return &proto.GreetFromServer{Result: "[ACK] deployed ok"}, nil
 	default:
 		logger.Debug("Greet - unsupported type")
