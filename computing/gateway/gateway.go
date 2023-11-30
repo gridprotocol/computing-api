@@ -30,6 +30,7 @@ func (cg *ComputingGateway) Compute(entrance string, input *model.ComputingInput
 	if err != nil {
 		return err
 	}
+
 	// redirect entrance
 	req.URL.Host = entrance
 	req.Host = entrance
@@ -47,6 +48,7 @@ func (cg *ComputingGateway) Compute(entrance string, input *model.ComputingInput
 	resBuf := new(bytes.Buffer)
 	res.Write(resBuf)
 	output.Response = resBuf.Bytes()
+
 	return nil
 }
 

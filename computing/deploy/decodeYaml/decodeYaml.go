@@ -4,7 +4,12 @@ This package is used for decoding yaml file into objects.
 package decodeYaml
 
 import (
+	"bytes"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
+	"path"
 
 	"fmt"
 
@@ -26,20 +31,14 @@ func GetDecoder() runtime.Decoder {
 	return decoder
 }
 
-// decode deployment from yaml filepath
-func DecDeployment(yaml string) (*appsv1.Deployment, error) {
+// decode yaml data into a deployment, data can be read from a file or an url
+func DecDeployment(data []byte) (*appsv1.Deployment, error) {
 	// get decoder
 	decoder := GetDecoder()
 
-	// read yaml
-	deploymentYAML, err := os.ReadFile(yaml)
-	if err != nil {
-		return nil, err
-	}
-
 	// decode yaml for deployment
 	deployment := new(appsv1.Deployment)
-	_, _, err = decoder.Decode(deploymentYAML, nil, deployment)
+	_, _, err := decoder.Decode(data, nil, deployment)
 	if err != nil {
 		return nil, err
 	}
@@ -68,4 +67,53 @@ func DecNamespace(yaml string) (*corev1.Namespace, error) {
 	fmt.Printf("namespace: %s\n", namespace.ObjectMeta.GetName())
 
 	return namespace, nil
+}
+
+// get yaml data from a file
+func ReadYamlFile(file string) ([]byte, error) {
+	// read yaml
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// get yaml data from an url
+func ReadYamlUrl(urlPath string) ([]byte, error) {
+	// check ext
+	u, err := url.Parse(urlPath)
+	if err != nil {
+		return nil, err
+	}
+	fileExt := path.Ext(u.Path)
+	if fileExt != ".yaml" && fileExt != ".yml" {
+		return nil, fmt.Errorf("file ext in url is invalid, should be .yaml or .yml file")
+	}
+
+	// check size
+	resp, err := http.Head(urlPath)
+	if err != nil {
+		return nil, err
+	}
+	fsize := resp.ContentLength
+	if fsize > 1024*1024 {
+		return nil, fmt.Errorf("yaml file is too big, limited to 1 Mib")
+	}
+
+	// get yaml data from url
+	resp, err = http.Get(urlPath)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// read into a buffer
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }

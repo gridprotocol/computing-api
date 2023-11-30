@@ -22,14 +22,20 @@ type EndPoint struct {
 }
 
 // deploy an app and create a nodePort service for it
-func Deploy(yamlfile string) (*EndPoint, error) {
+func Deploy(url string) (*EndPoint, error) {
 	// get k8s service
 	svc := docker.NewK8sService()
 
+	fmt.Println("reading url:", url)
+
+	data, err := decodeYaml.ReadYamlUrl(url)
+	if err != nil {
+		return nil, err
+	}
 	//------- k8s operations
 	// decode yaml to deployment object
-	logger.Debug("decoding")
-	deployObject, err := decodeYaml.DecDeployment(yamlfile)
+	logger.Debug("decoding yaml to obj")
+	deployObject, err := decodeYaml.DecDeployment(data)
 	if err != nil {
 		return nil, err
 	}
