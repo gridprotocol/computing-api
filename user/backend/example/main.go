@@ -37,6 +37,7 @@ func main() {
 
 	once := true
 
+	// greet
 	if once {
 		// 1. check lease contract
 		fmt.Println("Greet 0")
@@ -64,7 +65,7 @@ func main() {
 
 		// 4. deploy (set entrance)
 		fmt.Println("Greet 3")
-		yamlUrl := "./hello.yaml"
+		yamlUrl := "https://k8s.io/examples/service/load-balancer-example.yaml"
 		res4, err := c.Greet(ctx, &proto.GreetFromClient{Input: yamlUrl, Opts: map[string]string{"address": contract}, MsgType: 3})
 		if err != nil {
 			log.Fatalf("fail to greet: %v", err)
@@ -73,7 +74,7 @@ func main() {
 	}
 
 	// process
-	testReq, err := http.NewRequest("GET", "https://example/", nil)
+	testReq, err := http.NewRequest("GET", "http://example/", nil)
 	if err != nil {
 		log.Fatalf("fail to create a request: %v", err)
 	}
@@ -90,5 +91,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("fail to read response: %v", err)
 	}
-	log.Printf("[Response] %v\n", resp)
+
+	// read body from response
+	body := make([]byte, 100)
+	resp.Body.Read(body)
+	log.Printf("[Response] %s\n", body)
 }

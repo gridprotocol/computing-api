@@ -3,4 +3,5 @@ testdb
 rpc
 cli
 gw-server
+gw-user
 *.log
