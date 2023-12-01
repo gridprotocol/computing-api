@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"computing-api/common/version"
 	"computing-api/computing/proto"
 	"context"
 	"flag"
@@ -24,7 +25,10 @@ var (
 )
 
 func main() {
-	flag.Parse()
+	if version.CheckVersion() {
+		return
+	}
+	// flag.Parse()
 	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("cannot connect to the server: %v", err)

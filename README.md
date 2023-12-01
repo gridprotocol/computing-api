@@ -8,7 +8,7 @@
 
 **整体三层**
 
-![fig01](./NewComputeStructure.png)
+![fig01](./assets/NewComputeStructure.png)
 
 用户层中实际上有两类角色，一个是用户，另一个是平台。平台的存在并不会引入中心化，而是为了方便用户操作，类似交易所，用户随时可以切换平台甚至自己完成操作。对于平台，前端提供用户访问与操作的页面，后端则负责与结算层、计算层的通信。
 
@@ -23,11 +23,11 @@
 
 **计算层**
 
-![fig02](./GatewayInterface.png)
+![fig02](./assets/GatewayInterface.png)
 
 ## 工作流
 
-![fig03](./NewComputeWorkflow.png)
+![fig03](./assets/NewComputeWorkflow.png)
 
 对于用户：
 
@@ -44,7 +44,7 @@
 - 订单内质押的报酬随时间释放，保证计算节点的权益。用户结束订单时会自动触发结算，计算节点通过函数也可以手动触发。
 - 为了保证用户的权益和体验，合约逻辑内可以加入一段试用期。试用期内用户取消订单不扣费（除了交易手续费）。
 
-![fig04](./NewComputeWorkflowFail.png)
+![fig04](./assets/NewComputeWorkflowFail.png)
 
 在没有能力验证双方可信度的情况下，用释放合约来保证用户和计算节点双方的权益。
 

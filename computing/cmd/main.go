@@ -1,6 +1,7 @@
 package main
 
 import (
+	"computing-api/common/version"
 	"computing-api/computing/config"
 	"computing-api/computing/gateway"
 	"computing-api/computing/gateway/local"
@@ -23,6 +24,10 @@ var (
 )
 
 func init() {
+	if version.CheckVersion() {
+		os.Exit(0)
+	}
+
 	err := config.InitConfig()
 	if err != nil {
 		log.Fatalf("failed to init the config: %v", err)
