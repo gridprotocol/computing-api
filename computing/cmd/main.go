@@ -18,13 +18,23 @@ import (
 
 var gw *gateway.ComputingGateway
 
+var (
+	test = false // for local test, no k8s deployment required
+)
+
 func init() {
 	err := config.InitConfig()
 	if err != nil {
 		log.Fatalf("failed to init the config: %v", err)
 	}
+
 	grp := remote.NewGatewayRemoteProcess()
-	glp := local.NewGatewayLocalProcess()
+	var glp gateway.GatewayLocalProcessAPI
+	if test {
+		glp = local.NewFakeImplementofLocalProcess()
+	} else {
+		glp = local.NewGatewayLocalProcess()
+	}
 	gw = gateway.NewComputingGateway(glp, grp)
 }
 

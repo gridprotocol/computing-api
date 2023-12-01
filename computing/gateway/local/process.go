@@ -12,6 +12,7 @@ import (
 
 var logger = logs.Logger("local")
 
+// TODO: add cache
 type GatewayLocalProcess struct {
 	db *kv.Database
 }
@@ -69,6 +70,15 @@ func (glp *GatewayLocalProcess) AssessPower() model.Resources {
 }
 
 func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error {
+	if ok, err := glp.db.Has(prefixKey(user, leasePrefix)); err != nil {
+		logger.Error("Error occurs when reading db, err:", err)
+		return err
+	} else {
+		if ok {
+			return nil
+		}
+	}
+
 	// set account -> lease
 	lb, err := lease.Encode()
 	if err != nil {
