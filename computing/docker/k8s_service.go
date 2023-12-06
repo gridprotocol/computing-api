@@ -18,6 +18,7 @@ import (
 
 	networkingv1 "k8s.io/api/networking/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -133,7 +134,7 @@ func (s *K8sService) CreateService(ctx context.Context, nameSpace, spaceName str
 }
 
 // create a nodeport service
-func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appName string, containerPort int32) (result *coreV1.Service, err error) {
+func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appName string, port, containerPort int32) (result *coreV1.Service, err error) {
 	service := &coreV1.Service{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Service",
@@ -147,8 +148,9 @@ func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appNa
 			Type: coreV1.ServiceTypeNodePort,
 			Ports: []coreV1.ServicePort{
 				{
-					Name: "http",
-					Port: containerPort,
+					Name:       "http",
+					Port:       port,
+					TargetPort: intstr.FromInt(int(containerPort)),
 				},
 			},
 			Selector: map[string]string{

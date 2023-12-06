@@ -53,10 +53,25 @@ func Deploy(url string) (*EndPoint, error) {
 	logger.Debugf("create deployment ok: %s", deployName)
 
 	// create a node port service with name: svc-appName, port: port
-	npSvc, err := svc.CreateNodePortService(context.TODO(), "default", "hello", int32(8080))
+	nameSpace := "default"
+	appName := deployName
+	fmt.Println("app name:", deployName)
+	// get containerPort from pod's container
+	containerPort := d.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort
+	// cluster port is set to containerPort here
+	// it can be customized to a different port.
+	port := containerPort
+	npSvc, err := svc.CreateNodePortService(context.TODO(), nameSpace, appName, port, containerPort)
 	if err != nil {
 		return nil, err
 	}
+	// get svc name
+	svcName := npSvc.GetObjectMeta().GetName()
+	fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d",
+		svcName,
+		npSvc.Spec.Ports[0].Port,
+		npSvc.Spec.Ports[0].TargetPort.IntVal,
+		npSvc.Spec.Ports[0].NodePort)
 
 	// wait for deployment to be ready
 	var retry uint
