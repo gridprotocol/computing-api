@@ -1,7 +1,6 @@
 *.exe
 testdb
-rpc
-cli
-gw-server
-gw-user
+computing-gw-rpc
+computing-gw
+user-example
 *.log

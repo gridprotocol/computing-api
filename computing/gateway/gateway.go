@@ -24,11 +24,20 @@ func NewComputingGateway(glp GatewayLocalProcessAPI, grp GatewayRemoteProcessAPI
 // TODO: only forward the msg, not deal with it. Should use unified interface
 // maybe input is a http request and output is a http response?
 func (cg *ComputingGateway) Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error {
-	// build request
-	reqBuf := bytes.NewBuffer(input.Request)
-	req, err := http.ReadRequest(bufio.NewReader(reqBuf))
-	if err != nil {
-		return err
+	var req *http.Request
+	var err error
+	if len(input.Request) != 0 {
+		// build request
+		reqBuf := bytes.NewBuffer(input.Request)
+		req, err = http.ReadRequest(bufio.NewReader(reqBuf))
+		if err != nil {
+			return err
+		}
+	} else {
+		req, err = http.NewRequest("GET", "http://example/", nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	// redirect entrance

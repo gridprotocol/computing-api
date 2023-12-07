@@ -1,6 +1,9 @@
 [Grpc]
 Listen = "localhost:12345"
 
+[Http]
+Listen = "localhost:12346"
+
 [Local]
 DBPath = "./testdb"
 

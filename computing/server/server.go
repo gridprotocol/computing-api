@@ -65,6 +65,9 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 			return &proto.GreetFromServer{Result: "[Fail] user's address is required"}, nil
 		}
 		// TODO: api_key verify
+		if !es.gw.VerifyAccessibility(addr, "", false) {
+			return &proto.GreetFromServer{Result: "[Fail] user is not authorized"}, nil
+		}
 		es.gw.Deploy(addr, yamlUrl)
 		return &proto.GreetFromServer{Result: "[ACK] deployed ok"}, nil
 	default:
