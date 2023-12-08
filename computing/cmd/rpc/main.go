@@ -6,29 +6,33 @@ import (
 	"computing-api/computing/gateway"
 	"computing-api/computing/gateway/local"
 	"computing-api/computing/gateway/remote"
-	"computing-api/computing/server/httpserver"
-	"context"
+	"computing-api/computing/proto"
+	"computing-api/computing/server"
 	"log"
-	"net/http"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
+
+	"google.golang.org/grpc"
 )
+
+var gw *gateway.ComputingGateway
 
 var (
-	test = true
+	test = false // for local test, no k8s deployment required
 )
 
-func main() {
-	// init
+func init() {
 	if version.CheckVersion() {
 		os.Exit(0)
 	}
+
 	err := config.InitConfig()
 	if err != nil {
 		log.Fatalf("failed to init the config: %v", err)
 	}
+
 	grp := remote.NewGatewayRemoteProcess()
 	var glp gateway.GatewayLocalProcessAPI
 	if test {
@@ -36,13 +40,20 @@ func main() {
 	} else {
 		glp = local.NewGatewayLocalProcess()
 	}
-	gw := gateway.NewComputingGateway(glp, grp)
-	defer gw.Close()
+	gw = gateway.NewComputingGateway(glp, grp)
+}
 
-	// server
-	srv := httpserver.NewServer(config.GetConfig().Http.Listen, gw)
+func main() {
+	lis, err := net.Listen("tcp", config.GetConfig().Grpc.Listen)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	srv := server.InitEntranceService(gw)
+	proto.RegisterComputeServiceServer(s, srv)
+
 	go func() {
-		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err = s.Serve(lis); err != nil {
 			log.Fatalf("fail to start serving: %v", err)
 		}
 	}()
@@ -52,9 +63,6 @@ func main() {
 	<-quit
 
 	log.Println("Shutting down gateway...")
-	cctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(cctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
-	}
+	s.GracefulStop()
+	gw.Close()
 }

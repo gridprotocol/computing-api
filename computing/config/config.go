@@ -13,6 +13,7 @@ var conf *GatewayConfig
 
 type GatewayConfig struct {
 	Grpc   Grpc
+	Http   Http
 	Local  Local
 	Remote Remote
 }
@@ -26,6 +27,10 @@ type Remote struct {
 }
 
 type Grpc struct {
+	Listen string
+}
+
+type Http struct {
 	Listen string
 }
 
@@ -54,6 +59,7 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Remote"},
 
 		{"Grpc", "Listen"},
+		{"Http", "Listen"},
 
 		{"Local", "DBPath"},
 

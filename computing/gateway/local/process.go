@@ -7,7 +7,6 @@ import (
 	"computing-api/lib/kv"
 	"computing-api/lib/logs"
 	"fmt"
-	"log"
 )
 
 var logger = logs.Logger("local")
@@ -70,6 +69,9 @@ func (glp *GatewayLocalProcess) AssessPower() model.Resources {
 }
 
 func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error {
+	if len(user) == 0 {
+		return fmt.Errorf("user should not be empty")
+	}
 	if ok, err := glp.db.Has(prefixKey(user, leasePrefix)); err != nil {
 		logger.Error("Error occurs when reading db, err:", err)
 		return err
@@ -101,7 +103,8 @@ func (glp *GatewayLocalProcess) Deploy(user string, yamlurl string) error {
 	ep, err := deploy.Deploy(yamlurl)
 
 	if err != nil {
-		log.Fatalf("fail to greet: %v", err)
+		logger.Error("fail to deploy: %v", err)
+		return err
 	}
 
 	// use the NodePort to make an entrance
