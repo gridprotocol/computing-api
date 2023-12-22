@@ -95,7 +95,12 @@ func (hc handlerCore) handlerGreet(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] user is not authorized"})
 			return
 		}
-		hc.gw.Deploy(addr, input)
+		// file path for test
+		input = "./tomcat-dm.yaml" // if loacal=true, set this local file
+		err := hc.gw.Deploy(addr, input, true)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed failed"})
+		}
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"err": "unsupported msg type"})

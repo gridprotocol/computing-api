@@ -96,12 +96,18 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 }
 
 // (flexiable, enable image change in the future, describe in the task file)
-func (glp *GatewayLocalProcess) Deploy(user string, yamlurl string) error {
+func (glp *GatewayLocalProcess) Deploy(user string, yaml string, local bool) error {
 	// k8s deploy service
 
-	// deploy with yaml and create NodePort service
-	ep, err := deploy.Deploy(yamlurl)
+	var ep *deploy.EndPoint
+	var err error
 
+	// deploy with yaml and create NodePort service
+	if local {
+		ep, err = deploy.DeployLocal(yaml)
+	} else {
+		ep, err = deploy.Deploy(yaml)
+	}
 	if err != nil {
 		logger.Error("fail to deploy: %v", err)
 		return err

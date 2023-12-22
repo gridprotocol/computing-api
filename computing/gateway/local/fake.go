@@ -30,7 +30,7 @@ func (filp *FakeImplementofLocalProcess) Authorize(user string, lease model.Leas
 	filp.fakeDB[string(key)] = ""
 	return nil
 }
-func (filp *FakeImplementofLocalProcess) Deploy(user string, task string) error {
+func (filp *FakeImplementofLocalProcess) Deploy(user string, task string, local bool) error {
 	key := prefixKey(user, entrancePrefix)
 	filp.fakeDB[string(key)] = task
 	return nil
