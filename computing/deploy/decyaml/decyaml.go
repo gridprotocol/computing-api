@@ -1,15 +1,18 @@
 /*
 This package is used for decoding yaml file into objects.
 */
-package decodeYaml
+package decyaml
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"fmt"
 
@@ -17,6 +20,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	yaml_k8s "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 // get decoder with apimachinery lib
@@ -116,4 +120,58 @@ func ReadYamlUrl(urlPath string) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// parse objects from a yaml file data
+func ParseYaml(data []byte) (deps []*appsv1.Deployment, svcs []*corev1.Service, err error) {
+
+	// split data with '---'
+	dataArr := strings.Split(string(data), "---")
+
+	for _, value := range dataArr {
+		// YAML to json byte
+		obj, err := yaml_k8s.ToJSON([]byte(value))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// check object kind
+		var result map[string]interface{}
+		err = json.Unmarshal(obj, &result)
+		if err != nil {
+			panic("failed to parse JSON")
+		}
+		//fmt.Println("kind:", result["kind"])
+
+		kind := result["kind"]
+		switch kind {
+		case "Deployment":
+			// parse to deployment obj
+			dep := appsv1.Deployment{}
+			err = json.Unmarshal(obj, &dep)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			// add to result
+			if dep.Kind == "Deployment" {
+				deps = append(deps, &dep)
+			}
+		case "Service":
+			// parse to service obj
+			svc := corev1.Service{}
+			err = json.Unmarshal(obj, &svc)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			// add to result
+			if svc.Kind == "Service" {
+				svcs = append(svcs, &svc)
+			}
+		default:
+		}
+	}
+
+	return deps, svcs, nil
 }
