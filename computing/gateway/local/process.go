@@ -105,16 +105,12 @@ func (glp *GatewayLocalProcess) Deploy(user string, yaml string, local bool) err
 	// deploy with yaml and create NodePort service
 	if local {
 		ep, err = deploy.DeployLocal(yaml)
-		if err != nil {
-			logger.Error("fail to deploy: %v", err)
-			return err
-		}
 	} else {
 		ep, err = deploy.Deploy(yaml)
-		if err != nil {
-			logger.Error("fail to deploy: %v", err)
-			return err
-		}
+	}
+	if err != nil {
+		logger.Error("fail to deploy: %v", err)
+		return err
 	}
 
 	// use the NodePort to make an entrance
