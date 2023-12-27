@@ -32,11 +32,6 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(address string, api_key stri
 	if len(address) == 0 && len(api_key) == 0 {
 		return false
 	}
-	// addrBytes, err := address2bytes(address)
-	// if err != nil {
-	// 	logger.Error("Fail to decode address, err: ", err)
-	// 	return false
-	// }
 	// check whether the address is authorized
 	if !needKey {
 		if ok, err := glp.db.Has(prefixKey(address, leasePrefix)); err != nil {
@@ -114,7 +109,7 @@ func (glp *GatewayLocalProcess) Deploy(user string, yaml string, local bool) err
 	}
 
 	// use the NodePort to make an entrance
-	entrance := fmt.Sprintf("localhost:%d", ep.NodePort)
+	entrance := fmt.Sprintf("http://localhost:%d", ep.NodePort)
 	fmt.Println("entrance:", entrance)
 
 	// record entrance

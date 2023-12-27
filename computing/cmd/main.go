@@ -8,6 +8,7 @@ import (
 	"computing-api/computing/gateway/remote"
 	"computing-api/computing/server/httpserver"
 	"context"
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -17,11 +18,16 @@ import (
 )
 
 var (
-	test = false
+	test *bool
 )
+
+func checkFlag() {
+	test = flag.Bool("test", false, "deploy or direct forward")
+}
 
 func main() {
 	// init
+	checkFlag()
 	if version.CheckVersion() {
 		os.Exit(0)
 	}
@@ -31,7 +37,7 @@ func main() {
 	}
 	grp := remote.NewGatewayRemoteProcess()
 	var glp gateway.GatewayLocalProcessAPI
-	if test {
+	if *test {
 		glp = local.NewFakeImplementofLocalProcess()
 	} else {
 		glp = local.NewGatewayLocalProcess()
