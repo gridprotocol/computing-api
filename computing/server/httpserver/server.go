@@ -6,6 +6,9 @@ import (
 	"computing-api/lib/logs"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +16,9 @@ import (
 var logger = logs.Logger("http")
 
 type handlerCore struct {
-	gw gateway.ComputingGatewayAPI
+	gw  gateway.ComputingGatewayAPI
+	rpp sync.Pool // reverse proxy pool
+	cm  *cookieManager
 }
 
 func NewServer(addr string, gw gateway.ComputingGatewayAPI) *http.Server {
@@ -31,21 +36,21 @@ func NewServer(addr string, gw gateway.ComputingGatewayAPI) *http.Server {
 func registerAllRoute(gw gateway.ComputingGatewayAPI) *gin.Engine {
 	route := gin.Default()
 	route.Use(cors())
-	route.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"route":   "/greet and /process",
-			"greet":   "required: type (0-3), input",
-			"process": "required: address", // http request (forward), api_key
-		})
-	})
-
-	hc := handlerCore{gw}
-	route.GET("/greet", hc.handlerGreet)
-	route.GET("/process", hc.handlerProcess)
+	hc := handlerCore{
+		gw: gw,
+		cm: newCookieManager(),
+		rpp: sync.Pool{
+			New: func() any {
+				return &httputil.ReverseProxy{}
+			},
+		},
+	}
+	// route.GET("/greet", hc.handlerGreet)
+	route.Any("/*path", hc.handlerProcess)
 	return route
 }
 
-func (hc handlerCore) handlerGreet(c *gin.Context) {
+func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	msgType := c.Query("type")
 	input := c.Query("input")
 	switch msgType {
@@ -56,6 +61,7 @@ func (hc handlerCore) handlerGreet(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"msg": "[Fail] the lease is not acceptable"})
 		}
 	case "1": // apply for authority
+		// TODO: cache check
 		if !hc.gw.CheckContract(input) {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the lease is not acceptable"})
 			return
@@ -74,32 +80,37 @@ func (hc handlerCore) handlerGreet(c *gin.Context) {
 		// set watcher for the lease (current ver is empty)
 		hc.gw.SetWatcher(input)
 		c.JSON(http.StatusOK, gin.H{"msg": fmt.Sprintf("[ACK] %s authorized ok", user)})
-	case "2": // check authority
+	case "2": // Acquire cookie for later access
 		if hc.gw.VerifyAccessibility(input, "", false) {
+			cookie := hc.cm.Set(input)
+			http.SetCookie(c.Writer, cookie)
 			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] already authorized"})
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your account"})
 		}
 	case "3": // deploy
+		// verify accessibility
+		addr, ok := hc.cm.CheckCookie(c.Request.Cookies())
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
+			return
+		}
+		// local for test
+		localfile := c.Query("local")
+		local := false
+		if len(localfile) != 0 {
+			input = localfile
+			local = true
+		}
 		// input is deploy-yaml-file-url
 		if len(input) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] empty deployment"})
 			return
 		}
-		addr := c.Query("addr")
-		if len(addr) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] empty user address"})
-			return
-		}
-		if !hc.gw.VerifyAccessibility(addr, "", false) {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] user is not authorized"})
-			return
-		}
-		// file path for test
-		input = "./tomcat-dm.yaml" // if loacal=true, set this local file
-		err := hc.gw.Deploy(addr, input, true)
+		err := hc.gw.Deploy(addr, input, local)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed failed"})
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] Failed to deploy"})
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
 	default:
@@ -107,29 +118,51 @@ func (hc handlerCore) handlerGreet(c *gin.Context) {
 	}
 }
 
-// temporarily ignore api_key
-func (hc handlerCore) handlerProcess(c *gin.Context) {
-	addr := c.Query("addr")
-	if !hc.gw.VerifyAccessibility(addr, "", false) {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] user is not authorized"})
+func (hc *handlerCore) handlerProcess(c *gin.Context) {
+	// redirect handler
+	if c.Request.URL.Path == "/greet" && c.Request.Method == "GET" {
+		hc.handlerGreet(c)
 		return
 	}
+
+	// verify accessibility
+	addr, ok := hc.cm.CheckCookie(c.Request.Cookies())
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
+		return
+	}
+
+	// forward entrance
 	ent, err := hc.gw.GetEntrance(addr)
 	if err != nil {
 		logger.Error("No Entrance: ", err)
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] have not deployed before or something went wrong"})
 		return
 	}
-	// temp fixate the request to get /
-	in := model.ComputingInput{Request: nil}
-	out := model.ComputingOutput{Response: nil}
-	err = hc.gw.Compute(ent, &in, &out)
+	logger.Info(ent)
+	targetURL, err := url.Parse(ent)
 	if err != nil {
-		logger.Error("Bad request: ", err)
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] failed to compute: %v", err)})
+		logger.Error("Fail to parse url: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"err": "fail to parse entrance"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] compute ok", "response": out.Response})
+	logger.Info(targetURL)
+
+	// forward rules
+	director := func(r *http.Request) {
+		if len(targetURL.Scheme) != 0 {
+			r.URL.Scheme = targetURL.Scheme
+		} else {
+			r.URL.Scheme = "http"
+		}
+		r.URL.Host = targetURL.Host
+		r.Host = targetURL.Host
+	}
+	proxy := hc.rpp.Get().(*httputil.ReverseProxy)
+	defer hc.rpp.Put(proxy)
+	proxy.Director = director
+
+	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
 func cors() gin.HandlerFunc {
