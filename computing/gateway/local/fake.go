@@ -17,8 +17,8 @@ func NewFakeImplementofLocalProcess() *FakeImplementofLocalProcess {
 	}
 }
 
-func (filp *FakeImplementofLocalProcess) VerifyAccessibility(address string, api_key string, needKey bool) bool {
-	key := prefixKey(address, leasePrefix)
+func (filp *FakeImplementofLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool {
+	key := prefixKey(ainfo.Address, leasePrefix)
 	if _, ok := filp.get(string(key)); !ok {
 		return false
 	}
