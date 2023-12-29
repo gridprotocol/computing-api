@@ -12,6 +12,12 @@ type ComputingOutput struct {
 	Response []byte
 }
 
+type AuthInfo struct {
+	Address string
+	Sig     string
+	Msg     string
+}
+
 type Lease struct {
 	PublicKey string
 	Contract  string

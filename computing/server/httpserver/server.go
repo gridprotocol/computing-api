@@ -81,12 +81,14 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		hc.gw.SetWatcher(input)
 		c.JSON(http.StatusOK, gin.H{"msg": fmt.Sprintf("[ACK] %s authorized ok", user)})
 	case "2": // Acquire cookie for later access
-		if hc.gw.VerifyAccessibility(input, "", false) {
+		addr := c.Query("addr")
+		sig := c.Query("sig")
+		if hc.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Sig: sig, Msg: input}) {
 			cookie := hc.cm.Set(input)
 			http.SetCookie(c.Writer, cookie)
 			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] already authorized"})
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your account"})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your signature"})
 		}
 	case "3": // deploy
 		// verify accessibility

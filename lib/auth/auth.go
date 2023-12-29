@@ -5,15 +5,27 @@ import (
 	"crypto/ecdsa"
 	"log"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-const (
-	SK = "fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19"
-)
+// signature to address(hex string)
+func SigToAddress(hash []byte, sig []byte) []byte {
+	pub, err := crypto.SigToPub(hash, sig)
+	if err != nil {
+		return nil
+	}
+	return crypto.PubkeyToAddress(*pub).Bytes()
+}
 
-// data used to make signature
-var Data = "hello"
+// Decode decodes a hex string with 0x prefix.
+func HexDecode(input string) ([]byte, error) {
+	return hexutil.Decode(input)
+}
+
+func HexEncode(input []byte) string {
+	return hexutil.Encode(input)
+}
 
 // sign on data hash
 func Sign(hash []byte, sk string) ([]byte, error) {
@@ -32,7 +44,7 @@ func Sign(hash []byte, sk string) ([]byte, error) {
 	return signature, nil
 }
 
-// verify signature
+// verify signature with Pubkey
 func Verify(signature []byte, hash []byte, publicKeyBytes []byte) (bool, error) {
 	// recover signature into pubkey
 	sigPublicKey, err := crypto.Ecrecover(hash, signature)
@@ -47,7 +59,7 @@ func Verify(signature []byte, hash []byte, publicKeyBytes []byte) (bool, error) 
 }
 
 // data to hash
-func HASH(data []byte) []byte {
+func Hash(data []byte) []byte {
 	h := crypto.Keccak256Hash(data)
 	return h.Bytes()
 }

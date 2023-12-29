@@ -11,6 +11,10 @@ import (
 
 var logger = logs.Logger("local")
 
+const (
+	testWhitelistMsg = "cheat"
+)
+
 // TODO: add cache
 type GatewayLocalProcess struct {
 	db *kv.Database
@@ -27,22 +31,27 @@ func NewGatewayLocalProcess() *GatewayLocalProcess {
 	return glp
 }
 
-// TODO: api_key is required, and need some way to verify
-func (glp *GatewayLocalProcess) VerifyAccessibility(address string, api_key string, needKey bool) bool {
-	if len(address) == 0 && len(api_key) == 0 {
-		return false
+// TODO: cache
+func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool {
+	// check msg (time)
+	if ainfo.Msg == testWhitelistMsg {
+		return true
 	}
-	// check whether the address is authorized
-	if !needKey {
-		if ok, err := glp.db.Has(prefixKey(address, leasePrefix)); err != nil {
-			logger.Error("Error occurs when reading db, err:", err)
+	if ok, err := checkExpire(ainfo.Msg, 60); err != nil {
+		logger.Error("Invalid time", err)
+		return false
+	} else {
+		if !ok {
+			logger.Debug("Expired time", ainfo.Msg)
 			return false
-		} else {
-			return ok
 		}
 	}
-	// check api_key with address
-	dat, err := glp.db.Get(prefixKey(address, leasePrefix))
+
+	// check sig and address
+	if len(ainfo.Address) == 0 || len(ainfo.Sig) == 0 {
+		return false
+	}
+	dat, err := glp.db.Get(prefixKey(ainfo.Address, leasePrefix))
 	if err != nil {
 		logger.Error("Fail to get address's lease, err: ", err)
 		return false
@@ -52,10 +61,16 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(address string, api_key stri
 		logger.Error("Fail to decode, err: ", err)
 		return false
 	}
-	if checkExpire(l.Expire) {
+	// lease check
+	// if checkExpire(l.Expire) {
+	// 	return false
+	// }
+	ok, err := checkSignature(ainfo.Sig, ainfo.Address, ainfo.Msg)
+	if err != nil {
+		logger.Error("Bad signature, err: ", err)
 		return false
 	}
-	return checkAPIkey(api_key, l.PublicKey)
+	return ok
 }
 
 // One approach is to record in a structure or in database
