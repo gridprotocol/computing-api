@@ -84,7 +84,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		addr := c.Query("addr")
 		sig := c.Query("sig")
 		if hc.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Sig: sig, Msg: input}) {
-			cookie := hc.cm.Set(input)
+			cookie := hc.cm.Set(addr)
 			http.SetCookie(c.Writer, cookie)
 			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] already authorized"})
 		} else {
