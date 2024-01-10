@@ -3,6 +3,8 @@ Listen = "localhost:12345"
 
 [Http]
 Listen = "localhost:12346"
+HSKey = "memo.io"
+Expire = 86400
 
 [Local]
 DBPath = "./testdb"

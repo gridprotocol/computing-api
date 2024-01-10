@@ -1,10 +1,11 @@
 package httpserver
 
 import (
-	"computing-api/lib/tool"
+	"computing-api/computing/config"
+	"computing-api/lib/auth"
 	"net/http"
+	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -13,50 +14,43 @@ const (
 )
 
 type cookieManager struct {
-	// cookie cache
-	cc map[string]string
-	mu sync.RWMutex
+	signKey []byte
+	expire  time.Duration
 }
 
 func newCookieManager() *cookieManager {
 	return &cookieManager{
-		cc: make(map[string]string),
+		signKey: []byte(config.GetConfig().Http.HSKey),
+		expire:  time.Duration(time.Duration(config.GetConfig().Http.Expire) * time.Second),
 	}
 }
 
 func (cm *cookieManager) Set(addr string) *http.Cookie {
-	token := tool.GenerateRandomString(10)
+	expire := time.Now().Add(cm.expire)
+	ts := strconv.FormatInt(expire.Unix(), 10)
+	sig, _ := auth.SignToken(addr+ts, cm.signKey)
 	cookie := &http.Cookie{
 		Name:    tokenPrefix + addr,
-		Value:   token,
-		Expires: time.Now().Add(24 * time.Hour),
+		Value:   ts + "_" + sig,
+		Expires: expire,
 	}
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	cm.cc[addr] = token
 	return cookie
-}
-
-func (cm *cookieManager) get(addr string) (string, bool) {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-	token, ok := cm.cc[addr]
-	return token, ok
-}
-
-func (cm *cookieManager) Delete(addr string) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	delete(cm.cc, addr)
 }
 
 func (cm *cookieManager) CheckCookie(cks []*http.Cookie) (string, bool) {
 	for _, ck := range cks {
 		if strings.HasPrefix(ck.Name, tokenPrefix) {
 			addr := ck.Name[len(tokenPrefix):]
-			if validToken, ok := cm.get(addr); ok {
-				if validToken == ck.Value {
-					return addr, true
+			parts := strings.Split(ck.Value, "_")
+			if len(parts) == 2 {
+				ts, sig := parts[0], parts[1]
+				expire, err := strconv.Atoi(ts)
+				if err == nil {
+					if time.Now().Before(time.Unix(int64(expire), 0)) {
+						if err = auth.VerifyToken(addr+ts, sig, cm.signKey); err == nil {
+							return addr, true
+						}
+					}
 				}
 			}
 			return "", false

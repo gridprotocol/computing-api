@@ -32,6 +32,8 @@ type Grpc struct {
 
 type Http struct {
 	Listen string
+	HSKey  string
+	Expire int // cookie expire time in second
 }
 
 func InitConfig() error {
@@ -57,9 +59,12 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Grpc"},
 		{"Local"},
 		{"Remote"},
+		{"Http"},
 
 		{"Grpc", "Listen"},
 		{"Http", "Listen"},
+		{"Http", "HSKey"},
+		{"Http", "Expire"},
 
 		{"Local", "DBPath"},
 
