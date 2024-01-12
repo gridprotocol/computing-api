@@ -3,6 +3,7 @@ package local
 import (
 	"bytes"
 	"computing-api/lib/auth"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -36,7 +37,8 @@ func checkSignature(sig string, addr string, msg string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	hash := auth.Hash([]byte(msg))
+	// eth wallet now
+	hash := auth.Hash([]byte(ethWalletSign(msg)))
 	addrFromSig := auth.SigToAddress(hash, sigByte)
 	if !bytes.Equal(addrByte, addrFromSig) {
 		return false, nil
@@ -55,4 +57,8 @@ func checkExpire(expire string, within int64) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func ethWalletSign(msg string) string {
+	return fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(msg), msg)
 }
