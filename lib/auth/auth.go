@@ -11,6 +11,7 @@ import (
 
 // signature to address(hex string)
 func SigToAddress(hash []byte, sig []byte) []byte {
+	sig[len(sig)-1] %= 27
 	pub, err := crypto.SigToPub(hash, sig)
 	if err != nil {
 		return nil
