@@ -31,6 +31,7 @@ func main() {
 	if version.CheckVersion() {
 		os.Exit(0)
 	}
+	log.Println("Current Version:", version.CurrentVersion())
 	err := config.InitConfig()
 	if err != nil {
 		log.Fatalf("failed to init the config: %v", err)

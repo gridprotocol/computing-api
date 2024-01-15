@@ -17,7 +17,8 @@ const (
 
 // TODO: add cache
 type GatewayLocalProcess struct {
-	db *kv.Database
+	db         *kv.Database
+	signExpire int64
 }
 
 func NewGatewayLocalProcess() *GatewayLocalProcess {
@@ -28,6 +29,7 @@ func NewGatewayLocalProcess() *GatewayLocalProcess {
 		panic(err)
 	}
 	glp.db = db
+	glp.signExpire = int64(config.GetConfig().Local.SignExpire)
 	return glp
 }
 
@@ -37,12 +39,12 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool 
 	if ainfo.Msg == testWhitelistMsg {
 		return true
 	}
-	if ok, err := checkExpire(ainfo.Msg, 60); err != nil {
+	if ok, err := checkExpire(ainfo.Msg, glp.signExpire); err != nil {
 		logger.Error("Invalid time", err)
 		return false
 	} else {
 		if !ok {
-			logger.Debug("Expired time", ainfo.Msg)
+			logger.Error("Expired time", ainfo.Msg)
 			return false
 		}
 	}

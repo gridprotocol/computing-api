@@ -148,7 +148,6 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": "fail to parse entrance"})
 		return
 	}
-	logger.Info(targetURL)
 
 	// forward rules
 	director := func(r *http.Request) {

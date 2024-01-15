@@ -8,6 +8,7 @@ Expire = 86400
 
 [Local]
 DBPath = "./testdb"
+SignExpire = 60
 
 [Remote]
 Wallet = "0x123456"

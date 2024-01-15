@@ -19,7 +19,8 @@ type GatewayConfig struct {
 }
 
 type Local struct {
-	DBPath string
+	DBPath     string
+	SignExpire int // signature expire time in second, 60s is suggested
 }
 
 type Remote struct {
@@ -67,6 +68,7 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Http", "Expire"},
 
 		{"Local", "DBPath"},
+		{"Local", "SignExpire"},
 
 		{"Remote", "Wallet"},
 	}
