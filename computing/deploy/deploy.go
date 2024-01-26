@@ -37,6 +37,7 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 
 	//------- k8s operations
 
+	logger.Debug("decoding yaml to obj")
 	// parse yaml data into deployments and services
 	deps, svcs, err := decyaml.ParseYaml(data)
 	if err != nil {
@@ -59,6 +60,19 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 		k8s.Clientset.CoreV1().Services("default").Create(context.Background(), svc, metav1.CreateOptions{})
 	}
 
+	// create a node port service with name: svc-appName, port: port
+	npSvc, err := CreateNodePortSvc(deps[0])
+	if err != nil {
+		return nil, err
+	}
+	// get svc name
+	svcName := npSvc.GetObjectMeta().GetName()
+	fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
+		svcName,
+		npSvc.Spec.Ports[0].Port,
+		npSvc.Spec.Ports[0].TargetPort.IntVal,
+		npSvc.Spec.Ports[0].NodePort)
+
 	// wait for all deployments to be ready
 	var allReady bool
 	for _, d := range deps {
@@ -78,12 +92,12 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 	// if all apps is ready, return service endpoint
 	if allReady {
 		fmt.Println("all app is ready")
-
-		// use the last service in the yaml as the endpoint(nodeport)
+		// endpoint of service
 		ep := &EndPoint{
-			IPs:      svcs[len(svcs)-1].Spec.ExternalIPs,
-			NodePort: svcs[len(svcs)-1].Spec.Ports[0].NodePort,
+			IPs:      npSvc.Spec.ExternalIPs,
+			NodePort: npSvc.Spec.Ports[0].NodePort,
 		}
+
 		return ep, nil
 	} else {
 		return nil, fmt.Errorf("deployment is failed to be ready after retrys")
@@ -200,7 +214,7 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 	deployName := d.GetObjectMeta().GetName()
 
 	var retry uint
-	for retry = 0; retry < 10; retry++ {
+	for retry = 0; retry < 60; retry++ {
 		// get current version of deployment
 		deploymentsClient := k8s.Clientset.AppsV1().Deployments(corev1.NamespaceDefault)
 		result, getErr := deploymentsClient.Get(context.TODO(), deployName, metav1.GetOptions{})
