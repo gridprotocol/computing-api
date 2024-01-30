@@ -18,7 +18,7 @@ type GatewayLocalProcessAPI interface {
 	Authorize(user string, lease model.Lease) error
 	Deploy(user string, task string, local bool) error
 	GetEntrance(user string) (string, error)
-	Terminate() error
+	Terminate(user string) error
 	Close() error
 }
 

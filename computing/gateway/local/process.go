@@ -63,10 +63,6 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool 
 		logger.Error("Fail to decode, err: ", err)
 		return false
 	}
-	// lease check
-	// if checkExpire(l.Expire) {
-	// 	return false
-	// }
 	ok, err := checkSignature(ainfo.Sig, ainfo.Address, ainfo.Msg)
 	if err != nil {
 		logger.Error("Bad signature, err: ", err)
@@ -108,6 +104,8 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 }
 
 // (flexiable, enable image change in the future, describe in the task file)
+// TODO: 1. consider the edge case: already deployed, but fail to put into database
+// TODO: 2. user -> lease -> resources -> yaml, which limits the resources a deployment uses
 func (glp *GatewayLocalProcess) Deploy(user string, yaml string, local bool) error {
 	// k8s deploy service
 
@@ -130,7 +128,11 @@ func (glp *GatewayLocalProcess) Deploy(user string, yaml string, local bool) err
 	fmt.Println("entrance:", entrance)
 
 	// record entrance
-	glp.db.Put(prefixKey(user, entrancePrefix), []byte(entrance))
+	err = glp.db.Put(prefixKey(user, entrancePrefix), []byte(entrance))
+	if err != nil {
+		// should delete deployment or pod
+		return err
+	}
 	return nil
 }
 
@@ -143,7 +145,16 @@ func (glp *GatewayLocalProcess) GetEntrance(user string) (string, error) {
 }
 
 // delete outdated or canceled record
-func (glp *GatewayLocalProcess) Terminate() error {
+// TODO: delete deployment and pod/service
+func (glp *GatewayLocalProcess) Terminate(user string) error {
+	keys := [][]byte{
+		prefixKey(user, entrancePrefix),
+		prefixKey(user, leasePrefix),
+	}
+	err := glp.db.MultiDelete(keys)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

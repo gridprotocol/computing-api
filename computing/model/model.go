@@ -19,10 +19,7 @@ type AuthInfo struct {
 }
 
 type Lease struct {
-	PublicKey string
-	Contract  string
-	Expire    string
-	Resources Resources
+	Resources Resources `json:"resources"`
 }
 
 func (l Lease) Encode() ([]byte, error) {
