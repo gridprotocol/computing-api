@@ -1,3 +1,3 @@
 #!/bin/bash
 kubectl delete deploy hello-world
-kubectl delete svc svc-hello
+kubectl delete svc svc-hello-world

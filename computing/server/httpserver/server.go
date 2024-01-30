@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -86,13 +87,17 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		if hc.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Sig: sig, Msg: input}) {
 			cookie := hc.cm.Set(addr)
 			http.SetCookie(c.Writer, cookie)
-			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] already authorized"})
+			c.JSON(http.StatusOK, gin.H{
+				"msg":    "[ACK] already authorized",
+				"cookie": cookie.String(),
+			})
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your signature"})
 		}
 	case "3": // deploy
 		// verify accessibility
-		addr, ok := hc.cm.CheckCookie(c.Request.Cookies())
+		cks := cookieOrToken(c)
+		addr, ok := hc.cm.CheckCookie(cks)
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
 			return
@@ -128,7 +133,8 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 	}
 
 	// verify accessibility
-	addr, ok := hc.cm.CheckCookie(c.Request.Cookies())
+	cks := cookieOrToken(c)
+	addr, ok := hc.cm.CheckCookie(cks)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
 		return
@@ -166,14 +172,28 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
+func cookieOrToken(c *gin.Context) []*http.Cookie {
+	var cks []*http.Cookie
+	tokenStr := c.GetHeader("Authorization")
+	if len(tokenStr) != 0 {
+		parts := strings.SplitN(tokenStr, " ", 2)
+		if !(len(parts) == 2 && parts[0] == "Bearer") {
+			return cks
+		}
+		c.Request.Header.Add("Cookie", parts[1])
+	}
+	cks = c.Request.Cookies()
+	return cks
+}
+
 func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
 		origin := c.Request.Header.Get("Origin")
 		if origin != "" {
-			c.Header("Access-Control-Allow-Origin", "*")
+			c.Header("Access-Control-Allow-Origin", origin)
 			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-			c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
+			c.Header("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, Authorization, Token")
 			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
 			c.Header("Access-Control-Allow-Credentials", "true")
 		}
