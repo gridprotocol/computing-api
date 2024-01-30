@@ -46,6 +46,18 @@ func (d *Database) Delete(key []byte) error {
 	})
 }
 
+func (d *Database) MultiDelete(keys [][]byte) error {
+	return d.db.Update(func(txn *badger.Txn) error {
+		var err error
+		for i := 0; i < len(keys); i++ {
+			if err = txn.Delete(keys[i]); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func (d *Database) Get(key []byte) ([]byte, error) {
 	var result []byte
 	err := d.db.View(func(txn *badger.Txn) error {

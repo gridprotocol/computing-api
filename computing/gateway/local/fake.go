@@ -50,7 +50,11 @@ func (filp *FakeImplementofLocalProcess) GetEntrance(user string) (string, error
 	}
 }
 
-func (filp *FakeImplementofLocalProcess) Terminate() error {
+func (filp *FakeImplementofLocalProcess) Terminate(user string) error {
+	key1 := prefixKey(user, entrancePrefix)
+	filp.delete(string(key1))
+	key2 := prefixKey(user, leasePrefix)
+	filp.delete(string(key2))
 	return nil
 }
 
@@ -70,4 +74,10 @@ func (filp *FakeImplementofLocalProcess) get(key string) (string, bool) {
 	defer filp.mu.RUnlock()
 	value, ok := filp.fakeDB[key]
 	return value, ok
+}
+
+func (filp *FakeImplementofLocalProcess) delete(key string) {
+	filp.mu.RLock()
+	defer filp.mu.RUnlock()
+	delete(filp.fakeDB, key)
 }
