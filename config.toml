@@ -4,11 +4,11 @@ Listen = "localhost:12345"
 [Http]
 Listen = "localhost:12346"
 HSKey = "memo.io"
-Expire = 86400
+Expire = 8640000
 
 [Local]
 DBPath = "./testdb"
-SignExpire = 60
+SignExpire = 8640000
 
 [Remote]
 Wallet = "0x123456"

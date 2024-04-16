@@ -140,7 +140,7 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		return
 	}
 
-	// forward entrance
+	// get entrance using address
 	ent, err := hc.gw.GetEntrance(addr)
 	if err != nil {
 		logger.Error("No Entrance: ", err)
@@ -148,6 +148,8 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		return
 	}
 	logger.Info(ent)
+
+	//parse entrance into target url
 	targetURL, err := url.Parse(ent)
 	if err != nil {
 		logger.Error("Fail to parse url: ", err)
@@ -155,7 +157,7 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		return
 	}
 
-	// forward rules
+	// forward rule
 	director := func(r *http.Request) {
 		if len(targetURL.Scheme) != 0 {
 			r.URL.Scheme = targetURL.Scheme
@@ -165,10 +167,13 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		r.URL.Host = targetURL.Host
 		r.Host = targetURL.Host
 	}
+	// get a proxy from pool
 	proxy := hc.rpp.Get().(*httputil.ReverseProxy)
 	defer hc.rpp.Put(proxy)
+	// set director for proxy
 	proxy.Director = director
 
+	// redirect requests to proxy, and get response from it
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
