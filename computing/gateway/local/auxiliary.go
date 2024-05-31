@@ -41,7 +41,7 @@ func checkSignature(sig string, addr string, msg string) (bool, error) {
 	hash := auth.Hash([]byte(ethWalletSign(msg)))
 	addrFromSig := auth.SigToAddress(hash, sigByte)
 	if !bytes.Equal(addrByte, addrFromSig) {
-		return false, nil
+		return false, fmt.Errorf("signature check failed")
 	}
 	return true, nil
 }

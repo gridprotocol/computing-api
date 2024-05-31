@@ -17,7 +17,7 @@ func TestCookieProcess(t *testing.T) {
 		expire:  expire,
 	}
 
-	ck := ckm.Set(addr)
+	ck := ckm.MakeCookie(addr)
 
 	// right
 	addr2, ok := ckm.CheckCookie([]*http.Cookie{ck})
@@ -31,7 +31,7 @@ func TestCookieProcess(t *testing.T) {
 
 	// expire
 	ckm.expire = time.Second
-	ck2 := ckm.Set(addr)
+	ck2 := ckm.MakeCookie(addr)
 	time.Sleep(time.Second)
 	_, ok = ckm.CheckCookie([]*http.Cookie{ck2})
 	if ok {

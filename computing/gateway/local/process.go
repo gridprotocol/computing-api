@@ -35,10 +35,11 @@ func NewGatewayLocalProcess() *GatewayLocalProcess {
 
 // TODO: cache
 func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool {
-	// check msg (time)
+	// check msg (time), if input=cheat, always ok
 	if ainfo.Msg == testWhitelistMsg {
 		return true
 	}
+
 	if ok, err := checkExpire(ainfo.Msg, glp.signExpire); err != nil {
 		logger.Error("Invalid time", err)
 		return false
@@ -51,6 +52,7 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool 
 
 	// check sig and address
 	if len(ainfo.Address) == 0 || len(ainfo.Sig) == 0 {
+		logger.Error("Fail sig or address is nil")
 		return false
 	}
 	dat, err := glp.db.Get(prefixKey(ainfo.Address, leasePrefix))
@@ -58,6 +60,7 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool 
 		logger.Error("Fail to get address's lease, err: ", err)
 		return false
 	}
+
 	var l model.Lease
 	if err = l.Decode(dat); err != nil {
 		logger.Error("Fail to decode, err: ", err)
@@ -68,6 +71,7 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool 
 		logger.Error("Bad signature, err: ", err)
 		return false
 	}
+
 	return ok
 }
 

@@ -52,8 +52,10 @@ func registerAllRoute(gw gateway.ComputingGatewayAPI) *gin.Engine {
 }
 
 func (hc *handlerCore) handlerGreet(c *gin.Context) {
+	// greet type
 	msgType := c.Query("type")
 	input := c.Query("input")
+
 	switch msgType {
 	case "0": // lease
 		if hc.gw.CheckContract(input) {
@@ -84,9 +86,14 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	case "2": // Acquire cookie for later access
 		addr := c.Query("addr")
 		sig := c.Query("sig")
-		if hc.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Sig: sig, Msg: input}) {
-			cookie := hc.cm.Set(addr)
+		// verify signature
+		ok := hc.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Sig: sig, Msg: input})
+		if ok {
+			// make cookie from addr and expire
+			cookie := hc.cm.MakeCookie(addr)
+			// set cookie into response
 			http.SetCookie(c.Writer, cookie)
+			// response
 			c.JSON(http.StatusOK, gin.H{
 				"msg":    "[ACK] already authorized",
 				"cookie": cookie.String(),
@@ -95,30 +102,39 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your signature"})
 		}
 	case "3": // deploy
-		// verify accessibility
+		// get data(Authorization) from request header and add a cookie for request header with it
 		cks := cookieOrToken(c)
+		// check the cookie's expire and sig
 		addr, ok := hc.cm.CheckCookie(cks)
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
 			return
 		}
-		// local for test
+
+		// deploy with local filepath or remote file url
+		var isLocal = false
+
+		// yaml from local filepath
 		localfile := c.Query("local")
-		local := false
+		// if local is set
 		if len(localfile) != 0 {
 			input = localfile
-			local = true
+			isLocal = true
 		}
-		// input is deploy-yaml-file-url
+
+		// if no remote yaml is provided either, response error
 		if len(input) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] empty deployment"})
 			return
 		}
-		err := hc.gw.Deploy(addr, input, local)
+
+		// deploy with local or remote yaml file
+		err := hc.gw.Deploy(addr, input, isLocal)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] Failed to deploy"})
 			return
 		}
+
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"err": "unsupported msg type"})
@@ -177,14 +193,17 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
+// get data from request header and add cookie into request header, and return this cookie
 func cookieOrToken(c *gin.Context) []*http.Cookie {
 	var cks []*http.Cookie
 	tokenStr := c.GetHeader("Authorization")
 	if len(tokenStr) != 0 {
 		parts := strings.SplitN(tokenStr, " ", 2)
+		// cookie must begin with Bearer
 		if !(len(parts) == 2 && parts[0] == "Bearer") {
 			return cks
 		}
+		// add cookie into request header
 		c.Request.Header.Add("Cookie", parts[1])
 	}
 	cks = c.Request.Cookies()
