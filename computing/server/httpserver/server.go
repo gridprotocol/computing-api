@@ -86,7 +86,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	case "2": // Acquire cookie for later access
 		addr := c.Query("addr")
 		sig := c.Query("sig")
-		// verify signature
+		// verify signature in type2
 		ok := hc.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Sig: sig, Msg: input})
 		if ok {
 			// make cookie from addr and expire

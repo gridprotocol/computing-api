@@ -25,7 +25,7 @@ func newCookieManager() *cookieManager {
 	}
 }
 
-// make cookie from addr and expire
+// make cookie from addr and expire, sign with signKey
 func (cm *cookieManager) MakeCookie(addr string) *http.Cookie {
 	expire := time.Now().Add(cm.expire)
 	ts := strconv.FormatInt(expire.Unix(), 10)
@@ -38,7 +38,7 @@ func (cm *cookieManager) MakeCookie(addr string) *http.Cookie {
 	return cookie
 }
 
-// check cookie's expire and verify sig of token
+// check cookie's expire and sig
 func (cm *cookieManager) CheckCookie(cks []*http.Cookie) (string, bool) {
 	for _, ck := range cks {
 		if strings.HasPrefix(ck.Name, tokenPrefix) {

@@ -17,17 +17,18 @@ func prefixKey(key, prefix string) []byte {
 	return []byte(prefix + key)
 }
 
-// func address2bytes(addr string) ([]byte, error) {
-// 	if addr[:2] == "0x" {
-// 		addr = addr[2:]
-// 	}
-// 	b, err := hex.DecodeString(addr)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return b, nil
-// }
+//	func address2bytes(addr string) ([]byte, error) {
+//		if addr[:2] == "0x" {
+//			addr = addr[2:]
+//		}
+//		b, err := hex.DecodeString(addr)
+//		if err != nil {
+//			return nil, err
+//		}
+//		return b, nil
+//	}
 
+// check eth signature
 func checkSignature(sig string, addr string, msg string) (bool, error) {
 	sigByte, err := auth.HexDecode(sig)
 	if err != nil {
@@ -47,6 +48,7 @@ func checkSignature(sig string, addr string, msg string) (bool, error) {
 }
 
 // unit: second
+// check expire for signature
 func checkExpire(expire string, within int64) (bool, error) {
 	expireunix, err := strconv.ParseInt(expire, 10, 64)
 	if err != nil {
