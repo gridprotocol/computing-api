@@ -2,16 +2,16 @@
 Listen = "localhost:12345"
 
 [Http]
-// computing backend
+# computing backend
 Listen = "localhost:12346"
-// key to sign for cookie
+# key to sign for cookie
 HSKey = "memo.io"
-// cookie's expire timestamp
+# cookie's expire timestamp
 Expire = 86400000
 
 [Local]
 DBPath = "./testdb"
-// expire for signature in type2
+# expire for signature in type2
 SignExpire = 86400000
 
 [Remote]
