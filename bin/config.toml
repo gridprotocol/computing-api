@@ -7,7 +7,7 @@ Listen = "localhost:12346"
 # key to sign for cookie
 HSKey = "memo.io"
 # cookie's expire timestamp
-Expire = 86400000
+Expire = 86400
 
 [Local]
 DBPath = "./testdb"

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:                   # RC的名称,全局唯一
+  name: mysql               # Pod副本期待数量
+spec:
+  replicas: 1
+  selector:                  # 符合目标的Pod拥有此标签
+    matchLabels:
+      app: mysql               # 根据此模板创建Pod的副本(实例).
+  template:
+    metadata:                 #Pod副本拥有的标签,对应RC的Selector
+      labels:
+        app: mysql
+    spec:
+      containers:                    # Pod内容器的定义部分
+        - name: mysql                # 容器的名称,容器对应的Docker Image
+          image: mysql:5.7
+          ports:                     #容器应用监听的端口号
+            - containerPort: 3306
+          env:                       #注入容器内的环境变量
+            - name: MYSQL_ROOT_PASSWORD
+              value: "123456"
+
+---
+
+apiVersion: v1
+kind: Service  # 表明是Kubernetes Service
+metadata:
+  name: mysql  # Service的全局唯一名称
+spec:
+  ports:
+    - port: 3306 #service提供服务的端口号
+  selector:      #Service对应的Pod拥有这里定义的标签
+    app: mysql
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: myweb
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myweb
+  template:
+    metadata:
+      labels:
+        app: myweb
+    spec:
+      containers: 
+        - name: myweb
+          image: kubeguide/tomcat-app:v1
+          ports:
+            - containerPort: 8080
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: myweb
+spec:
+  type: NodePort
+  ports: 
+    - port: 8080
+      nodePort: 30002
+  selector:
+    app: myweb
