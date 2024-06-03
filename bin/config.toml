@@ -1,9 +1,9 @@
 [Grpc]
-Listen = "localhost:12345"
+Listen = "0.0.0.0:12345"
 
 [Http]
 # computing backend
-Listen = "localhost:12346"
+Listen = "0.0.0.0:12346"
 # key to sign for cookie
 HSKey = "memo.io"
 # cookie's expire timestamp
