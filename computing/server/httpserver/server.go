@@ -155,6 +155,7 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
 		return
 	}
+	logger.Info("cookie check pass,addr:", addr)
 
 	// get entrance using address
 	ent, err := hc.gw.GetEntrance(addr)
@@ -163,7 +164,7 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] have not deployed before or something went wrong"})
 		return
 	}
-	logger.Info(ent)
+	logger.Info("entrance:", ent)
 
 	//parse entrance into target url
 	targetURL, err := url.Parse(ent)
@@ -172,6 +173,8 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": "fail to parse entrance"})
 		return
 	}
+
+	logger.Info("target url:", targetURL)
 
 	// forward rule
 	director := func(r *http.Request) {
@@ -182,6 +185,7 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		}
 		r.URL.Host = targetURL.Host
 		r.Host = targetURL.Host
+		logger.Info("new request:", r)
 	}
 	// get a proxy from pool
 	proxy := hc.rpp.Get().(*httputil.ReverseProxy)
