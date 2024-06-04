@@ -15,7 +15,9 @@ spec:
         app.kubernetes.io/name: load-balancer-example
     spec:
       containers:
-      - image: docker.io/rockiecn/hello-app:2.0
-        name: hello-world
+      - name: hello-world
+        image: gcr.io/google-samples/node-hello:1.0
+        #image: docker.io/rockiecn/hello-app:2.0
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
