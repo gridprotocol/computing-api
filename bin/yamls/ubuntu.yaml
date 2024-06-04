@@ -17,6 +17,5 @@ spec:
       containers:
       - name: ubuntu
         image: docker.io/library/ubuntu:latest
-        imagePullPolicy: Never
         ports:
         - containerPort: 8080
