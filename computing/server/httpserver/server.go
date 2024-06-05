@@ -106,7 +106,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 
 	case "3": // deploy by input
-		// get data(Authorization) from request header and add a cookie for request header with it
+		// get data(Authorization) from request header and add a cookie into the request header with it
 		cks := cookieOrToken(c)
 
 		// check the cookie's expire and sig
