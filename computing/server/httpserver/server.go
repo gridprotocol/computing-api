@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"computing-api/common/utils"
 	"computing-api/computing/gateway"
 	"computing-api/computing/model"
 	"computing-api/lib/logs"
@@ -63,6 +64,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusOK, gin.H{"msg": "[Fail] the lease is not acceptable"})
 		}
+
 	case "1": // apply for authority
 		// TODO: cache check
 		if !hc.gw.CheckContract(input) {
@@ -83,6 +85,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// set watcher for the lease (current ver is empty)
 		hc.gw.SetWatcher(input)
 		c.JSON(http.StatusOK, gin.H{"msg": fmt.Sprintf("[ACK] %s authorized ok", user)})
+
 	case "2": // Acquire cookie for later access
 		addr := c.Query("addr")
 		sig := c.Query("sig")
@@ -93,7 +96,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			cookie := hc.cm.MakeCookie(addr)
 			// set cookie into response
 			http.SetCookie(c.Writer, cookie)
-			// response
+			// response with cookie
 			c.JSON(http.StatusOK, gin.H{
 				"msg":    "[ACK] already authorized",
 				"cookie": cookie.String(),
@@ -101,15 +104,19 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your signature"})
 		}
-	case "3": // deploy
+
+	case "3": // deploy by input
 		// get data(Authorization) from request header and add a cookie for request header with it
 		cks := cookieOrToken(c)
+
 		// check the cookie's expire and sig
 		addr, ok := hc.cm.CheckCookie(cks)
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
 			return
 		}
+
+		logger.Info("cookie check passed")
 
 		// deploy with local filepath or remote file url
 		var isLocal = false
@@ -136,6 +143,44 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
+
+	case "4": // deploy by id of local list
+		// get data(Authorization) from request header and add a cookie for request header with it
+		cks := cookieOrToken(c)
+
+		// check the cookie's expire and sig
+		addr, ok := hc.cm.CheckCookie(cks)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"err": "[Fail] invalid cookie"})
+			return
+		}
+
+		logger.Info("cookie check passed")
+
+		// if no remote yaml is provided either, response error
+		if len(input) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] no yaml id in request"})
+			return
+		}
+
+		// get yaml path from id in input
+		p, err := utils.GetPathByID(input)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] invalid yaml id"})
+			return
+		}
+
+		logger.Info("yaml path from id:", p)
+
+		// deploy with local yaml path
+		err = hc.gw.Deploy(addr, p, true)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] Failed to deploy"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
+
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"err": "unsupported msg type"})
 	}
@@ -148,16 +193,18 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		return
 	}
 
-	// verify accessibility
+	// get cookies in request header
 	cks := cookieOrToken(c)
+	logger.Info("cookies:", cks)
+
+	// check cookie's expire and sig, return the addr in cookie
 	addr, ok := hc.cm.CheckCookie(cks)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "cookie check failed"})
 		return
 	}
-	logger.Info("cookie check pass,addr:", addr)
 
-	// get entrance using address
+	// query entrance url stored in DB with address
 	ent, err := hc.gw.GetEntrance(addr)
 	if err != nil {
 		logger.Error("No Entrance: ", err)
@@ -166,7 +213,7 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 	}
 	logger.Info("entrance:", ent)
 
-	//parse entrance into target url
+	// parse the entrance url into an URL struct
 	targetURL, err := url.Parse(ent)
 	if err != nil {
 		logger.Error("Fail to parse url: ", err)
@@ -174,23 +221,25 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 		return
 	}
 
-	logger.Info("target url:", targetURL)
-
-	// forward rule
+	// forward rule func
 	director := func(r *http.Request) {
 		if len(targetURL.Scheme) != 0 {
 			r.URL.Scheme = targetURL.Scheme
 		} else {
+			// scheme default to http
 			r.URL.Scheme = "http"
 		}
+
+		// replace host info
 		r.URL.Host = targetURL.Host
 		r.Host = targetURL.Host
-		logger.Info("new request:", r)
 	}
+
 	// get a proxy from pool
 	proxy := hc.rpp.Get().(*httputil.ReverseProxy)
 	defer hc.rpp.Put(proxy)
-	// set director for proxy
+
+	// set the director func for the proxy
 	proxy.Director = director
 
 	// redirect requests to proxy, and get response from it
