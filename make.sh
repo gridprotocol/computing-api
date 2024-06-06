@@ -1,3 +1,3 @@
 #!/bin/bash
-rm computing-gw
+rm ./bin/computing-gw
 make computing-gw

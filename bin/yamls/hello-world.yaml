@@ -18,6 +18,6 @@ spec:
       - name: hello-world
         image: gcr.io/google-samples/node-hello:1.0
         #image: docker.io/rockiecn/hello-app:2.0
-        imagePullPolicy: Never
+        #imagePullPolicy: Never
         ports:
         - containerPort: 8080
