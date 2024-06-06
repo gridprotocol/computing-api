@@ -6,9 +6,9 @@ import (
 
 func TestLease(t *testing.T) {
 	l := &Lease{
-		PublicKey: "a",
-		Contract:  "b",
-		Expire:    "c",
+		// PublicKey: "a",
+		// Contract:  "b",
+		// Expire:    "c",
 		Resources: Resources{
 			Cpu: "d",
 		},

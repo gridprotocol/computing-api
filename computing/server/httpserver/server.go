@@ -23,21 +23,36 @@ type handlerCore struct {
 	cm  *cookieManager
 }
 
+// make a new server with a router registered all routes
 func NewServer(addr string, gw gateway.ComputingGatewayAPI) *http.Server {
-	logger.Info("Start server")
+	logger.Info("Starting server")
+
+	// gin mode
 	gin.SetMode(gin.ReleaseMode)
-	route := registerAllRoute(gw)
+
+	// make a router
+	r := gin.Default()
+
+	// register all routes for the new router
+	registerAllRoutes(gw, r)
+
+	// new server object with router
 	server := &http.Server{
 		Addr:    addr,
-		Handler: route,
+		Handler: r,
 	}
-	logger.Info("Set route ok")
+
+	logger.Info("create new router ok")
+
 	return server
 }
 
-func registerAllRoute(gw gateway.ComputingGatewayAPI) *gin.Engine {
-	route := gin.Default()
-	route.Use(cors())
+// register all routes
+func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
+	// use middleware for
+	r.Use(cors())
+
+	// new hc object with gw
 	hc := handlerCore{
 		gw: gw,
 		cm: newCookieManager(),
@@ -47,11 +62,13 @@ func registerAllRoute(gw gateway.ComputingGatewayAPI) *gin.Engine {
 			},
 		},
 	}
-	// route.GET("/greet", hc.handlerGreet)
-	route.Any("/*path", hc.handlerProcess)
-	return route
+
+	// register routes
+	//r.GET("/greet", hc.handlerGreet)
+	r.Any("/*path", hc.handlerAllRequests)
 }
 
+// handler greet request
 func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// greet type
 	msgType := c.Query("type")
@@ -74,12 +91,12 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// check payee (send activate tx if necessary)
 		_, user := hc.gw.CheckPayee(input)
 		if len(user) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] no user address is provided"})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
 			return
 		}
 		if err := hc.gw.Authorize(user, model.Lease{}); err != nil {
 			logger.Error(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] failed to authorized"})
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] authorization failed"})
 			return
 		}
 		// set watcher for the lease (current ver is empty)
@@ -105,14 +122,16 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your signature"})
 		}
 
-	case "3": // deploy by input
-		// get data(Authorization) from request header and add a cookie into the request header with it
-		cks := cookieOrToken(c)
+	// deploy with input string
+	case "3":
+		// inject a cookie into request header, in case the cookie is refused by the client(browser)
+		cks := injectCookie(c)
 
 		// check the cookie's expire and sig
-		addr, ok := hc.cm.CheckCookie(cks)
-		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"err": "invalid cookie"})
+		addr, err := hc.cm.CheckCookie(cks)
+		if err != nil {
+			msg := fmt.Sprintf("invalid cookie: %s", err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"err": msg})
 			return
 		}
 
@@ -131,27 +150,29 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		// if no remote yaml is provided either, response error
 		if len(input) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] empty deployment"})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml resource"})
 			return
 		}
 
 		// deploy with local or remote yaml file
-		err := hc.gw.Deploy(addr, input, isLocal)
+		err = hc.gw.Deploy(addr, input, isLocal)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] Failed to deploy"})
+			msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
 
 	case "4": // deploy by id of local list
-		// get data(Authorization) from request header and add a cookie for request header with it
-		cks := cookieOrToken(c)
+		// inject a cookie into request header, in case the cookie is refused by the client(browser)
+		cks := injectCookie(c)
 
 		// check the cookie's expire and sig
-		addr, ok := hc.cm.CheckCookie(cks)
-		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"err": "[Fail] invalid cookie"})
+		addr, err := hc.cm.CheckCookie(cks)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] invalid cookie: %s", err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"err": msg})
 			return
 		}
 
@@ -159,14 +180,15 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		// if no remote yaml is provided either, response error
 		if len(input) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] no yaml id in request"})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the request missing yaml id"})
 			return
 		}
 
 		// get yaml path from id in input
 		p, err := utils.GetPathByID(input)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] invalid yaml id"})
+			msg := fmt.Sprintf("[Fail] invalid yaml id: %s", err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
 			return
 		}
 
@@ -175,7 +197,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// deploy with local yaml path
 		err = hc.gw.Deploy(addr, p, true)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] Failed to deploy"})
+			msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
 			return
 		}
 
@@ -186,21 +209,25 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	}
 }
 
-func (hc *handlerCore) handlerProcess(c *gin.Context) {
-	// redirect handler
+// handler all requests
+func (hc *handlerCore) handlerAllRequests(c *gin.Context) {
+	// handle the greet requst preferentially
 	if c.Request.URL.Path == "/greet" && c.Request.Method == "GET" {
 		hc.handlerGreet(c)
 		return
 	}
 
-	// get cookies in request header
-	cks := cookieOrToken(c)
+	// for all other requests, forward them to a proxy, and return the response from the proxy to the client
+
+	// inject a cookie into request header, in case the cookie is refused by the client(browser)
+	cks := injectCookie(c)
 	logger.Info("cookies:", cks)
 
-	// check cookie's expire and sig, return the addr in cookie
-	addr, ok := hc.cm.CheckCookie(cks)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"err": "cookie check failed"})
+	// check cookie's expire and sig, return the addr in cookie name
+	addr, err := hc.cm.CheckCookie(cks)
+	if err != nil {
+		msg := fmt.Sprintf("cookie check failed: %s", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
 		return
 	}
 
@@ -208,7 +235,8 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 	ent, err := hc.gw.GetEntrance(addr)
 	if err != nil {
 		logger.Error("No Entrance: ", err)
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] have not deployed before or something went wrong"})
+		msg := fmt.Sprintf("[Fail] have not deployed before or something went wrong: %s", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
 		return
 	}
 	logger.Info("entrance:", ent)
@@ -217,16 +245,18 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 	targetURL, err := url.Parse(ent)
 	if err != nil {
 		logger.Error("Fail to parse url: ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"err": "fail to parse entrance"})
+		msg := fmt.Sprintf("fail to parse entrance: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"err": msg})
 		return
 	}
 
 	// forward rule func
 	director := func(r *http.Request) {
+		// scheme provided in the target url
 		if len(targetURL.Scheme) != 0 {
 			r.URL.Scheme = targetURL.Scheme
 		} else {
-			// scheme default to http
+			// if no scheme given, default to http
 			r.URL.Scheme = "http"
 		}
 
@@ -246,8 +276,8 @@ func (hc *handlerCore) handlerProcess(c *gin.Context) {
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
-// get data from request header and add cookie into request header, and return this cookie
-func cookieOrToken(c *gin.Context) []*http.Cookie {
+// make a cookie from the auth data in the request header, and inject it into the request header, return all cookies
+func injectCookie(c *gin.Context) []*http.Cookie {
 	var cks []*http.Cookie
 	tokenStr := c.GetHeader("Authorization")
 	if len(tokenStr) != 0 {
@@ -259,6 +289,8 @@ func cookieOrToken(c *gin.Context) []*http.Cookie {
 		// add cookie into request header
 		c.Request.Header.Add("Cookie", parts[1])
 	}
+
+	// get all cookies in the request header
 	cks = c.Request.Cookies()
 	return cks
 }

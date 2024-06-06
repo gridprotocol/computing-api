@@ -28,7 +28,7 @@ func prefixKey(key, prefix string) []byte {
 //		return b, nil
 //	}
 
-// check eth signature
+// check eth signature(with prefix)
 func checkSignature(sig string, addr string, msg string) (bool, error) {
 	sigByte, err := auth.HexDecode(sig)
 	if err != nil {

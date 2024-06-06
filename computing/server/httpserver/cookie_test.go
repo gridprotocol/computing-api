@@ -20,8 +20,8 @@ func TestCookieProcess(t *testing.T) {
 	ck := ckm.MakeCookie(addr)
 
 	// right
-	addr2, ok := ckm.CheckCookie([]*http.Cookie{ck})
-	if !ok {
+	addr2, err := ckm.CheckCookie([]*http.Cookie{ck})
+	if err != nil {
 		t.Error("fail to check cookie")
 	}
 	if addr2 != addr {
@@ -33,8 +33,8 @@ func TestCookieProcess(t *testing.T) {
 	ckm.expire = time.Second
 	ck2 := ckm.MakeCookie(addr)
 	time.Sleep(time.Second)
-	_, ok = ckm.CheckCookie([]*http.Cookie{ck2})
-	if ok {
+	_, err = ckm.CheckCookie([]*http.Cookie{ck2})
+	if err != nil {
 		t.Error("cookie should be expired")
 	} else {
 		t.Log("Expire test is ok")
@@ -44,8 +44,8 @@ func TestCookieProcess(t *testing.T) {
 	ckm.expire = time.Hour
 	ck3 := *ck
 	ck3.Value = "2" + ck.Value[1:]
-	_, ok = ckm.CheckCookie([]*http.Cookie{&ck3})
-	if ok {
+	_, err = ckm.CheckCookie([]*http.Cookie{&ck3})
+	if err != nil {
 		t.Error("should be invalid signature")
 	} else {
 		t.Log("invalid signature test is ok")

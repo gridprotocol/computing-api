@@ -40,7 +40,7 @@ func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool 
 		return true
 	}
 
-	// check expire for signature in type2
+	// check expire for the signature in type2
 	if ok, err := checkExpire(ainfo.Msg, glp.signExpire); err != nil {
 		logger.Error("Invalid time", err)
 		return false
