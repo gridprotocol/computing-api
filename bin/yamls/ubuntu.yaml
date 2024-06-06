@@ -18,4 +18,4 @@ spec:
       - name: ubuntu
         image: docker.io/library/ubuntu:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 8082
