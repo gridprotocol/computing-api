@@ -168,7 +168,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
 
-		// check the cookie's expire and sig
+		// check cookies‘ expire and sig
 		addr, err := hc.cm.CheckCookie(cks)
 		if err != nil {
 			msg := fmt.Sprintf("[Fail] invalid cookie: %s", err.Error())
