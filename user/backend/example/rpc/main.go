@@ -3,14 +3,15 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"computing-api/common/version"
-	"computing-api/computing/proto"
 	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gridprotocol/computing-api/common/version"
+	"github.com/gridprotocol/computing-api/computing/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

@@ -2,10 +2,11 @@ package local
 
 import (
 	"bytes"
-	"computing-api/lib/auth"
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/gridprotocol/computing-api/lib/auth"
 )
 
 const (

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"syscall"
 
-	"computing-api/computing/deploy"
+	"github.com/gridprotocol/computing-api/computing/deploy"
 
 	ps "github.com/mitchellh/go-ps"
 )

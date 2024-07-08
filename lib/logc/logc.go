@@ -1,4 +1,4 @@
-package logs
+package logc
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ func init() {
 		panic(fmt.Sprintf("unable to open logging output: %v", err))
 	}
 
-	lf := os.Getenv("MEFS_LOG_FILE")
+	lf := os.Getenv("GRID_LOG_FILE")
 	if lf != "" {
 		debugWriter = getLogWriter(lf)
 	}
@@ -44,7 +44,7 @@ func init() {
 
 	mLogger = logger.Sugar()
 
-	l := getLogLevel(os.Getenv("MEFS_LOG_LEVEL"))
+	l := getLogLevel(os.Getenv("GRID_LOG_LEVEL"))
 	mLoglevel.SetLevel(l)
 }
 

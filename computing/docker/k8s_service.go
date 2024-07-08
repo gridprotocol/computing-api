@@ -1,7 +1,6 @@
 package docker
 
 import (
-	"computing-api/computing/model"
 	"context"
 	"flag"
 	"fmt"
@@ -10,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/gridprotocol/computing-api/computing/model"
 
 	"k8s.io/client-go/util/retry"
 

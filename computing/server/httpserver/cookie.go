@@ -1,13 +1,14 @@
 package httpserver
 
 import (
-	"computing-api/computing/config"
-	"computing-api/lib/auth"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gridprotocol/computing-api/computing/config"
+	"github.com/gridprotocol/computing-api/lib/auth"
 )
 
 const (

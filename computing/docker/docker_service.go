@@ -4,12 +4,12 @@ import (
 	"archive/tar"
 	"bufio"
 	"bytes"
-	"computing-api/lib/logs"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gridprotocol/computing-api/lib/logc"
 	"io"
 	"log"
 	"os"
@@ -25,7 +25,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-var logger = logs.Logger("docker")
+var logger = logc.Logger("docker")
 
 type DockerService struct {
 	c *client.Client

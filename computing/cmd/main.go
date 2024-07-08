@@ -1,12 +1,6 @@
 package main
 
 import (
-	"computing-api/common/version"
-	"computing-api/computing/config"
-	"computing-api/computing/gateway"
-	"computing-api/computing/gateway/local"
-	"computing-api/computing/gateway/remote"
-	"computing-api/computing/server/httpserver"
 	"context"
 	"flag"
 	"log"
@@ -15,6 +9,13 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gridprotocol/computing-api/common/version"
+	"github.com/gridprotocol/computing-api/computing/config"
+	"github.com/gridprotocol/computing-api/computing/gateway"
+	"github.com/gridprotocol/computing-api/computing/gateway/local"
+	"github.com/gridprotocol/computing-api/computing/gateway/remote"
+	"github.com/gridprotocol/computing-api/computing/server/httpserver"
 )
 
 var (

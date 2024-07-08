@@ -1,11 +1,12 @@
 package main
 
 import (
-	"computing-api/computing/proto"
 	"context"
 	"flag"
 	"log"
 	"time"
+
+	"github.com/gridprotocol/computing-api/computing/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

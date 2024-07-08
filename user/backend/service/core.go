@@ -1,6 +1,6 @@
 package service
 
-import "computing-api/user/backend"
+import "github.com/gridprotocol/computing-api/user/backend"
 
 type CoreService struct {
 	backend.BackendToChainAPI

@@ -1,9 +1,10 @@
 package local
 
 import (
-	"computing-api/computing/model"
 	"fmt"
 	"sync"
+
+	"github.com/gridprotocol/computing-api/computing/model"
 )
 
 type FakeImplementofLocalProcess struct {

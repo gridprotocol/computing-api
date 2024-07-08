@@ -3,10 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"computing-api/user/backend/chain"
-	"computing-api/user/backend/computing"
 	"log"
 	"net/http"
+
+	"github.com/gridprotocol/computing-api/user/backend/chain"
+	"github.com/gridprotocol/computing-api/user/backend/computing"
 )
 
 // test computing interface: greet and process

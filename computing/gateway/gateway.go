@@ -3,9 +3,10 @@ package gateway
 import (
 	"bufio"
 	"bytes"
-	"computing-api/computing/model"
 	"net/http"
 	"time"
+
+	"github.com/gridprotocol/computing-api/computing/model"
 )
 
 // Namespace, appName, how to call and execute

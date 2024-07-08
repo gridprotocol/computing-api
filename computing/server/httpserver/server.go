@@ -1,10 +1,6 @@
 package httpserver
 
 import (
-	"computing-api/common/utils"
-	"computing-api/computing/gateway"
-	"computing-api/computing/model"
-	"computing-api/lib/logs"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -12,10 +8,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gridprotocol/computing-api/common/utils"
+	"github.com/gridprotocol/computing-api/computing/gateway"
+	"github.com/gridprotocol/computing-api/computing/model"
+	"github.com/gridprotocol/computing-api/lib/logc"
+
 	"github.com/gin-gonic/gin"
 )
 
-var logger = logs.Logger("http")
+var logger = logc.Logger("http")
 
 type handlerCore struct {
 	gw  gateway.ComputingGatewayAPI
@@ -68,26 +69,61 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 	r.Any("/*path", hc.handlerAllRequests)
 }
 
+// handler all requests, including greet and compute
+func (hc *handlerCore) handlerAllRequests(c *gin.Context) {
+	// handle the greet requst
+	if c.Request.URL.Path == "/greet" && c.Request.Method == "GET" {
+		hc.handlerGreet(c)
+		return
+	} else {
+		// handle the compute request
+		hc.handlerCompute(c)
+	}
+}
+
 // handler greet request
 func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// greet type
 	msgType := c.Query("type")
+
 	input := c.Query("input")
 
+	user := c.Query("user")
+	cp := c.Query("cp")
+
+	// for each greet type
 	switch msgType {
-	case "0": // lease
-		if hc.gw.CheckContract(input) {
-			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease is acceptable"})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"msg": "[Fail] the lease is not acceptable"})
+
+	// static check
+	case "0":
+		// check contract
+		ok, err := hc.gw.StaticCheck(user, cp)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
+			return
 		}
 
-	case "1": // apply for authority
-		// TODO: cache check
-		if !hc.gw.CheckContract(input) {
+		//
+		if ok {
+			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease is acceptable"})
+		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the lease is not acceptable"})
 			return
 		}
+
+	// apply for authority
+	case "1":
+		// TODO: cache check
+		ok, err := hc.gw.StaticCheck(user, cp)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
+			return
+		}
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the lease is not acceptable"})
+			return
+		}
+
 		// check payee (send activate tx if necessary)
 		_, user := hc.gw.CheckPayee(input)
 		if len(user) == 0 {
@@ -103,7 +139,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		hc.gw.SetWatcher(input)
 		c.JSON(http.StatusOK, gin.H{"msg": fmt.Sprintf("[ACK] %s authorized ok", user)})
 
-	case "2": // Acquire cookie for later access
+	// Acquire cookie for later access
+	case "2":
 		addr := c.Query("addr")
 		sig := c.Query("sig")
 		// verify signature in type2
@@ -164,7 +201,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
 
-	case "4": // deploy by id of local list
+	// deploy by id of local list
+	case "4":
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
 
@@ -204,21 +242,14 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
 
+	// illegal type
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"err": "unsupported msg type"})
 	}
 }
 
-// handler all requests
-func (hc *handlerCore) handlerAllRequests(c *gin.Context) {
-	// handle the greet requst preferentially
-	if c.Request.URL.Path == "/greet" && c.Request.Method == "GET" {
-		hc.handlerGreet(c)
-		return
-	}
-
-	// for all other requests, forward them to a proxy, and return the response from the proxy to the client
-
+// for all other requests, forward them to a proxy, and return the response from the proxy to the client
+func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
 	cks := injectCookie(c)
 	logger.Info("cookies:", cks)
@@ -231,7 +262,7 @@ func (hc *handlerCore) handlerAllRequests(c *gin.Context) {
 		return
 	}
 
-	// query entrance url stored in DB with address
+	// query entrance url(service endpoint) stored in DB with address
 	ent, err := hc.gw.GetEntrance(addr)
 	if err != nil {
 		logger.Error("No Entrance: ", err)
@@ -260,7 +291,7 @@ func (hc *handlerCore) handlerAllRequests(c *gin.Context) {
 			r.URL.Scheme = "http"
 		}
 
-		// replace host info
+		// replace host info in the request with entrance
 		r.URL.Host = targetURL.Host
 		r.Host = targetURL.Host
 	}
@@ -295,6 +326,7 @@ func injectCookie(c *gin.Context) []*http.Cookie {
 	return cks
 }
 
+// for the cross domain access
 func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method

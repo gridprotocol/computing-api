@@ -1,12 +1,13 @@
 package deploy
 
 import (
-	"computing-api/computing/deploy/decyaml"
-	"computing-api/computing/docker"
-	"computing-api/lib/logs"
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/gridprotocol/computing-api/computing/deploy/decyaml"
+	"github.com/gridprotocol/computing-api/computing/docker"
+	"github.com/gridprotocol/computing-api/lib/logc"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -14,7 +15,7 @@ import (
 	//appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 )
 
-var logger = logs.Logger("deploy")
+var logger = logc.Logger("deploy")
 
 // service endpoints, any ip in IPs is available with the same port
 type EndPoint struct {

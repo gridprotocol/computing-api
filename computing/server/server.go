@@ -1,15 +1,16 @@
 package server
 
 import (
-	"computing-api/computing/gateway"
-	"computing-api/computing/model"
-	"computing-api/computing/proto"
-	"computing-api/lib/logs"
 	"context"
 	"fmt"
+
+	"github.com/gridprotocol/computing-api/computing/gateway"
+	"github.com/gridprotocol/computing-api/computing/model"
+	"github.com/gridprotocol/computing-api/computing/proto"
+	"github.com/gridprotocol/computing-api/lib/logc"
 )
 
-var logger = logs.Logger("server")
+var logger = logc.Logger("server")
 
 type EntranceService struct {
 	proto.UnimplementedComputeServiceServer
@@ -28,17 +29,20 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 	switch gfc.MsgType {
 	case 0: // contract
 		logger.Debug("Greet - contract")
-		// check contract address
-		if es.gw.CheckContract(gfc.GetInput()) {
-			return &proto.GreetFromServer{Result: "[ACK] the contract is acceptable"}, nil
-		} else {
-			return &proto.GreetFromServer{Result: "[Fail] the contract is not acceptable"}, nil
-		}
+		// // check contract address
+		// if es.gw.StaticCheck(gfc.GetInput()) {
+		// 	return &proto.GreetFromServer{Result: "[ACK] the contract is acceptable"}, nil
+		// } else {
+		// 	return &proto.GreetFromServer{Result: "[Fail] the contract is not acceptable"}, nil
+		// }
+
+		return nil, nil
 	case 1: // apply for authority
 		logger.Debug("Greet - apply for authority")
-		if !es.gw.CheckContract(gfc.GetInput()) {
-			return &proto.GreetFromServer{Result: "[Fail] the contract is not acceptable"}, nil
-		}
+		// if !es.gw.StaticCheck(gfc.GetInput()) {
+		// 	return &proto.GreetFromServer{Result: "[Fail] the contract is not acceptable"}, nil
+		// }
+
 		// check payee (send activate tx if necessary)
 		_, user := es.gw.CheckPayee(gfc.GetInput())
 		// authorize and record in database and set a contract watcher
