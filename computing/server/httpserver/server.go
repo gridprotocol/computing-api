@@ -97,30 +97,42 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// static check
 	case "0":
 		// check contract
-		ok, err := hc.gw.StaticCheck(user, cp)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
-			return
-		}
-
-		//
-		if ok {
-			c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease is acceptable"})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the lease is not acceptable"})
-			return
-		}
-
-	// apply for authority
-	case "1":
-		// TODO: cache check
-		ok, err := hc.gw.StaticCheck(user, cp)
+		ok, msg, err := hc.gw.StaticCheck(user, cp)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
 			return
 		}
 		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the lease is not acceptable"})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order static check failed: " + msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease is acceptable"})
+		return
+
+	// apply for authority
+	case "1":
+		// TODO: cache check
+
+		// static check
+		ok, msg, err := hc.gw.StaticCheck(user, cp)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
+			return
+		}
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order static check failed: " + msg})
+			return
+		}
+
+		// status check
+		ok, msg, err = hc.gw.StatusCheck(user, cp)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
+			return
+		}
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order status check failed: " + msg})
 			return
 		}
 

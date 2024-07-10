@@ -26,8 +26,11 @@ type GatewayLocalProcessAPI interface {
 type GatewayRemoteProcessAPI interface {
 	// Register the service on a contract, which can be showned to users.
 	Register(ability model.Resources) error
+
 	// Check the settlement contract to decide whether to offer the service.
-	StaticCheck(user string, cp string) (bool, error)
+	StaticCheck(user string, cp string) (bool, string, error)
+	StatusCheck(user string, cp string) (bool, string, error)
+
 	CheckPayee(contract string) (bool, string)
 	SetWatcher(contract string) error
 	// Retrieve remuneration.
