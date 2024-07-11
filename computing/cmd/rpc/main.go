@@ -13,7 +13,7 @@ import (
 	"github.com/gridprotocol/computing-api/computing/gateway/local"
 	"github.com/gridprotocol/computing-api/computing/gateway/remote"
 	"github.com/gridprotocol/computing-api/computing/proto"
-	"github.com/gridprotocol/computing-api/computing/server"
+	"github.com/gridprotocol/computing-api/computing/server/rpcserver"
 
 	"google.golang.org/grpc"
 )
@@ -50,7 +50,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	srv := server.InitEntranceService(gw)
+	srv := rpcserver.InitEntranceService(gw)
 	proto.RegisterComputeServiceServer(s, srv)
 
 	go func() {

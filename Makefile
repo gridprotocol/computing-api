@@ -6,7 +6,7 @@ gateway-rpc:
 	go build $(BUILD_FLAGS) -o ./bin/gateway-rpc ./computing/cmd/rpc
 
 gateway:
-	go build ${BUILD_FLAGS} -o ./bin/gateway ./computing/cmd/
+	go build ${BUILD_FLAGS} -o ./bin/gateway ./computing/cmd/http
 
 user-example:
 	go build ${BUILD_FLAGS} -o ./bin/user-example ./user/backend/example

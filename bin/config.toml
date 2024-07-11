@@ -16,3 +16,9 @@ SignExpire = 86400000
 
 [Remote]
 Wallet = "0x123456"
+
+[Key]
+Key = "234fe73f5154570065a202f185dca074f1d7482a5e08ce093a92ed96807a6cf0"
+
+[Addr]
+Addr = "0xEf95c72C836605203F7f66788E450Af2a4141957"

@@ -16,6 +16,8 @@ type GatewayConfig struct {
 	Http   Http
 	Local  Local
 	Remote Remote
+	Key    Key
+	Addr   Addr
 }
 
 type Local struct {
@@ -37,6 +39,15 @@ type Http struct {
 	Expire int // cookie expire time in second
 }
 
+type Key struct {
+	Key string
+}
+
+type Addr struct {
+	Addr string
+}
+
+// read and decode config file
 func InitConfig() error {
 	currentDir, _ := os.Getwd()
 	configFile := filepath.Join(currentDir, "config.toml")
@@ -48,6 +59,7 @@ func InitConfig() error {
 			log.Fatal("Required fields not given")
 		}
 	}
+
 	return nil
 }
 
@@ -71,6 +83,9 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Local", "SignExpire"},
 
 		{"Remote", "Wallet"},
+
+		{"Key", "Key"},
+		{"Addr", "Addr"},
 	}
 
 	for _, v := range requiredFields {

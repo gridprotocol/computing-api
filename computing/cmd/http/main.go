@@ -33,6 +33,8 @@ func main() {
 		os.Exit(0)
 	}
 	log.Println("Current Version:", version.CurrentVersion())
+
+	// parse config file
 	err := config.InitConfig()
 	if err != nil {
 		log.Fatalf("failed to init the config: %v", err)

@@ -29,7 +29,12 @@ type GatewayRemoteProcessAPI interface {
 
 	// Check the settlement contract to decide whether to offer the service.
 	StaticCheck(user string, cp string) (bool, string, error)
-	StatusCheck(user string, cp string) (bool, string, error)
+	// check expire
+	ExpireCheck(user string, cp string) (bool, string, error)
+	// provider confirm an order
+	ProviderConfirm(user string) error
+	// provider activate an order
+	Activate(user string) error
 
 	CheckPayee(contract string) (bool, string)
 	SetWatcher(contract string) error

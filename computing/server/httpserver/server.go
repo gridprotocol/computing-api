@@ -8,7 +8,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/grid/contracts/eth"
 	"github.com/gridprotocol/computing-api/common/utils"
+	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/gateway"
 	"github.com/gridprotocol/computing-api/computing/model"
 	"github.com/gridprotocol/computing-api/lib/logc"
@@ -17,6 +20,33 @@ import (
 )
 
 var logger = logc.Logger("http")
+
+var (
+	// market contract addr
+	MarketAddr common.Address
+	// access contract address
+	AccessAddr common.Address
+	// credit contract address
+	CreditAddr common.Address
+	// registry contract address
+	RegistryAddr common.Address
+)
+
+// load all addresses from json
+func init() {
+	logger.Debug("load addresses")
+
+	// loading contracts
+	a := eth.Load("../../grid-contracts/eth/contracts.json")
+	logger.Debugf("%+v\n", a)
+	if a.Market == "" || a.Access == "" || a.Credit == "" || a.Registry == "" {
+		panic("all contract addresses must exist in json file")
+	}
+	MarketAddr = common.HexToAddress(a.Market)
+	AccessAddr = common.HexToAddress(a.Access)
+	CreditAddr = common.HexToAddress(a.Credit)
+	RegistryAddr = common.HexToAddress(a.Registry)
+}
 
 type handlerCore struct {
 	gw  gateway.ComputingGatewayAPI
@@ -85,18 +115,15 @@ func (hc *handlerCore) handlerAllRequests(c *gin.Context) {
 func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// greet type
 	msgType := c.Query("type")
-
-	input := c.Query("input")
-
-	user := c.Query("user")
-	cp := c.Query("cp")
+	// get cp address from config file
+	cp := config.GetConfig().Addr.Addr
 
 	// for each greet type
 	switch msgType {
-
 	// static check
 	case "0":
-		// check contract
+		user := c.Query("user")
+
 		ok, msg, err := hc.gw.StaticCheck(user, cp)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
@@ -107,11 +134,13 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease is acceptable"})
-		return
+		logger.Debug("static check ok")
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease static check ok"})
 
-	// apply for authority
+	// other check and confirm
 	case "1":
+		user := c.Query("user")
+
 		// TODO: cache check
 
 		// static check
@@ -125,41 +154,52 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		// status check
-		ok, msg, err = hc.gw.StatusCheck(user, cp)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
-			return
-		}
-		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order status check failed: " + msg})
-			return
-		}
+		logger.Debug("static check ok")
+
+		// // status check
+		// ok, msg, err = hc.gw.StatusCheck(user, cp)
+		// if err != nil {
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
+		// 	return
+		// }
+		// if !ok {
+		// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order status check failed: " + msg})
+		// 	return
+		// }
 
 		// check payee (send activate tx if necessary)
-		_, user := hc.gw.CheckPayee(input)
+		_, _ = hc.gw.CheckPayee(user)
 		if len(user) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
 			return
 		}
+
 		if err := hc.gw.Authorize(user, model.Lease{}); err != nil {
 			logger.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] authorization failed"})
 			return
 		}
-		// set watcher for the lease (current ver is empty)
-		hc.gw.SetWatcher(input)
-		c.JSON(http.StatusOK, gin.H{"msg": fmt.Sprintf("[ACK] %s authorized ok", user)})
 
-	// Acquire cookie for later access
+		// set watcher for the lease (current ver is empty)
+		hc.gw.SetWatcher(user)
+
+		// provider confirm this order
+		logger.Debug("provider confirming")
+		hc.gw.ProviderConfirm(user)
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] status check ok"})
+
+	// send cookie to user
 	case "2":
-		addr := c.Query("addr")
+		ts := c.Query("ts")
+		user := c.Query("user")
 		sig := c.Query("sig")
+
 		// verify signature in type2
-		ok := hc.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Sig: sig, Msg: input})
+		ok := hc.gw.VerifyAccessibility(&model.AuthInfo{Address: user, Sig: sig, Msg: ts})
 		if ok {
 			// make cookie from addr and expire
-			cookie := hc.cm.MakeCookie(addr)
+			cookie := hc.cm.MakeCookie(user)
 			// set cookie into response
 			http.SetCookie(c.Writer, cookie)
 			// response with cookie
@@ -173,6 +213,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 	// deploy with input string
 	case "3":
+		user := c.Query("user")
+
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
 
@@ -191,30 +233,49 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		// yaml from local filepath
 		localfile := c.Query("local")
-		// if local is set
-		if len(localfile) != 0 {
-			input = localfile
-			isLocal = true
-		}
+		remotefile := c.Query("remote")
+		var yaml string
 
-		// if no remote yaml is provided either, response error
-		if len(input) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml resource"})
+		// missing yaml
+		if len(localfile) == 0 && len(remotefile) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml resource in request"})
 			return
 		}
 
-		// deploy with local or remote yaml file
-		err = hc.gw.Deploy(addr, input, isLocal)
+		// if local is set
+		if len(localfile) != 0 {
+			yaml = localfile
+			isLocal = true
+		} else {
+			yaml = remotefile
+			isLocal = false
+		}
+
+		logger.Debug("deploying app")
+		// deploy with remote yaml file
+		err = hc.gw.Deploy(addr, yaml, isLocal)
 		if err != nil {
 			msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
+		logger.Debug("activating order")
+		// activate this order after app deployed
+		err = hc.gw.Activate(user)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] Failed to activate: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok, order activated"})
 
 	// deploy by id of local list
 	case "4":
+		yamlID := c.Query("id")
+		user := c.Query("user")
+
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
 
@@ -229,13 +290,13 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		logger.Info("cookie check passed")
 
 		// if no remote yaml is provided either, response error
-		if len(input) == 0 {
+		if len(yamlID) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the request missing yaml id"})
 			return
 		}
 
 		// get yaml path from id in input
-		p, err := utils.GetPathByID(input)
+		p, err := utils.GetPathByID(yamlID)
 		if err != nil {
 			msg := fmt.Sprintf("[Fail] invalid yaml id: %s", err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
@@ -252,7 +313,16 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
+		logger.Debug("activating order")
+		// activate this order after app deployed
+		err = hc.gw.Activate(user)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] Failed to activate: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok, order activated"})
 
 	// illegal type
 	default:
