@@ -1,32 +1,36 @@
-{"level":"DEBUG","time":"2024-07-11T17:01:31+08:00","sub":"remote","caller":"remote/remote.go:26","msg":"load addresses"}
-{"level":"DEBUG","time":"2024-07-11T17:01:31+08:00","sub":"remote","caller":"remote/remote.go:30","msg":"{Market:0xFcE7bC45c95C1db9bF9A758C0A3D718A16E67648 Access:0x95E14A5d6E94da8A631E56E1554b5899C9D7369C Credit:0xe625bA9e9409FB655b98bB6D1d0225F5363E7777 Token: Registry:0xA3117b60C6C760c84EE26f18f4Eef1627D066694 Swap: Pledge:}\n"}
-{"level":"DEBUG","time":"2024-07-11T17:01:31+08:00","sub":"http","caller":"httpserver/server.go:37","msg":"load addresses"}
-{"level":"DEBUG","time":"2024-07-11T17:01:31+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"{Market:0xFcE7bC45c95C1db9bF9A758C0A3D718A16E67648 Access:0x95E14A5d6E94da8A631E56E1554b5899C9D7369C Credit:0xe625bA9e9409FB655b98bB6D1d0225F5363E7777 Token: Registry:0xA3117b60C6C760c84EE26f18f4Eef1627D066694 Swap: Pledge:}\n"}
-2024/07/11 17:01:31 Current Version: 0.3.2+
-badger 2024/07/11 17:01:31 INFO: All 0 tables opened in 0s
-badger 2024/07/11 17:01:31 INFO: Replaying file id: 0 at offset: 0
-badger 2024/07/11 17:01:31 INFO: Replay took: 25µs
-{"level":"INFO","time":"2024-07-11T17:01:31+08:00","sub":"http","caller":"httpserver/server.go:59","msg":"Starting server"}
-{"level":"INFO","time":"2024-07-11T17:01:31+08:00","sub":"http","caller":"httpserver/server.go:76","msg":"create new router ok"}
-{"level":"DEBUG","time":"2024-07-11T17:02:24+08:00","sub":"remote","caller":"remote/remote.go:58","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-07-11T17:02:24+08:00","sub":"remote","caller":"remote/remote.go:72","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 2626954 2626954 0 true true 1720686520 1720686520 5 1231 1}"}
-{"level":"DEBUG","time":"2024-07-11T17:02:24+08:00","sub":"remote","caller":"remote/remote.go:76","msg":"order value should be: 2626954"}
-{"level":"DEBUG","time":"2024-07-11T17:02:24+08:00","sub":"remote","caller":"remote/remote.go:77","msg":"order total value: 2626954"}
-{"level":"DEBUG","time":"2024-07-11T17:02:24+08:00","sub":"http","caller":"httpserver/server.go:137","msg":"static check ok"}
-[GIN] 2024/07/11 - 17:02:24 | 200 |  101.684708ms |             ::1 | GET      "/greet?type=0&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"remote","caller":"remote/remote.go:58","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"remote","caller":"remote/remote.go:72","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 2626954 2626954 0 true true 1720686520 1720686520 5 1231 1}"}
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"remote","caller":"remote/remote.go:76","msg":"order value should be: 2626954"}
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"remote","caller":"remote/remote.go:77","msg":"order total value: 2626954"}
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"http","caller":"httpserver/server.go:157","msg":"static check ok"}
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"http","caller":"httpserver/server.go:187","msg":"provider confirming"}
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"remote","caller":"remote/remote.go:110","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"remote","caller":"remote/remote.go:128","msg":"provider confirm an order"}
-[GIN] 2024/07/11 - 17:02:33 | 200 |   56.191917ms |             ::1 | GET      "/greet?type=1&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-[GIN] 2024/07/11 - 17:04:52 | 200 |      779.75µs |             ::1 | GET      "/greet?type=2&ts=1705053750&user=0x0090675FD3ef5031d7719A758163E73Fd58AF1EB&sig=0x47923ee7a90546d87186beca95fb2b7e6015e753daa1acbf891fbe3ae4d93f6a31cd09bd87de0de1aac9e4ac061a01f0377360a97a9cf19a3e02e3cdfc80f11c1b"
-2024/07/12 08:28:03 Shutting down gateway...
-badger 2024/07/12 08:28:03 INFO: Storing value log head: {Fid:0 Len:0 Offset:608}
-badger 2024/07/12 08:28:03 INFO: [Compactor: 173] Running compaction: {level:0 score:1.73 dropPrefixes:[]} for level: 0
-badger 2024/07/12 08:28:03 INFO: LOG Compact 0->1, del 1 tables, add 1 tables, took 41.360333ms
-badger 2024/07/12 08:28:03 INFO: [Compactor: 173] Compaction for level: 0 DONE
-badger 2024/07/12 08:28:03 INFO: Force compaction on level 0 done
+2024/07/15 16:36:41 Current Version: 0.3.2+cbbd248+2024-07-15.16:36:27CST
+badger 2024/07/15 16:36:41 INFO: All 1 tables opened in 0s
+badger 2024/07/15 16:36:41 INFO: Replaying file id: 0 at offset: 608
+badger 2024/07/15 16:36:41 INFO: Replay took: 1.834µs
+{"level":"INFO","time":"2024-07-15T16:36:41+08:00","sub":"http","caller":"httpserver/server.go:59","msg":"Starting server"}
+{"level":"INFO","time":"2024-07-15T16:36:41+08:00","sub":"http","caller":"httpserver/server.go:76","msg":"create new router ok"}
+[GIN] 2024/07/15 - 16:37:08 | 200 |   37.281084ms |             ::1 | GET      "/greet?type=0&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/07/15 - 16:37:20 | 200 |  6.096465083s |             ::1 | GET      "/greet?type=1&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/07/15 - 16:40:18 | 200 |   37.138458ms |             ::1 | GET      "/greet?type=2&ts=1705053750&user=0x0090675FD3ef5031d7719A758163E73Fd58AF1EB&sig=0x47923ee7a90546d87186beca95fb2b7e6015e753daa1acbf891fbe3ae4d93f6a31cd09bd87de0de1aac9e4ac061a01f0377360a97a9cf19a3e02e3cdfc80f11c1b"
+{"level":"INFO","time":"2024-07-15T16:41:35+08:00","sub":"http","caller":"httpserver/server.go:288","msg":"cookie check passed"}
+{"level":"INFO","time":"2024-07-15T16:41:35+08:00","sub":"http","caller":"httpserver/server.go:304","msg":"yaml path from id:./yamls/nginx.yaml"}
+reading file: ./yamls/nginx.yaml
+app name: nginx
+nodePort service is created.
+service name: svc-nginx
+port:8081
+targetPort:8081
+NodePort: 32406
+all app is ready
+entrance: http://localhost:32406
+[GIN] 2024/07/15 - 16:41:39 | 500 |  4.219258708s |             ::1 | GET      "/greet?type=4&id=1"
+[GIN] 2024/07/15 - 17:15:52 | 200 |   43.627875ms |             ::1 | GET      "/greet?type=0&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/07/15 - 17:16:03 | 200 |  6.104842375s |             ::1 | GET      "/greet?type=1&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/07/15 - 17:16:06 | 200 |   27.496458ms |             ::1 | GET      "/greet?type=2&ts=1705053750&user=0x0090675FD3ef5031d7719A758163E73Fd58AF1EB&sig=0x47923ee7a90546d87186beca95fb2b7e6015e753daa1acbf891fbe3ae4d93f6a31cd09bd87de0de1aac9e4ac061a01f0377360a97a9cf19a3e02e3cdfc80f11c1b"
+{"level":"INFO","time":"2024-07-15T17:16:27+08:00","sub":"http","caller":"httpserver/server.go:288","msg":"cookie check passed"}
+{"level":"INFO","time":"2024-07-15T17:16:27+08:00","sub":"http","caller":"httpserver/server.go:304","msg":"yaml path from id:./yamls/nginx.yaml"}
+reading file: ./yamls/nginx.yaml
+app name: nginx
+nodePort service is created.
+service name: svc-nginx
+port:8081
+targetPort:8081
+NodePort: 30904
+all app is ready
+entrance: http://localhost:30904
+[GIN] 2024/07/15 - 17:16:37 | 500 | 10.239489875s |             ::1 | GET      "/greet?type=4&id=1"

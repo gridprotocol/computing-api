@@ -142,7 +142,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		logger.Debug("static check ok")
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease static check ok"})
 
-	// other check and confirm
+	// all status check and provider confirm
 	case "1":
 		if len(user) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
@@ -205,7 +205,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			http.SetCookie(c.Writer, cookie)
 			// response with cookie
 			c.JSON(http.StatusOK, gin.H{
-				"msg":    "[ACK] already authorized",
+				"msg":    "[ACK] user authorized",
 				"cookie": cookie.String(),
 			})
 		} else {
