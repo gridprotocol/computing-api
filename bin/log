@@ -24,3 +24,9 @@ badger 2024/07/11 17:01:31 INFO: Replay took: 25µs
 {"level":"DEBUG","time":"2024-07-11T17:02:32+08:00","sub":"remote","caller":"remote/remote.go:128","msg":"provider confirm an order"}
 [GIN] 2024/07/11 - 17:02:33 | 200 |   56.191917ms |             ::1 | GET      "/greet?type=1&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
 [GIN] 2024/07/11 - 17:04:52 | 200 |      779.75µs |             ::1 | GET      "/greet?type=2&ts=1705053750&user=0x0090675FD3ef5031d7719A758163E73Fd58AF1EB&sig=0x47923ee7a90546d87186beca95fb2b7e6015e753daa1acbf891fbe3ae4d93f6a31cd09bd87de0de1aac9e4ac061a01f0377360a97a9cf19a3e02e3cdfc80f11c1b"
+2024/07/12 08:28:03 Shutting down gateway...
+badger 2024/07/12 08:28:03 INFO: Storing value log head: {Fid:0 Len:0 Offset:608}
+badger 2024/07/12 08:28:03 INFO: [Compactor: 173] Running compaction: {level:0 score:1.73 dropPrefixes:[]} for level: 0
+badger 2024/07/12 08:28:03 INFO: LOG Compact 0->1, del 1 tables, add 1 tables, took 41.360333ms
+badger 2024/07/12 08:28:03 INFO: [Compactor: 173] Compaction for level: 0 DONE
+badger 2024/07/12 08:28:03 INFO: Force compaction on level 0 done

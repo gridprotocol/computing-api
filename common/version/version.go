@@ -16,6 +16,7 @@ func CurrentVersion() string {
 func CheckVersion() bool {
 	check := flag.Bool("version", false, "print version")
 	flag.Parse()
+
 	if *check {
 		fmt.Println("Current version: ", version)
 		fmt.Println("Building info: ", BuildFlag)

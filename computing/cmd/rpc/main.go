@@ -24,6 +24,7 @@ var (
 	test = false // for local test, no k8s deployment required
 )
 
+// make a geteway object with remote and local
 func init() {
 	if version.CheckVersion() {
 		os.Exit(0)
@@ -34,13 +35,18 @@ func init() {
 		log.Fatalf("failed to init the config: %v", err)
 	}
 
+	// remote
 	grp := remote.NewGatewayRemoteProcess()
+
+	// local
 	var glp gateway.GatewayLocalProcessAPI
 	if test {
 		glp = local.NewFakeImplementofLocalProcess()
 	} else {
 		glp = local.NewGatewayLocalProcess()
 	}
+
+	// gw
 	gw = gateway.NewComputingGateway(glp, grp)
 }
 

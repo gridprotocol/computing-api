@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/grid/contracts/go/market"
 	"github.com/gridprotocol/computing-api/computing/gateway"
 	"github.com/gridprotocol/computing-api/computing/model"
 	"github.com/gridprotocol/computing-api/computing/proto"
@@ -38,13 +39,19 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 
 		return nil, nil
 	case 1: // apply for authority
+		var user string
+
 		logger.Debug("Greet - apply for authority")
 		// if !es.gw.StaticCheck(gfc.GetInput()) {
 		// 	return &proto.GreetFromServer{Result: "[Fail] the contract is not acceptable"}, nil
 		// }
 
 		// check payee (send activate tx if necessary)
-		_, user := es.gw.CheckPayee(gfc.GetInput())
+		ok, err := es.gw.PayeeCheck(market.MarketOrder{})
+		if !ok {
+			return &proto.GreetFromServer{Result: "[Fail] Authorize failed"}, err
+		}
+
 		// authorize and record in database and set a contract watcher
 		if err := es.gw.Authorize(user, model.Lease{}); err != nil {
 			return &proto.GreetFromServer{Result: "[Fail] Authorize failed"}, err

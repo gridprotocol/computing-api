@@ -1,6 +1,9 @@
 package gateway
 
-import "github.com/gridprotocol/computing-api/computing/model"
+import (
+	"github.com/grid/contracts/go/market"
+	"github.com/gridprotocol/computing-api/computing/model"
+)
 
 type ComputingGatewayAPI interface {
 	GatewayLocalProcessAPI
@@ -28,16 +31,20 @@ type GatewayRemoteProcessAPI interface {
 	Register(ability model.Resources) error
 
 	// Check the settlement contract to decide whether to offer the service.
-	StaticCheck(user string, cp string) (bool, string, error)
+	StaticCheck(orderInfo market.MarketOrder) (bool, error)
 	// check expire
-	ExpireCheck(user string, cp string) (bool, string, error)
+	ExpireCheck(orderInfo market.MarketOrder) (bool, error)
 	// provider confirm an order
 	ProviderConfirm(user string) error
 	// provider activate an order
 	Activate(user string) error
 
-	CheckPayee(contract string) (bool, string)
+	// check the order's payee to be the provider itself
+	PayeeCheck(orderInfo market.MarketOrder) (bool, error)
 	SetWatcher(contract string) error
 	// Retrieve remuneration.
 	Settle() error
+
+	// get order with user and cp
+	GetOrder(user string, cp string) (*market.MarketOrder, error)
 }

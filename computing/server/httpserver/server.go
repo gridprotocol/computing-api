@@ -115,22 +115,27 @@ func (hc *handlerCore) handlerAllRequests(c *gin.Context) {
 func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// greet type
 	msgType := c.Query("type")
+	user := c.Query("user")
+
 	// get cp address from config file
 	cp := config.GetConfig().Addr.Addr
+
+	// get order info with params
+	orderInfo, err := hc.gw.GetOrder(user, cp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+		return
+	}
+
+	logger.Debug("order info:", orderInfo)
 
 	// for each greet type
 	switch msgType {
 	// static check
 	case "0":
-		user := c.Query("user")
-
-		ok, msg, err := hc.gw.StaticCheck(user, cp)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
-			return
-		}
+		ok, err := hc.gw.StaticCheck(*orderInfo)
 		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order static check failed: " + msg})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order static check failed: " + err.Error()})
 			return
 		}
 
@@ -139,41 +144,38 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 	// other check and confirm
 	case "1":
-		user := c.Query("user")
-
-		// TODO: cache check
-
-		// static check
-		ok, msg, err := hc.gw.StaticCheck(user, cp)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
-			return
-		}
-		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order static check failed: " + msg})
-			return
-		}
-
-		logger.Debug("static check ok")
-
-		// // status check
-		// ok, msg, err = hc.gw.StatusCheck(user, cp)
-		// if err != nil {
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "[Fail] " + err.Error()})
-		// 	return
-		// }
-		// if !ok {
-		// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order status check failed: " + msg})
-		// 	return
-		// }
-
-		// check payee (send activate tx if necessary)
-		_, _ = hc.gw.CheckPayee(user)
 		if len(user) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
 			return
 		}
 
+		// TODO: cache check
+
+		// static check
+		ok, err := hc.gw.StaticCheck(*orderInfo)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order static check failed: " + err.Error()})
+			return
+		}
+		logger.Debug("static check ok")
+
+		// // expire check
+		// ok, err = hc.gw.ExpireCheck(*orderInfo)
+		// if !ok {
+		// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order expire check failed: " + err.Error()})
+		// 	return
+		// }
+		// logger.Debug("expire check ok")
+
+		// check payee (send activate tx if necessary)
+		ok, err = hc.gw.PayeeCheck(*orderInfo)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order payee check failed: " + err.Error()})
+			return
+		}
+		logger.Debug("payee check ok")
+
+		// check authorize
 		if err := hc.gw.Authorize(user, model.Lease{}); err != nil {
 			logger.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] authorization failed"})
@@ -183,7 +185,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// set watcher for the lease (current ver is empty)
 		hc.gw.SetWatcher(user)
 
-		// provider confirm this order
+		// provider confirm this order after all check passed
 		logger.Debug("provider confirming")
 		hc.gw.ProviderConfirm(user)
 
@@ -192,7 +194,6 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// send cookie to user
 	case "2":
 		ts := c.Query("ts")
-		user := c.Query("user")
 		sig := c.Query("sig")
 
 		// verify signature in type2
@@ -213,8 +214,6 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 	// deploy with input string
 	case "3":
-		user := c.Query("user")
-
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
 
@@ -274,7 +273,6 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// deploy by id of local list
 	case "4":
 		yamlID := c.Query("id")
-		user := c.Query("user")
 
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)

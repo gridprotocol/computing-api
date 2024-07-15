@@ -29,6 +29,8 @@ func checkFlag() {
 func main() {
 	// init
 	checkFlag()
+
+	// check version
 	if version.CheckVersion() {
 		os.Exit(0)
 	}
@@ -39,17 +41,21 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to init the config: %v", err)
 	}
+
+	// remote
 	grp := remote.NewGatewayRemoteProcess()
+	// local
 	var glp gateway.GatewayLocalProcessAPI
 	if *test {
 		glp = local.NewFakeImplementofLocalProcess()
 	} else {
 		glp = local.NewGatewayLocalProcess()
 	}
+	// gw object
 	gw := gateway.NewComputingGateway(glp, grp)
 	defer gw.Close()
 
-	// server
+	// make an httpserver with ip:port and gw object
 	srv := httpserver.NewServer(config.GetConfig().Http.Listen, gw)
 	go func() {
 		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -57,6 +63,7 @@ func main() {
 		}
 	}()
 
+	// exit signals
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
