@@ -142,7 +142,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		logger.Debug("static check ok")
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease static check ok"})
 
-	// all status check and provider confirm
+	// all status check
 	case "1":
 		if len(user) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
@@ -177,16 +177,34 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// set watcher for the lease (current ver is empty)
 		hc.gw.SetWatcher(user)
 
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] status check ok"})
+
+	// provider confirm
+	case "2":
+		if len(user) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
+			return
+		}
+
 		// provider confirm this order after all check passed
 		logger.Debug("provider confirming")
 		hc.gw.ProviderConfirm(user)
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] status check ok"})
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] provider confirm ok"})
 
 	// send cookie to user
-	case "2":
+	case "3":
 		ts := c.Query("ts")
 		sig := c.Query("sig")
+
+		if len(ts) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing timestamp in request"})
+			return
+		}
+		if len(sig) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing signature in request"})
+			return
+		}
 
 		// verify signature in type2
 		ok := hc.gw.VerifyAccessibility(&model.AuthInfo{Address: user, Sig: sig, Msg: ts})
@@ -204,8 +222,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] Failed to verify your signature"})
 		}
 
-	// deploy with input string
-	case "3":
+	// deploy with yaml url
+	case "4":
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
 
@@ -262,9 +280,13 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok, order activated"})
 
-	// deploy by id of local list
-	case "4":
+	// deploy by id
+	case "5":
 		yamlID := c.Query("id")
+		if len(yamlID) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
+			return
+		}
 
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
