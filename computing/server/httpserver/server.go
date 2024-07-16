@@ -159,14 +159,6 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 		logger.Debug("static check ok")
 
-		// // expire check
-		// ok, err = hc.gw.ExpireCheck(*orderInfo)
-		// if !ok {
-		// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order expire check failed: " + err.Error()})
-		// 	return
-		// }
-		// logger.Debug("expire check ok")
-
 		// check payee (send activate tx if necessary)
 		ok, err = hc.gw.PayeeCheck(*orderInfo)
 		if !ok {
@@ -334,13 +326,31 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	cks := injectCookie(c)
 	logger.Info("cookies:", cks)
 
-	// check cookie's expire and sig, return the addr in cookie name
+	// check cookie's expire and sig, return the user addr in cookie name
 	addr, err := hc.cm.CheckCookie(cks)
 	if err != nil {
 		msg := fmt.Sprintf("cookie check failed: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
 		return
 	}
+
+	// get order info and do expire check for it
+	// get cp address from config file
+	cp := config.GetConfig().Addr.Addr
+	// get order info with params
+	orderInfo, err := hc.gw.GetOrder(addr, cp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+		return
+	}
+	logger.Debug("order info:", orderInfo)
+	// order expire check
+	ok, err := hc.gw.ExpireCheck(*orderInfo)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order expire check failed: " + err.Error()})
+		return
+	}
+	logger.Debug("expire check ok")
 
 	// query entrance url(service endpoint) stored in DB with address
 	ent, err := hc.gw.GetEntrance(addr)
