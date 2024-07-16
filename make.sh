@@ -1,3 +1,3 @@
 #!/bin/bash
-rm ./bin/gateway
-make gateway
+rm ./bin/computing-api
+make computing-api

@@ -1,6 +1,6 @@
 *.exe
 testdb
-gateway-rpc
-gateway
+computing-api-rpc
+computing-api
 user-example
 *.log
