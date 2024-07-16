@@ -24,7 +24,7 @@ type EndPoint struct {
 }
 
 // deploy apps and services from a local file
-func DeployLocal(filepath string) (*EndPoint, error) {
+func DeployLocal(filepath string) (*EndPoint, []*appsv1.Deployment, error) {
 	// get k8s service
 	k8s := docker.NewK8sService()
 
@@ -33,7 +33,7 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 	// read yaml file into bytes
 	data, err := decyaml.ReadYamlFile(filepath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	//------- k8s operations
@@ -42,7 +42,7 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 	// parse yaml data into deployments and services
 	deps, svcs, err := decyaml.ParseYaml(data)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	logger.Debug("parse yaml ok")
@@ -52,7 +52,7 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 		// the given namespace must match the namespace in the deployment Object
 		_, err = k8s.CreateDeployment(context.Background(), "default", dep)
 		if err != nil {
-			return nil, err
+			return nil, deps, err
 		}
 	}
 
@@ -64,7 +64,7 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 	// create a node port service with name: svc-appName, port: port
 	npSvc, err := CreateNodePortSvc(deps[0])
 	if err != nil {
-		return nil, err
+		return nil, deps, err
 	}
 	// get svc name
 	svcName := npSvc.GetObjectMeta().GetName()
@@ -79,7 +79,7 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 	for _, d := range deps {
 		isReady, err := WaitReady(d)
 		if err != nil {
-			return nil, err
+			return nil, deps, err
 		}
 		if isReady {
 			allReady = true
@@ -99,14 +99,14 @@ func DeployLocal(filepath string) (*EndPoint, error) {
 			NodePort: npSvc.Spec.Ports[0].NodePort,
 		}
 
-		return ep, nil
+		return ep, deps, nil
 	} else {
-		return nil, fmt.Errorf("deployment is failed to be ready after retrys")
+		return nil, deps, fmt.Errorf("deployment is failed to be ready after retrys")
 	}
 }
 
 // deploy apps and services from a yaml file in remote url
-func Deploy(url string) (*EndPoint, error) {
+func Deploy(url string) (*EndPoint, []*appsv1.Deployment, error) {
 	// get k8s service
 	k8s := docker.NewK8sService()
 
@@ -115,7 +115,7 @@ func Deploy(url string) (*EndPoint, error) {
 	// doawnload yaml url into bytes
 	data, err := decyaml.ReadYamlUrl(url)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	//------- k8s operations
@@ -124,7 +124,7 @@ func Deploy(url string) (*EndPoint, error) {
 	// parse yaml data into deployments and services
 	deps, svcs, err := decyaml.ParseYaml(data)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	logger.Debug("parse yaml ok")
@@ -134,7 +134,7 @@ func Deploy(url string) (*EndPoint, error) {
 		// the given namespace must match the namespace in the deployment Object
 		_, err = k8s.CreateDeployment(context.Background(), "default", dep)
 		if err != nil {
-			return nil, err
+			return nil, deps, err
 		}
 	}
 
@@ -146,7 +146,7 @@ func Deploy(url string) (*EndPoint, error) {
 	// create a node port service with name: svc-appName, port: port
 	npSvc, err := CreateNodePortSvc(deps[0])
 	if err != nil {
-		return nil, err
+		return nil, deps, err
 	}
 	// get svc name
 	svcName := npSvc.GetObjectMeta().GetName()
@@ -161,7 +161,7 @@ func Deploy(url string) (*EndPoint, error) {
 	for _, d := range deps {
 		isReady, err := WaitReady(d)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if isReady {
 			allReady = true
@@ -181,9 +181,9 @@ func Deploy(url string) (*EndPoint, error) {
 			NodePort: npSvc.Spec.Ports[0].NodePort,
 		}
 
-		return ep, nil
+		return ep, deps, nil
 	} else {
-		return nil, fmt.Errorf("deployment is failed to be ready after retrys")
+		return nil, deps, fmt.Errorf("deployment is failed to be ready after retrys")
 	}
 }
 
@@ -248,4 +248,26 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 	// retry timeout
 	return false, nil
 
+}
+
+// delete a deployment and it's svc with yaml path
+func CleanDeploy(depName string) error {
+	// get k8s service
+	k8s := docker.NewK8sService()
+
+	// delete deployment
+	logger.Debug("delete dep: ", depName)
+	err := k8s.DeleteDeployment(context.Background(), "default", depName)
+	if err != nil {
+		return err
+	}
+
+	// delete svc
+	logger.Debug("delete svc: ", "svc-", depName)
+	err = k8s.DeleteService(context.Background(), "default", fmt.Sprintf("svc-%s", depName))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

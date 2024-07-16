@@ -1,24 +1,27 @@
-2024/07/16 15:25:26 Current Version: 0.3.2+0918e9a+2024-07-16.15:20:21CST
-badger 2024/07/16 15:25:26 INFO: All 1 tables opened in 0s
-badger 2024/07/16 15:25:26 INFO: Replaying file id: 0 at offset: 608
-badger 2024/07/16 15:25:26 INFO: Replay took: 11.375µs
-{"level":"INFO","time":"2024-07-16T15:25:26+08:00","sub":"http","caller":"httpserver/server.go:59","msg":"Starting server"}
-{"level":"INFO","time":"2024-07-16T15:25:26+08:00","sub":"http","caller":"httpserver/server.go:76","msg":"create new router ok"}
-[GIN] 2024/07/16 - 15:25:49 | 200 |   36.078125ms |             ::1 | GET      "/greet?type=0&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-[GIN] 2024/07/16 - 15:25:57 | 200 |   35.612542ms |             ::1 | GET      "/greet?type=1&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-[GIN] 2024/07/16 - 15:28:01 | 200 |  6.118976625s |             ::1 | GET      "/greet?type=2&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-{"level":"INFO","time":"2024-07-16T15:30:12+08:00","sub":"http","caller":"httpserver/server.go:238","msg":"cookie check passed"}
-[GIN] 2024/07/16 - 15:30:12 | 400 |   34.911208ms |             ::1 | GET      "/greet?type=4&ts=1705053750&user=0x0090675FD3ef5031d7719A758163E73Fd58AF1EB&sig=0x47923ee7a90546d87186beca95fb2b7e6015e753daa1acbf891fbe3ae4d93f6a31cd09bd87de0de1aac9e4ac061a01f0377360a97a9cf19a3e02e3cdfc80f11c1b"
-[GIN] 2024/07/16 - 15:30:35 | 200 |   44.922125ms |             ::1 | GET      "/greet?type=3&ts=1705053750&user=0x0090675FD3ef5031d7719A758163E73Fd58AF1EB&sig=0x47923ee7a90546d87186beca95fb2b7e6015e753daa1acbf891fbe3ae4d93f6a31cd09bd87de0de1aac9e4ac061a01f0377360a97a9cf19a3e02e3cdfc80f11c1b"
-{"level":"INFO","time":"2024-07-16T15:30:45+08:00","sub":"http","caller":"httpserver/server.go:302","msg":"cookie check passed"}
-{"level":"INFO","time":"2024-07-16T15:30:45+08:00","sub":"http","caller":"httpserver/server.go:318","msg":"yaml path from id:./yamls/nginx.yaml"}
-reading file: ./yamls/nginx.yaml
-app name: nginx
+{"level":"DEBUG","time":"2024-07-16T16:39:14+08:00","sub":"remote","caller":"remote/remote.go:26","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-07-16T16:39:14+08:00","sub":"remote","caller":"remote/remote.go:30","msg":"{Market:0x72Ed522dC2b3454b39841dD02544f9aBE421d324 Access:0xE89F421A1736ee250Db159AD552db4164708c597 Credit:0x5825735090a9FAfF0bBAB2109414B8Bc6Cde4732 Token: Registry:0xDa9870756b63ff3FfAcceb764cb83c28378268fA Swap: Pledge:}\n"}
+{"level":"DEBUG","time":"2024-07-16T16:39:14+08:00","sub":"http","caller":"httpserver/server.go:40","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-07-16T16:39:14+08:00","sub":"http","caller":"httpserver/server.go:44","msg":"{Market:0x72Ed522dC2b3454b39841dD02544f9aBE421d324 Access:0xE89F421A1736ee250Db159AD552db4164708c597 Credit:0x5825735090a9FAfF0bBAB2109414B8Bc6Cde4732 Token: Registry:0xDa9870756b63ff3FfAcceb764cb83c28378268fA Swap: Pledge:}\n"}
+2024/07/16 16:39:14 Current Version: 0.3.2+ce7ebd9+2024-07-16.16:38:55CST
+badger 2024/07/16 16:39:14 INFO: All 1 tables opened in 1ms
+badger 2024/07/16 16:39:14 INFO: Replaying file id: 0 at offset: 608
+badger 2024/07/16 16:39:14 INFO: Replay took: 12.25µs
+{"level":"INFO","time":"2024-07-16T16:39:14+08:00","sub":"http","caller":"httpserver/server.go:62","msg":"Starting server"}
+{"level":"INFO","time":"2024-07-16T16:39:14+08:00","sub":"http","caller":"httpserver/server.go:79","msg":"create new router ok"}
+{"level":"DEBUG","time":"2024-07-16T16:39:20+08:00","sub":"remote","caller":"remote/remote.go:263","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-07-16T16:39:20+08:00","sub":"http","caller":"httpserver/server.go:133","msg":"order info:&{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 {0 0 0 0} {0 0 0 0} 0 0 0 false false 0 0 0 0 0}"}
+{"level":"INFO","time":"2024-07-16T16:39:20+08:00","sub":"http","caller":"httpserver/server.go:312","msg":"cookie check passed"}
+{"level":"INFO","time":"2024-07-16T16:39:20+08:00","sub":"http","caller":"httpserver/server.go:328","msg":"yaml path from id:./yamls/hello-world.yaml"}
+reading file: ./yamls/hello-world.yaml
+{"level":"DEBUG","time":"2024-07-16T16:39:20+08:00","sub":"deploy","caller":"deploy/deploy.go:41","msg":"decoding yaml to obj"}
+{"level":"DEBUG","time":"2024-07-16T16:39:20+08:00","sub":"deploy","caller":"deploy/deploy.go:48","msg":"parse yaml ok"}
+app name: hello-world
 nodePort service is created.
-service name: svc-nginx
-port:8081
-targetPort:8081
-NodePort: 30427
-all app is ready
-entrance: http://localhost:30427
-[GIN] 2024/07/16 - 15:30:55 | 200 | 10.207333708s |             ::1 | GET      "/greet?type=5&id=1"
+service name: svc-hello-world
+port:8080
+targetPort:8080
+NodePort: 30550
+{"level":"ERROR","time":"2024-07-16T16:40:20+08:00","sub":"local","caller":"local/local.go:124","msg":"fail to deploy: deployment is failed to be ready after retrys"}
+{"level":"DEBUG","time":"2024-07-16T16:40:20+08:00","sub":"deploy","caller":"deploy/deploy.go:259","msg":"delete dep: hello-world"}
+{"level":"DEBUG","time":"2024-07-16T16:40:20+08:00","sub":"deploy","caller":"deploy/deploy.go:266","msg":"delete svc: svc-hello-world"}
+[GIN] 2024/07/16 - 16:40:20 | 500 |          1m0s |             ::1 | GET      "/greet?type=5&id=0"

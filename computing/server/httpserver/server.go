@@ -12,11 +12,14 @@ import (
 	"github.com/grid/contracts/eth"
 	"github.com/gridprotocol/computing-api/common/utils"
 	"github.com/gridprotocol/computing-api/computing/config"
+	"github.com/gridprotocol/computing-api/computing/deploy"
 	"github.com/gridprotocol/computing-api/computing/gateway"
 	"github.com/gridprotocol/computing-api/computing/model"
 	"github.com/gridprotocol/computing-api/lib/logc"
 
 	"github.com/gin-gonic/gin"
+
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 var logger = logc.Logger("http")
@@ -262,8 +265,15 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		logger.Debug("deploying app")
 		// deploy with remote yaml file
-		err = hc.gw.Deploy(addr, yaml, isLocal)
+		var deps []*appsv1.Deployment
+		deps, err = hc.gw.Deploy(addr, yaml, isLocal)
 		if err != nil {
+			// clean all failed deployments from k8s
+			for _, dep := range deps {
+				// todo: what if delete failed
+				_ = deploy.CleanDeploy(dep.Name)
+			}
+
 			msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
 			return
@@ -318,8 +328,15 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		logger.Info("yaml path from id:", p)
 
 		// deploy with local yaml path
-		err = hc.gw.Deploy(addr, p, true)
+		var deps []*appsv1.Deployment
+		deps, err = hc.gw.Deploy(addr, p, true)
 		if err != nil {
+			// clean all deployments from k8s if error happend when deploy
+			for _, dep := range deps {
+				// todo: what if delete failed
+				_ = deploy.CleanDeploy(dep.Name)
+			}
+
 			msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
 			return

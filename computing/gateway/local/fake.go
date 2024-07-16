@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gridprotocol/computing-api/computing/model"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 type FakeImplementofLocalProcess struct {
@@ -36,10 +37,10 @@ func (filp *FakeImplementofLocalProcess) Authorize(user string, lease model.Leas
 	return nil
 }
 
-func (filp *FakeImplementofLocalProcess) Deploy(user string, task string, local bool) error {
+func (filp *FakeImplementofLocalProcess) Deploy(user string, task string, local bool) ([]*appsv1.Deployment, error) {
 	key := prefixKey(user, entrancePrefix)
 	filp.put(string(key), task)
-	return nil
+	return nil, nil
 }
 
 func (filp *FakeImplementofLocalProcess) GetEntrance(user string) (string, error) {

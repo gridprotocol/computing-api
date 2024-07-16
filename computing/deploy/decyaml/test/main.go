@@ -37,10 +37,16 @@ func main() {
 	//------- k8s operations
 	// deploy with yaml file and create a nodePort service for it
 	fmt.Println("deploying and create service")
-	ep, err := deploy.Deploy("./hello.yaml")
+	ep, deps, err := deploy.Deploy("./hello.yaml")
 	if err != nil {
 		panic(err)
 	}
+
+	// show all deployments' name
+	for _, dep := range deps {
+		fmt.Println("deployment name: ", dep.Name)
+	}
+
 	fmt.Println("deployment ok, nodePort service is created:")
 	fmt.Printf("public ips: %s\n", ep.IPs)
 	fmt.Printf("node port: %d\n", ep.NodePort)
