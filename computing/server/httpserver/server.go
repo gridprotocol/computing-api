@@ -276,7 +276,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		logger.Debug("deploying app")
 		// deploy with remote yaml file
-		deps, err = hc.gw.Deploy(addr, deps, svcs, isLocal)
+		err = hc.gw.Deploy(addr, deps, svcs, isLocal)
 		if err != nil {
 			// clean all failed deployments from k8s
 			for _, dep := range deps {
@@ -345,7 +345,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 
 		// deploy with local yaml file data
-		deps, err = hc.gw.Deploy(addr, deps, svcs, true)
+		err = hc.gw.Deploy(addr, deps, svcs, true)
 		if err != nil {
 			// clean all deployments from k8s if error happend when deploy
 			for _, dep := range deps {

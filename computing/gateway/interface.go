@@ -21,7 +21,7 @@ type GatewayLocalProcessAPI interface {
 	AssessPower() model.Resources
 	//CalculateReward()
 	Authorize(user string, lease model.Lease) error
-	Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service, local bool) ([]*appsv1.Deployment, error)
+	Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service, local bool) error
 	GetEntrance(user string) (string, error)
 	Terminate(user string) error
 	Close() error

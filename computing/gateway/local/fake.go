@@ -38,10 +38,10 @@ func (filp *FakeImplementofLocalProcess) Authorize(user string, lease model.Leas
 	return nil
 }
 
-func (filp *FakeImplementofLocalProcess) Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service, local bool) ([]*appsv1.Deployment, error) {
+func (filp *FakeImplementofLocalProcess) Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service, local bool) error {
 	//key := prefixKey(user, entrancePrefix)
 	//filp.put(string(key), task)
-	return nil, nil
+	return nil
 }
 
 func (filp *FakeImplementofLocalProcess) GetEntrance(user string) (string, error) {
