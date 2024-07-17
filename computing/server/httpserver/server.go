@@ -191,7 +191,11 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		// provider confirm this order after all check passed
 		logger.Debug("provider confirming")
-		hc.gw.ProviderConfirm(user)
+		err := hc.gw.ProviderConfirm(user)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] confirm failed:%s", err.Error())})
+			return
+		}
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] provider confirm ok"})
 
