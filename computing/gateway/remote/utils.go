@@ -1,9 +1,7 @@
 package remote
 
 import (
-	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/grid/contracts/go/market"
 )
@@ -36,13 +34,13 @@ func orderValue(order market.MarketOrder) *big.Int {
 	return total
 }
 
-// seconds to time
-func bigIntToTime(bigInt *big.Int) (time.Time, error) {
-	// 假设big.Int是秒数，转换为time.Time
-	seconds := bigInt.Int64()
-	if seconds < int64(time.Second) || seconds > int64((^uint(0)>>1)) {
-		return time.Time{}, fmt.Errorf("big.Int value is out of range for time.Time")
-	}
+// // seconds to time
+// func bigIntToTime(bigInt *big.Int) (time.Time, error) {
+// 	// 假设big.Int是秒数，转换为time.Time
+// 	seconds := bigInt.Int64()
+// 	if seconds < int64(time.Second) || seconds > int64((^uint(0)>>1)) {
+// 		return time.Time{}, fmt.Errorf("big.Int value is out of range for time.Time")
+// 	}
 
-	return time.Unix(seconds, 0), nil
-}
+// 	return time.Unix(seconds, 0), nil
+// }

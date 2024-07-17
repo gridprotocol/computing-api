@@ -253,6 +253,7 @@ func (grp *GatewayRemoteProcess) Settle() error {
 
 func (grp *GatewayRemoteProcess) settle(signer interface{}) error {
 	// sign a transaction to retrieve remuneration
+	_ = signer
 	return nil
 }
 

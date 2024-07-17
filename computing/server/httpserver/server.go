@@ -18,8 +18,6 @@ import (
 	"github.com/gridprotocol/computing-api/lib/logc"
 
 	"github.com/gin-gonic/gin"
-
-	appsv1 "k8s.io/api/apps/v1"
 )
 
 var logger = logc.Logger("http")
@@ -122,6 +120,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 	// get cp address from config file
 	cp := config.GetConfig().Addr.Addr
+
+	logger.Debug("user:"+user, " cp:"+cp)
 
 	// get order info with params
 	orderInfo, err := hc.gw.GetOrder(user, cp)
@@ -267,10 +267,16 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			isLocal = false
 		}
 
+		// parse yaml into deps and svcs
+		deps, svcs, err := deploy.ParseYaml(yaml)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("parse yaml failed:%s", err.Error())})
+			return
+		}
+
 		logger.Debug("deploying app")
 		// deploy with remote yaml file
-		var deps []*appsv1.Deployment
-		deps, err = hc.gw.Deploy(addr, yaml, isLocal)
+		deps, err = hc.gw.Deploy(addr, deps, svcs, isLocal)
 		if err != nil {
 			// clean all failed deployments from k8s
 			for _, dep := range deps {
@@ -331,9 +337,15 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		logger.Info("yaml path from id:", p)
 
-		// deploy with local yaml path
-		var deps []*appsv1.Deployment
-		deps, err = hc.gw.Deploy(addr, p, true)
+		// parse yaml into deps and svcs
+		deps, svcs, err := deploy.ParseYaml(p)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("parse yaml failed:%s", err.Error())})
+			return
+		}
+
+		// deploy with local yaml file data
+		deps, err = hc.gw.Deploy(addr, deps, svcs, true)
 		if err != nil {
 			// clean all deployments from k8s if error happend when deploy
 			for _, dep := range deps {
@@ -346,7 +358,33 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
+
+		// activate order
+	case "6":
+		// already activated
+		if orderInfo.Status == 2 {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Note] order already activated"})
+			return
+		}
+
+		// check order status
+		if orderInfo.Status != 1 {
+			var status string
+			switch orderInfo.Status {
+			case 0:
+				status = "order not exist"
+			case 3:
+				status = "order cancelled"
+			case 4:
+				status = "order completed"
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] only unactive order can be activated, current order status:" + status})
+			return
+		}
+
 		logger.Debug("activating order")
+
 		// activate this order after app deployed
 		err = hc.gw.Activate(user)
 		if err != nil {
@@ -355,7 +393,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok, order activated"})
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order activated"})
 
 	// illegal type
 	default:

@@ -8,7 +8,9 @@ import (
 	"github.com/gridprotocol/computing-api/computing/model"
 	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
+
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 var logger = logc.Logger("local")
@@ -107,18 +109,17 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 // (flexiable, enable image change in the future, describe in the task file)
 // TODO: 1. consider the edge case: already deployed, but fail to put into database
 // TODO: 2. user -> lease -> resources -> yaml, which limits the resources a deployment uses
-func (glp *GatewayLocalProcess) Deploy(user string, yaml string, local bool) ([]*appsv1.Deployment, error) {
+func (glp *GatewayLocalProcess) Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service, local bool) ([]*appsv1.Deployment, error) {
 	// k8s deploy service
 
 	var ep *deploy.EndPoint
 	var err error
-	var deps []*appsv1.Deployment
 
 	// deploy with yaml and create NodePort service
 	if local {
-		ep, deps, err = deploy.DeployLocal(yaml)
+		ep, err = deploy.DeployLocal(deps, svcs)
 	} else {
-		ep, deps, err = deploy.Deploy(yaml)
+		ep, deps, err = deploy.Deploy("")
 	}
 	if err != nil {
 		logger.Error("fail to deploy: ", err)

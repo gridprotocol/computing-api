@@ -80,7 +80,7 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 			return &proto.GreetFromServer{Result: "[Fail] user is not authorized"}, nil
 		}
 		// 'true' for url deploy, 'false' for local
-		es.gw.Deploy(addr, yamlUrl, true)
+		//es.gw.Deploy(addr, yamlUrl, true)
 		return &proto.GreetFromServer{Result: "[ACK] deployed ok"}, nil
 	default:
 		logger.Debug("Greet - unsupported type")

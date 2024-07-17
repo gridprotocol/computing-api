@@ -23,36 +23,27 @@ type EndPoint struct {
 	NodePort int32    // node port of NodePort service
 }
 
-// deploy apps and services from a local file
-func DeployLocal(filepath string) (*EndPoint, []*appsv1.Deployment, error) {
+// deploy apps
+func DeployLocal(deps []*appsv1.Deployment, svcs []*corev1.Service) (*EndPoint, error) {
 	// get k8s service
 	k8s := docker.NewK8sService()
 
-	fmt.Println("reading file:", filepath)
-
-	// read yaml file into bytes
-	data, err := decyaml.ReadYamlFile(filepath)
-	if err != nil {
-		return nil, nil, err
+	// check if any svc exists
+	for _, dep := range deps {
+		svcName := fmt.Sprintf("svc-%s", dep.Name)
+		result, _ := k8s.GetServiceByName(context.Background(), "default", svcName, metav1.GetOptions{})
+		if result.Name == svcName {
+			logger.Debug("svc exists")
+			return nil, fmt.Errorf("svc exists:%s, deploy cancelled", svcName)
+		}
 	}
-
-	//------- k8s operations
-
-	logger.Debug("decoding yaml to obj")
-	// parse yaml data into deployments and services
-	deps, svcs, err := decyaml.ParseYaml(data)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	logger.Debug("parse yaml ok")
 
 	// create all deployments
 	for _, dep := range deps {
 		// the given namespace must match the namespace in the deployment Object
-		_, err = k8s.CreateDeployment(context.Background(), "default", dep)
+		_, err := k8s.CreateDeployment(context.Background(), "default", dep)
 		if err != nil {
-			return nil, deps, err
+			return nil, err
 		}
 	}
 
@@ -64,7 +55,7 @@ func DeployLocal(filepath string) (*EndPoint, []*appsv1.Deployment, error) {
 	// create a node port service with name: svc-appName, port: port
 	npSvc, err := CreateNodePortSvc(deps[0])
 	if err != nil {
-		return nil, deps, err
+		return nil, err
 	}
 	// get svc name
 	svcName := npSvc.GetObjectMeta().GetName()
@@ -79,7 +70,7 @@ func DeployLocal(filepath string) (*EndPoint, []*appsv1.Deployment, error) {
 	for _, d := range deps {
 		isReady, err := WaitReady(d)
 		if err != nil {
-			return nil, deps, err
+			return nil, err
 		}
 		if isReady {
 			allReady = true
@@ -99,9 +90,9 @@ func DeployLocal(filepath string) (*EndPoint, []*appsv1.Deployment, error) {
 			NodePort: npSvc.Spec.Ports[0].NodePort,
 		}
 
-		return ep, deps, nil
+		return ep, nil
 	} else {
-		return nil, deps, fmt.Errorf("deployment is failed to be ready after retrys")
+		return nil, fmt.Errorf("deployment is failed to be ready after retrys")
 	}
 }
 
@@ -248,6 +239,27 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 	// retry timeout
 	return false, nil
 
+}
+
+// pase yaml file into deps and svcs
+func ParseYaml(filepath string) ([]*appsv1.Deployment, []*corev1.Service, error) {
+	logger.Debug("reading file:", filepath)
+
+	// read yaml file into bytes
+	data, err := decyaml.ReadYamlFile(filepath)
+	if err != nil {
+		return nil, nil, err
+	}
+	logger.Debug("decoding yaml to obj")
+
+	// parse yaml data into deployments and services
+	deps, svcs, err := decyaml.ParseYaml(data)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parse yaml failed:%s", err.Error())
+	}
+	logger.Debug("parse yaml ok")
+
+	return deps, svcs, nil
 }
 
 // delete a deployment and it's svc with yaml path

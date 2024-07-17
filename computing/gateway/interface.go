@@ -4,6 +4,7 @@ import (
 	"github.com/grid/contracts/go/market"
 	"github.com/gridprotocol/computing-api/computing/model"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type ComputingGatewayAPI interface {
@@ -20,7 +21,7 @@ type GatewayLocalProcessAPI interface {
 	AssessPower() model.Resources
 	//CalculateReward()
 	Authorize(user string, lease model.Lease) error
-	Deploy(user string, task string, local bool) ([]*appsv1.Deployment, error)
+	Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service, local bool) ([]*appsv1.Deployment, error)
 	GetEntrance(user string) (string, error)
 	Terminate(user string) error
 	Close() error
