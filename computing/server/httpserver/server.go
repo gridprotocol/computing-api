@@ -247,30 +247,19 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// deploy with local filepath or remote file url
 		var isLocal = false
 
-		// yaml from local filepath
-		localfile := c.Query("local")
-		remotefile := c.Query("remote")
-		var yaml string
+		// yaml url
+		url := c.Query("url")
 
-		// missing yaml
-		if len(localfile) == 0 && len(remotefile) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml resource in request"})
+		// missing url
+		if len(url) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml url in request"})
 			return
 		}
 
-		// if local is set
-		if len(localfile) != 0 {
-			yaml = localfile
-			isLocal = true
-		} else {
-			yaml = remotefile
-			isLocal = false
-		}
-
-		// parse yaml into deps and svcs
-		deps, svcs, err := deploy.ParseYaml(yaml)
+		// parse url into deps and svcs
+		deps, svcs, err := deploy.ParseYamlUrl(url)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("parse yaml failed:%s", err.Error())})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("parse yaml url failed:%s", err.Error())})
 			return
 		}
 
@@ -289,16 +278,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		logger.Debug("activating order")
-		// activate this order after app deployed
-		err = hc.gw.Activate(user)
-		if err != nil {
-			msg := fmt.Sprintf("[Fail] Failed to activate: %s", err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok, order activated"})
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy from url ok"})
 
 	// deploy by id
 	case "5":
@@ -358,7 +338,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deployed ok"})
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy from file ok"})
 
 		// activate order
 	case "6":

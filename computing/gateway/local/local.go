@@ -115,14 +115,9 @@ func (glp *GatewayLocalProcess) Deploy(user string, deps []*appsv1.Deployment, s
 	var ep *deploy.EndPoint
 	var err error
 
-	// deploy with yaml and create NodePort service
-	if local {
-		// for local data
-		ep, err = deploy.DeployLocal(deps, svcs)
-	} else {
-		// for data from url
-		//ep, deps, err = deploy.Deploy("")
-	}
+	// deploy and create NodePort service
+	ep, err = deploy.Deploy(deps, svcs)
+
 	if err != nil {
 		logger.Error("fail to deploy: ", err)
 		return err

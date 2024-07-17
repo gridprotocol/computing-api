@@ -24,7 +24,7 @@ type EndPoint struct {
 }
 
 // deploy apps
-func DeployLocal(deps []*appsv1.Deployment, svcs []*corev1.Service) (*EndPoint, error) {
+func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service) (*EndPoint, error) {
 	// get k8s service
 	k8s := docker.NewK8sService()
 
@@ -96,88 +96,6 @@ func DeployLocal(deps []*appsv1.Deployment, svcs []*corev1.Service) (*EndPoint, 
 	}
 }
 
-// deploy apps and services from a yaml file in remote url
-func Deploy(url string) (*EndPoint, []*appsv1.Deployment, error) {
-	// get k8s service
-	k8s := docker.NewK8sService()
-
-	fmt.Println("reading url:", url)
-
-	// doawnload yaml url into bytes
-	data, err := decyaml.ReadYamlUrl(url)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	//------- k8s operations
-
-	logger.Debug("decoding yaml to obj")
-	// parse yaml data into deployments and services
-	deps, svcs, err := decyaml.ParseYaml(data)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	logger.Debug("parse yaml ok")
-
-	// create all deployments
-	for _, dep := range deps {
-		// the given namespace must match the namespace in the deployment Object
-		_, err = k8s.CreateDeployment(context.Background(), "default", dep)
-		if err != nil {
-			return nil, deps, err
-		}
-	}
-
-	// create all services
-	for _, svc := range svcs {
-		k8s.Clientset.CoreV1().Services("default").Create(context.Background(), svc, metav1.CreateOptions{})
-	}
-
-	// create a node port service with name: svc-appName, port: port
-	npSvc, err := CreateNodePortSvc(deps[0])
-	if err != nil {
-		return nil, deps, err
-	}
-	// get svc name
-	svcName := npSvc.GetObjectMeta().GetName()
-	fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
-		svcName,
-		npSvc.Spec.Ports[0].Port,
-		npSvc.Spec.Ports[0].TargetPort.IntVal,
-		npSvc.Spec.Ports[0].NodePort)
-
-	// wait for all deployments to be ready
-	var allReady bool
-	for _, d := range deps {
-		isReady, err := WaitReady(d)
-		if err != nil {
-			return nil, nil, err
-		}
-		if isReady {
-			allReady = true
-			continue
-		} else {
-			allReady = false
-			break
-		}
-	}
-
-	// if all apps is ready, return service endpoint
-	if allReady {
-		fmt.Println("all app is ready")
-		// endpoint of service
-		ep := &EndPoint{
-			IPs:      npSvc.Spec.ExternalIPs,
-			NodePort: npSvc.Spec.Ports[0].NodePort,
-		}
-
-		return ep, deps, nil
-	} else {
-		return nil, deps, fmt.Errorf("deployment is failed to be ready after retrys")
-	}
-}
-
 // create a node port service for a deployment
 func CreateNodePortSvc(d *appsv1.Deployment) (svc *corev1.Service, err error) {
 	// get deployment name
@@ -241,7 +159,7 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 
 }
 
-// pase yaml file into deps and svcs
+// pase local yaml file into deps and svcs
 func ParseYaml(filepath string) ([]*appsv1.Deployment, []*corev1.Service, error) {
 	logger.Debug("reading file:", filepath)
 
@@ -259,6 +177,29 @@ func ParseYaml(filepath string) ([]*appsv1.Deployment, []*corev1.Service, error)
 	}
 	logger.Debug("parse yaml ok")
 
+	return deps, svcs, nil
+}
+
+// pase yaml file with url into deps and svcs
+func ParseYamlUrl(url string) ([]*appsv1.Deployment, []*corev1.Service, error) {
+	fmt.Println("reading url:", url)
+
+	// doawnload yaml url into bytes
+	data, err := decyaml.ReadYamlUrl(url)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	//------- k8s operations
+
+	logger.Debug("decoding yaml to obj")
+	// parse yaml data into deployments and services
+	deps, svcs, err := decyaml.ParseYaml(data)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logger.Debug("parse yaml ok")
 	return deps, svcs, nil
 }
 
