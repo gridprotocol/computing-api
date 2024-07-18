@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/name: nginx-example
+    app/clean: label-for-clean
   name: nginx
 spec:
   replicas: 1

@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: ubuntu-example
+    app/clean: label-for-clean
   name: ubuntu
 spec:
   replicas: 1

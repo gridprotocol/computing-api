@@ -1,10 +1,6 @@
 #!/bin/bash
 
-kubectl delete deploy hello-world --now
-kubectl delete svc svc-hello-world
+#kubectl delete deployment --all -l app/clean=label-for-clean
 
-kubectl delete deploy nginx --now
-kubectl delete svc svc-nginx
-
-kubectl delete deploy ubuntu --now
-kubectl delete svc svc-ubuntu
+kubectl delete deploy --all
+kubectl delete svc --all

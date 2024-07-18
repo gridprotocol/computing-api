@@ -38,13 +38,12 @@ func main() {
 	deps, svcs, err := deploy.ParseYamlFile("./hello.yaml")
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	//------- k8s operations
 	// deploy with yaml file and create a nodePort service for it
 	fmt.Println("deploying and create service")
-	ep, err := deploy.Deploy(deps, svcs)
+	ep, err := deploy.Deploy(deps, svcs, "userAddr")
 	if err != nil {
 		panic(err)
 	}

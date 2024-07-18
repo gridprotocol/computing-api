@@ -261,7 +261,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		logger.Debug("deploying app")
 		// deploy with remote yaml file
-		err = hc.gw.Deploy(addr, deps, svcs)
+		err = hc.gw.Deploy(deps, svcs, addr)
 		if err != nil {
 			// clean all failed deployments from k8s
 			for _, dep := range deps {
@@ -295,7 +295,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		logger.Info("cookie check passed")
+		logger.Info("cookie check passed, addr:", addr)
 
 		// if no remote yaml is provided either, response error
 		if len(yamlID) == 0 {
@@ -321,7 +321,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 
 		// deploy with local yaml file data
-		err = hc.gw.Deploy(addr, deps, svcs)
+		err = hc.gw.Deploy(deps, svcs, addr)
 		if err != nil {
 			// clean all deployments from k8s if error happend when deploy
 			for _, dep := range deps {

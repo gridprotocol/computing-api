@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/name: load-balancer-example
+    app/clean: label-for-clean
   name: hello-world
 spec:
   replicas: 1

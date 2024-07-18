@@ -24,18 +24,27 @@ type EndPoint struct {
 }
 
 // deploy apps
-func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service) (*EndPoint, error) {
+func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string) (*EndPoint, error) {
 	// get k8s service
 	k8s := docker.NewK8sService()
 
-	// check if any svc exists
+	if len(deps) == 0 {
+		return nil, fmt.Errorf("no deployment passed in")
+	}
+
+	// append user address for each dep and svc to prevent object name conflict
 	for _, dep := range deps {
-		svcName := fmt.Sprintf("svc-%s", dep.Name)
-		result, _ := k8s.GetServiceByName(context.Background(), "default", svcName, metav1.GetOptions{})
-		if result.Name == svcName {
-			logger.Debug("svc exists")
-			return nil, fmt.Errorf("svc exists:%s, deploy cancelled", svcName)
-		}
+		// append user address to dep name
+		dep.Name = fmt.Sprintf("%s-%s", dep.Name, user)
+	}
+
+	// check if svc exists for the first deploy
+	dep0 := deps[0]
+	svcName := fmt.Sprintf("svc-%s", dep0.Name)
+	result, _ := k8s.GetServiceByName(context.Background(), "default", svcName, metav1.GetOptions{})
+	if result.Name == svcName {
+		logger.Debug("svc exists")
+		return nil, fmt.Errorf("svc exists:%s, deploy cancelled", svcName)
 	}
 
 	// create all deployments
@@ -52,13 +61,13 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service) (*EndPoint, error
 		k8s.Clientset.CoreV1().Services("default").Create(context.Background(), svc, metav1.CreateOptions{})
 	}
 
-	// create a node port service with name: svc-appName, port: port
+	// create a node port service for the first dep with name: svc-appName, port: port
 	npSvc, err := CreateNodePortSvc(deps[0])
 	if err != nil {
 		return nil, err
 	}
 	// get svc name
-	svcName := npSvc.GetObjectMeta().GetName()
+	svcName = npSvc.GetObjectMeta().GetName()
 	fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
 		svcName,
 		npSvc.Spec.Ports[0].Port,
@@ -168,7 +177,7 @@ func ParseYamlFile(filepath string) ([]*appsv1.Deployment, []*corev1.Service, er
 	if err != nil {
 		return nil, nil, err
 	}
-	logger.Debug("decoding yaml to obj")
+	logger.Debug("decoding yaml to objs")
 
 	// parse yaml data into deployments and services
 	deps, svcs, err := decyaml.ParseYaml(data)
