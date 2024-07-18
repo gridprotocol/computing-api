@@ -314,7 +314,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		logger.Info("yaml path from id:", p)
 
 		// parse yaml into deps and svcs
-		deps, svcs, err := deploy.ParseYaml(p)
+		deps, svcs, err := deploy.ParseYamlFile(p)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("parse yaml failed:%s", err.Error())})
 			return

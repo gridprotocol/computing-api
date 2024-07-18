@@ -35,7 +35,7 @@ func main() {
 	// }
 
 	// parse yaml into deps and svcs
-	deps, svcs, err := deploy.ParseYaml("./hello.yaml")
+	deps, svcs, err := deploy.ParseYamlFile("./hello.yaml")
 	if err != nil {
 		panic(err)
 		return

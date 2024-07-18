@@ -160,7 +160,7 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 }
 
 // pase local yaml file into deps and svcs
-func ParseYaml(filepath string) ([]*appsv1.Deployment, []*corev1.Service, error) {
+func ParseYamlFile(filepath string) ([]*appsv1.Deployment, []*corev1.Service, error) {
 	logger.Debug("reading file:", filepath)
 
 	// read yaml file into bytes
