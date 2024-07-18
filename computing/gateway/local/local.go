@@ -109,7 +109,7 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 // (flexiable, enable image change in the future, describe in the task file)
 // TODO: 1. consider the edge case: already deployed, but fail to put into database
 // TODO: 2. user -> lease -> resources -> yaml, which limits the resources a deployment uses
-func (glp *GatewayLocalProcess) Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service, local bool) error {
+func (glp *GatewayLocalProcess) Deploy(user string, deps []*appsv1.Deployment, svcs []*corev1.Service) error {
 	// k8s deploy service
 
 	var ep *deploy.EndPoint

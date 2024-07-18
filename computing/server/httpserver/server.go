@@ -241,11 +241,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"err": msg})
 			return
 		}
-
 		logger.Info("cookie check passed")
-
-		// deploy with local filepath or remote file url
-		var isLocal = false
 
 		// yaml url
 		url := c.Query("url")
@@ -265,7 +261,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		logger.Debug("deploying app")
 		// deploy with remote yaml file
-		err = hc.gw.Deploy(addr, deps, svcs, isLocal)
+		err = hc.gw.Deploy(addr, deps, svcs)
 		if err != nil {
 			// clean all failed deployments from k8s
 			for _, dep := range deps {
@@ -325,7 +321,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 
 		// deploy with local yaml file data
-		err = hc.gw.Deploy(addr, deps, svcs, true)
+		err = hc.gw.Deploy(addr, deps, svcs)
 		if err != nil {
 			// clean all deployments from k8s if error happend when deploy
 			for _, dep := range deps {
