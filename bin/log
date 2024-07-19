@@ -1,77 +1,13 @@
-{"level":"DEBUG","time":"2024-07-18T17:01:03+08:00","sub":"remote","caller":"remote/remote.go:26","msg":"load addresses"}
-{"level":"DEBUG","time":"2024-07-18T17:01:03+08:00","sub":"remote","caller":"remote/remote.go:30","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
-{"level":"DEBUG","time":"2024-07-18T17:01:03+08:00","sub":"http","caller":"httpserver/server.go:38","msg":"load addresses"}
-{"level":"DEBUG","time":"2024-07-18T17:01:03+08:00","sub":"http","caller":"httpserver/server.go:42","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
-2024/07/18 17:01:03 Current Version: 0.3.2+6b17dba+2024-07-18.17:00:48CST
-badger 2024/07/18 17:01:03 INFO: All 1 tables opened in 0s
-badger 2024/07/18 17:01:03 INFO: Replaying file id: 0 at offset: 608
-badger 2024/07/18 17:01:03 INFO: Replay took: 17.875µs
-{"level":"INFO","time":"2024-07-18T17:01:03+08:00","sub":"http","caller":"httpserver/server.go:60","msg":"Starting server"}
-{"level":"INFO","time":"2024-07-18T17:01:03+08:00","sub":"http","caller":"httpserver/server.go:77","msg":"create new router ok"}
-{"level":"DEBUG","time":"2024-07-18T17:01:13+08:00","sub":"http","caller":"httpserver/server.go:124","msg":"user: cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-{"level":"DEBUG","time":"2024-07-18T17:01:13+08:00","sub":"remote","caller":"remote/remote.go:264","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-07-18T17:01:13+08:00","sub":"http","caller":"httpserver/server.go:133","msg":"order info:&{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 {0 0 0 0} {0 0 0 0} 0 0 0 false false 0 0 0 0 0}"}
-{"level":"INFO","time":"2024-07-18T17:01:13+08:00","sub":"http","caller":"httpserver/server.go:298","msg":"cookie check passed, addr:0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06"}
-{"level":"INFO","time":"2024-07-18T17:01:13+08:00","sub":"http","caller":"httpserver/server.go:314","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:01:13+08:00","sub":"deploy","caller":"deploy/deploy.go:173","msg":"reading file:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:01:13+08:00","sub":"deploy","caller":"deploy/deploy.go:180","msg":"decoding yaml to objs"}
-{"level":"DEBUG","time":"2024-07-18T17:01:13+08:00","sub":"deploy","caller":"deploy/deploy.go:187","msg":"parse yaml ok"}
-app name: nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06
-nodePort service is created.
-service name: svc-nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06
-port:8081
-targetPort:8081
-NodePort: 31264
-{"level":"DEBUG","time":"2024-07-18T17:01:17+08:00","sub":"deploy","caller":"deploy/deploy.go:153","msg":"deployment is ready."}
-all app is ready
-entrance: http://localhost:31264
-[GIN] 2024/07/18 - 17:01:17 | 200 |  4.269291958s |             ::1 | GET      "/greet?type=5&id=1"
-{"level":"DEBUG","time":"2024-07-18T17:13:27+08:00","sub":"http","caller":"httpserver/server.go:124","msg":"user: cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-{"level":"DEBUG","time":"2024-07-18T17:13:27+08:00","sub":"remote","caller":"remote/remote.go:264","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-07-18T17:13:27+08:00","sub":"http","caller":"httpserver/server.go:133","msg":"order info:&{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 {0 0 0 0} {0 0 0 0} 0 0 0 false false 0 0 0 0 0}"}
-{"level":"INFO","time":"2024-07-18T17:13:27+08:00","sub":"http","caller":"httpserver/server.go:298","msg":"cookie check passed, addr:0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06"}
-{"level":"INFO","time":"2024-07-18T17:13:27+08:00","sub":"http","caller":"httpserver/server.go:314","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:13:27+08:00","sub":"deploy","caller":"deploy/deploy.go:173","msg":"reading file:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:13:27+08:00","sub":"deploy","caller":"deploy/deploy.go:180","msg":"decoding yaml to objs"}
-{"level":"DEBUG","time":"2024-07-18T17:13:27+08:00","sub":"deploy","caller":"deploy/deploy.go:187","msg":"parse yaml ok"}
-app name: nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06
-nodePort service is created.
-service name: svc-nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06
-port:8081
-targetPort:8081
-NodePort: 30128
-{"level":"DEBUG","time":"2024-07-18T17:13:31+08:00","sub":"deploy","caller":"deploy/deploy.go:153","msg":"deployment is ready."}
-all app is ready
-entrance: http://localhost:30128
-[GIN] 2024/07/18 - 17:13:31 | 200 |  4.237763375s |             ::1 | GET      "/greet?type=5&id=1"
-{"level":"DEBUG","time":"2024-07-18T17:14:30+08:00","sub":"http","caller":"httpserver/server.go:124","msg":"user: cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-{"level":"DEBUG","time":"2024-07-18T17:14:30+08:00","sub":"remote","caller":"remote/remote.go:264","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-07-18T17:14:30+08:00","sub":"http","caller":"httpserver/server.go:133","msg":"order info:&{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 {0 0 0 0} {0 0 0 0} 0 0 0 false false 0 0 0 0 0}"}
-{"level":"INFO","time":"2024-07-18T17:14:30+08:00","sub":"http","caller":"httpserver/server.go:298","msg":"cookie check passed, addr:0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06"}
-{"level":"INFO","time":"2024-07-18T17:14:30+08:00","sub":"http","caller":"httpserver/server.go:314","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:14:30+08:00","sub":"deploy","caller":"deploy/deploy.go:173","msg":"reading file:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:14:30+08:00","sub":"deploy","caller":"deploy/deploy.go:180","msg":"decoding yaml to objs"}
-{"level":"DEBUG","time":"2024-07-18T17:14:30+08:00","sub":"deploy","caller":"deploy/deploy.go:187","msg":"parse yaml ok"}
-app name: nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06
-nodePort service is created.
-service name: svc-nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06
-port:8081
-targetPort:8081
-NodePort: 30338
-{"level":"DEBUG","time":"2024-07-18T17:14:35+08:00","sub":"deploy","caller":"deploy/deploy.go:153","msg":"deployment is ready."}
-all app is ready
-entrance: http://localhost:30338
-[GIN] 2024/07/18 - 17:14:35 | 200 |  5.153918542s |             ::1 | GET      "/greet?type=5&id=1"
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"http","caller":"httpserver/server.go:124","msg":"user: cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"remote","caller":"remote/remote.go:264","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"http","caller":"httpserver/server.go:133","msg":"order info:&{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 {0 0 0 0} {0 0 0 0} 0 0 0 false false 0 0 0 0 0}"}
-{"level":"INFO","time":"2024-07-18T17:15:03+08:00","sub":"http","caller":"httpserver/server.go:298","msg":"cookie check passed, addr:0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06"}
-{"level":"INFO","time":"2024-07-18T17:15:03+08:00","sub":"http","caller":"httpserver/server.go:314","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"deploy","caller":"deploy/deploy.go:173","msg":"reading file:./yamls/nginx.yaml"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"deploy","caller":"deploy/deploy.go:180","msg":"decoding yaml to objs"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"deploy","caller":"deploy/deploy.go:187","msg":"parse yaml ok"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"deploy","caller":"deploy/deploy.go:46","msg":"svc exists"}
-{"level":"ERROR","time":"2024-07-18T17:15:03+08:00","sub":"local","caller":"local/local.go:122","msg":"fail to deploy: svc exists:svc-nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06, deploy cancelled"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"deploy","caller":"deploy/deploy.go:221","msg":"delete dep: nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06"}
-{"level":"DEBUG","time":"2024-07-18T17:15:03+08:00","sub":"deploy","caller":"deploy/deploy.go:228","msg":"delete svc: svc-nginx-0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06"}
-[GIN] 2024/07/18 - 17:15:03 | 500 |   67.843041ms |             ::1 | GET      "/greet?type=5&id=1"
+{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"remote","caller":"remote/remote.go:26","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"remote","caller":"remote/remote.go:30","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
+{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:38","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:42","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
+2024/07/19 14:41:45 Current Version: 0.3.2+d1a9c03+2024-07-19.14:37:23CST
+badger 2024/07/19 14:41:45 INFO: All 1 tables opened in 0s
+badger 2024/07/19 14:41:45 INFO: Replaying file id: 0 at offset: 608
+badger 2024/07/19 14:41:45 INFO: Replay took: 22.834µs
+{"level":"INFO","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:60","msg":"Starting server"}
+{"level":"INFO","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:77","msg":"create new router ok"}
+{"level":"DEBUG","time":"2024-07-19T14:41:51+08:00","sub":"http","caller":"httpserver/server.go:124","msg":"user: cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
+{"level":"DEBUG","time":"2024-07-19T14:41:52+08:00","sub":"remote","caller":"remote/remote.go:266","msg":"chain id:11155111"}
+[GIN] 2024/07/19 - 14:41:53 | 400 |  2.490614166s |             ::1 | GET      "/greet?type=5&id=1"

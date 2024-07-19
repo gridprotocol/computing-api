@@ -37,12 +37,14 @@ func init() {
 }
 
 type GatewayRemoteProcess struct {
-	wallet string
+	chain_endpoint string
+	wallet         string
 }
 
-func NewGatewayRemoteProcess() *GatewayRemoteProcess {
+func NewGatewayRemoteProcess(ep string) *GatewayRemoteProcess {
 	return &GatewayRemoteProcess{
-		wallet: config.GetConfig().Remote.Wallet,
+		chain_endpoint: ep,
+		wallet:         config.GetConfig().Remote.Wallet,
 	}
 }
 
@@ -88,7 +90,7 @@ func (grp *GatewayRemoteProcess) StaticCheck(orderInfo market.MarketOrder) (bool
 // provider confirm an order
 func (grp *GatewayRemoteProcess) ProviderConfirm(user string) error {
 	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
 
 	// get contract instance
@@ -114,12 +116,12 @@ func (grp *GatewayRemoteProcess) ProviderConfirm(user string) error {
 	}
 
 	logger.Debug("waiting for tx to be ok")
-	err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
 	if err != nil {
 		return err
 	}
 
-	receipt := eth.GetTransactionReceipt(eth.Endpoint, tx.Hash())
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
 	logger.Debug("provider confirm order gas used:", receipt.GasUsed)
 
 	// verify
@@ -138,7 +140,7 @@ func (grp *GatewayRemoteProcess) ProviderConfirm(user string) error {
 func (grp *GatewayRemoteProcess) Activate(user string) error {
 
 	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
 
 	// get contract instance
@@ -162,12 +164,12 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	}
 
 	logger.Debug("waiting for tx to be ok")
-	err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
 	if err != nil {
 		return err
 	}
 
-	receipt := eth.GetTransactionReceipt(eth.Endpoint, tx.Hash())
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
 	logger.Debug("activate order gas used:", receipt.GasUsed)
 
 	// get order
@@ -260,7 +262,7 @@ func (grp *GatewayRemoteProcess) settle(signer interface{}) error {
 // get an order with user and cp
 func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.MarketOrder, error) {
 	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
 
 	// get market instance

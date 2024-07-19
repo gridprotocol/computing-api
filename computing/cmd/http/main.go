@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/grid/contracts/eth"
 	"github.com/gridprotocol/computing-api/common/version"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/gateway"
@@ -19,11 +20,13 @@ import (
 )
 
 var (
-	test *bool
+	test  *bool
+	chain *string
 )
 
 func checkFlag() {
 	test = flag.Bool("test", false, "deploy or direct forward")
+	chain = flag.String("chain", "local", "select a chain to use, local or sepo")
 }
 
 func main() {
@@ -42,16 +45,27 @@ func main() {
 		log.Fatalf("failed to init the config: %v", err)
 	}
 
-	// remote
-	grp := remote.NewGatewayRemoteProcess()
-	// local
+	// chain select for remote gw
+	var chain_endpoint string
+	switch *chain {
+	case "local":
+		chain_endpoint = eth.Endpoint
+	case "sepo":
+		chain_endpoint = eth.Endpoint2
+	}
+
+	// remote gw
+	grp := remote.NewGatewayRemoteProcess(chain_endpoint)
+	// local gw
 	var glp gateway.GatewayLocalProcessAPI
+	//
 	if *test {
 		glp = local.NewFakeImplementofLocalProcess()
 	} else {
 		glp = local.NewGatewayLocalProcess()
 	}
-	// gw object
+
+	// make a gw object with local process and remote process
 	gw := gateway.NewComputingGateway(glp, grp)
 	defer gw.Close()
 

@@ -36,7 +36,7 @@ func init() {
 	}
 
 	// remote
-	grp := remote.NewGatewayRemoteProcess()
+	grp := remote.NewGatewayRemoteProcess("ep")
 
 	// local
 	var glp gateway.GatewayLocalProcessAPI
