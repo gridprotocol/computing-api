@@ -58,7 +58,8 @@ func main() {
 	grp := remote.NewGatewayRemoteProcess(chain_endpoint)
 	// local gw
 	var glp gateway.GatewayLocalProcessAPI
-	//
+
+	// check for fake
 	if *test {
 		glp = local.NewFakeImplementofLocalProcess()
 	} else {

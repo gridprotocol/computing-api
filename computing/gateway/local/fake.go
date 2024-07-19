@@ -84,3 +84,7 @@ func (filp *FakeImplementofLocalProcess) delete(key string) {
 	defer filp.mu.RUnlock()
 	delete(filp.fakeDB, key)
 }
+
+func (filp *FakeImplementofLocalProcess) Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error {
+	return nil
+}

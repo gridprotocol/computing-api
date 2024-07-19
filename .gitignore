@@ -3,4 +3,4 @@ testdb
 computing-api-rpc
 computing-api
 user-example
-*.log
+log

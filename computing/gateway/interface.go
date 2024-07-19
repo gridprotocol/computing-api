@@ -10,8 +10,6 @@ import (
 type ComputingGatewayAPI interface {
 	GatewayLocalProcessAPI
 	GatewayRemoteProcessAPI
-
-	Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error
 }
 
 // Local function. Processing locally without having to connect to blockchain.
@@ -23,6 +21,8 @@ type GatewayLocalProcessAPI interface {
 	Authorize(user string, lease model.Lease) error
 	Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string) error
 	GetEntrance(user string) (string, error)
+	// compute app after deployed
+	Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error
 	Terminate(user string) error
 	Close() error
 }

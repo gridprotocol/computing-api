@@ -1,13 +1,10 @@
-{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"remote","caller":"remote/remote.go:26","msg":"load addresses"}
-{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"remote","caller":"remote/remote.go:30","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
-{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:38","msg":"load addresses"}
-{"level":"DEBUG","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:42","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
-2024/07/19 14:41:45 Current Version: 0.3.2+d1a9c03+2024-07-19.14:37:23CST
-badger 2024/07/19 14:41:45 INFO: All 1 tables opened in 0s
-badger 2024/07/19 14:41:45 INFO: Replaying file id: 0 at offset: 608
-badger 2024/07/19 14:41:45 INFO: Replay took: 22.834µs
-{"level":"INFO","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:60","msg":"Starting server"}
-{"level":"INFO","time":"2024-07-19T14:41:45+08:00","sub":"http","caller":"httpserver/server.go:77","msg":"create new router ok"}
-{"level":"DEBUG","time":"2024-07-19T14:41:51+08:00","sub":"http","caller":"httpserver/server.go:124","msg":"user: cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-{"level":"DEBUG","time":"2024-07-19T14:41:52+08:00","sub":"remote","caller":"remote/remote.go:266","msg":"chain id:11155111"}
-[GIN] 2024/07/19 - 14:41:53 | 400 |  2.490614166s |             ::1 | GET      "/greet?type=5&id=1"
+{"level":"DEBUG","time":"2024-07-19T15:28:26+08:00","sub":"remote","caller":"remote/remote.go:26","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-07-19T15:28:26+08:00","sub":"remote","caller":"remote/remote.go:30","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
+{"level":"DEBUG","time":"2024-07-19T15:28:26+08:00","sub":"http","caller":"httpserver/server.go:38","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-07-19T15:28:26+08:00","sub":"http","caller":"httpserver/server.go:42","msg":"{Market:0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A Access:0x713909E8E123dbA655A2c0333980e5bE86240f27 Credit:0xaB33F8678833CdB1Abdc7bACbC51B042c0679642 Token: Registry:0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f Swap: Pledge:}\n"}
+2024/07/19 15:28:26 Current Version: 0.3.2+1325532+2024-07-19.15:28:10CST
+badger 2024/07/19 15:28:26 INFO: All 1 tables opened in 0s
+badger 2024/07/19 15:28:26 INFO: Replaying file id: 0 at offset: 608
+badger 2024/07/19 15:28:26 INFO: Replay took: 22.375µs
+{"level":"INFO","time":"2024-07-19T15:28:26+08:00","sub":"http","caller":"httpserver/server.go:60","msg":"Starting server"}
+{"level":"INFO","time":"2024-07-19T15:28:26+08:00","sub":"http","caller":"httpserver/server.go:77","msg":"create new router ok"}
