@@ -3,6 +3,7 @@ package deploy
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gridprotocol/computing-api/computing/deploy/decyaml"
@@ -32,10 +33,13 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string) (*En
 		return nil, fmt.Errorf("no deployment passed in")
 	}
 
+	// user address to lowercase
+	lower := strings.ToLower(user)
+
 	// append user address for each dep and svc to prevent object name conflict
 	for _, dep := range deps {
-		// append user address to dep name
-		dep.Name = fmt.Sprintf("%s-%s", dep.Name, user)
+		// append lower user address to dep name
+		dep.Name = fmt.Sprintf("%s-%s", dep.Name, lower)
 	}
 
 	// check if svc exists for the first deploy
