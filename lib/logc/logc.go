@@ -44,7 +44,7 @@ func init() {
 
 	mLogger = logger.Sugar()
 
-	l := getLogLevel(os.Getenv("GRID_LOG_LEVEL"))
+	l := getLogLevel(os.Getenv("COMPUTE_LOG_LEVEL"))
 	mLoglevel.SetLevel(l)
 }
 
