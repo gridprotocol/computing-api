@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/grid/contracts/eth"
 	"github.com/gridprotocol/computing-api/common/version"
 	"github.com/gridprotocol/computing-api/computing/config"
@@ -17,11 +18,16 @@ import (
 	"github.com/gridprotocol/computing-api/computing/gateway/local"
 	"github.com/gridprotocol/computing-api/computing/gateway/remote"
 	"github.com/gridprotocol/computing-api/computing/server/httpserver"
+	"github.com/gridprotocol/computing-api/lib/logc"
+
+	"github.com/grid/contracts/eth/contracts"
 )
 
 var (
 	test  *bool
 	chain *string
+
+	logger = logc.Logger("main")
 )
 
 func checkFlag() {
@@ -50,8 +56,41 @@ func main() {
 	switch *chain {
 	case "local":
 		chain_endpoint = eth.Endpoint
+
+		// load all addresses from json
+		logger.Debug("load addresses")
+		// loading contracts
+		l := contracts.Local{}
+		l.Load()
+		logger.Debugf("%+v\n", l)
+
+		if l.Market == "" || l.Access == "" || l.Credit == "" || l.Registry == "" {
+			logger.Debug("all contract addresses must exist in json file")
+		}
+		// save address
+		remote.MarketAddr = common.HexToAddress(l.Market)
+		remote.AccessAddr = common.HexToAddress(l.Access)
+		remote.CreditAddr = common.HexToAddress(l.Credit)
+		remote.RegistryAddr = common.HexToAddress(l.Registry)
+
 	case "sepo":
 		chain_endpoint = eth.Endpoint2
+
+		// load all addresses from json
+		logger.Debug("load addresses")
+		// loading contracts
+		s := contracts.Sepo{}
+		s.Load()
+		logger.Debugf("%+v\n", s)
+
+		if s.Market == "" || s.Access == "" || s.Credit == "" || s.Registry == "" {
+			logger.Debug("all contract addresses must exist in json file")
+		}
+		// save address
+		remote.MarketAddr = common.HexToAddress(s.Market)
+		remote.AccessAddr = common.HexToAddress(s.Access)
+		remote.CreditAddr = common.HexToAddress(s.Credit)
+		remote.RegistryAddr = common.HexToAddress(s.Registry)
 	}
 
 	// remote gw

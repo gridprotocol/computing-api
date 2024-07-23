@@ -5,36 +5,27 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/gridprotocol/computing-api/computing/config"
-	"github.com/gridprotocol/computing-api/computing/model"
-	"github.com/gridprotocol/computing-api/lib/logc"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/grid/contracts/eth"
 	"github.com/grid/contracts/go/market"
+	"github.com/gridprotocol/computing-api/computing/config"
+	"github.com/gridprotocol/computing-api/computing/model"
+	"github.com/gridprotocol/computing-api/lib/logc"
 )
 
 var (
+	logger = logc.Logger("remote")
+
 	// market contract addr
 	MarketAddr common.Address
-	logger     = logc.Logger("remote")
+	// access contract address
+	AccessAddr common.Address
+	// credit contract address
+	CreditAddr common.Address
+	// registry contract address
+	RegistryAddr common.Address
 )
-
-// load all addresses from json
-func init() {
-	logger.Debug("load addresses")
-
-	// loading
-	a := eth.Load("../../grid-contracts/eth/contracts.json")
-	logger.Debugf("%+v\n", a)
-
-	if a.Market == "" || a.Access == "" || a.Credit == "" || a.Registry == "" {
-		logger.Debug("all contract addresses must exist in json file")
-	}
-
-	MarketAddr = common.HexToAddress(a.Market)
-}
 
 type GatewayRemoteProcess struct {
 	chain_endpoint string

@@ -8,8 +8,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/grid/contracts/eth"
 	"github.com/gridprotocol/computing-api/common/utils"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/deploy"
@@ -21,33 +19,6 @@ import (
 )
 
 var logger = logc.Logger("http")
-
-var (
-	// market contract addr
-	MarketAddr common.Address
-	// access contract address
-	AccessAddr common.Address
-	// credit contract address
-	CreditAddr common.Address
-	// registry contract address
-	RegistryAddr common.Address
-)
-
-// load all addresses from json
-func init() {
-	logger.Debug("load addresses")
-
-	// loading contracts
-	a := eth.Load("../../grid-contracts/eth/contracts.json")
-	logger.Debugf("%+v\n", a)
-	if a.Market == "" || a.Access == "" || a.Credit == "" || a.Registry == "" {
-		panic("all contract addresses must exist in json file")
-	}
-	MarketAddr = common.HexToAddress(a.Market)
-	AccessAddr = common.HexToAddress(a.Access)
-	CreditAddr = common.HexToAddress(a.Credit)
-	RegistryAddr = common.HexToAddress(a.Registry)
-}
 
 type handlerCore struct {
 	gw  gateway.ComputingGatewayAPI
