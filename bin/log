@@ -54,3 +54,9 @@ badger 2024/07/25 16:12:45 INFO: Replay took: 10.459µs
 {"level":"DEBUG","time":"2024-07-25T16:13:23+08:00","sub":"remote","caller":"remote/remote.go:164","msg":"activate order gas used:86300"}
 {"level":"DEBUG","time":"2024-07-25T16:13:23+08:00","sub":"remote","caller":"remote/remote.go:171","msg":"order status:2"}
 [GIN] 2024/07/25 - 16:13:23 | 200 |  6.136217416s |             ::1 | GET      "/greet?type=6&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+{"level":"DEBUG","time":"2024-07-29T15:05:48+08:00","sub":"http","caller":"httpserver/server.go:95","msg":"user:0x82379862a857C98aB391Fa7F66957AfDE97EF528 cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
+{"level":"DEBUG","time":"2024-07-29T15:05:48+08:00","sub":"remote","caller":"remote/remote.go:257","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-07-29T15:05:48+08:00","sub":"http","caller":"httpserver/server.go:104","msg":"order info:&{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 262695400 262695400 0 false false 0 0 5 123100 1}"}
+{"level":"DEBUG","time":"2024-07-29T15:05:48+08:00","sub":"remote","caller":"remote/remote.go:51","msg":"order value should be: 262695400"}
+{"level":"DEBUG","time":"2024-07-29T15:05:48+08:00","sub":"remote","caller":"remote/remote.go:52","msg":"order total value: 262695400"}
+[GIN] 2024/07/29 - 15:05:48 | 400 |  373.103458ms |             ::1 | GET      "/greet?type=0&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"

@@ -99,6 +99,11 @@ func (grp *GatewayRemoteProcess) ProviderConfirm(user string) error {
 		return err
 	}
 
+	// gas
+	authProvider.GasLimit = 500000
+	// 50 gwei
+	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
+
 	// provider call confirm
 	logger.Debug("provider confirm an order")
 	tx, err := marketIns.ProviderConfirm(authProvider, common.HexToAddress(user))
@@ -142,14 +147,19 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 
 	sk := config.GetConfig().Key.Key
 	// make auth for sending transaction
-	txAuth, err := eth.MakeAuth(chainID, sk)
+	authProvider, err := eth.MakeAuth(chainID, sk)
 	if err != nil {
 		return err
 	}
 
+	// gas
+	authProvider.GasLimit = 500000
+	// 50 gwei
+	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
+
 	// provider call activate with user as param
 	logger.Debug("provider activate an order")
-	tx, err := marketIns.Activate(txAuth, eth.Addr1)
+	tx, err := marketIns.Activate(authProvider, eth.Addr1)
 	if err != nil {
 		return err
 	}
@@ -180,22 +190,6 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 
 // check the order expire
 func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.MarketOrder) (bool, error) {
-
-	// // check status to be active
-	// if orderInfo.Status != 1 {
-	// 	return false, "order not active", nil
-	// }
-
-	// check confirm
-	// if !orderInfo.UserConfirm {
-	// 	return false, "user not confirm", nil
-	// }
-	// if !orderInfo.ProviderConfirm {
-	// 	return false, "provider not confirm", nil
-	// }
-
-	// check order expireation
-
 	activate := orderInfo.ActivateTime
 	probation := orderInfo.Probation
 	duration := orderInfo.Duration
