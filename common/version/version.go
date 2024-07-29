@@ -5,12 +5,12 @@ import (
 	"fmt"
 )
 
-const version = "0.3.3"
+const Version = "0.3.4"
 
 var BuildFlag string
 
 func CurrentVersion() string {
-	return version + "+" + BuildFlag
+	return Version + "+" + BuildFlag
 }
 
 func CheckVersion() bool {
@@ -18,7 +18,7 @@ func CheckVersion() bool {
 	flag.Parse()
 
 	if *check {
-		fmt.Println("Current version: ", version)
+		fmt.Println("Current version: ", Version)
 		fmt.Println("Building info: ", BuildFlag)
 		return true
 	}

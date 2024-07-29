@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gridprotocol/computing-api/common/version"
 	"github.com/gridprotocol/computing-api/computing/app/http/cmd"
 	"github.com/urfave/cli/v2"
 )
@@ -25,7 +26,7 @@ func main() {
 		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.Bool("version") {
-				fmt.Println(cmd.Version + "+" + cmd.BuildFlag)
+				fmt.Println(version.Version + "+" + version.BuildFlag)
 			}
 			return nil
 		},

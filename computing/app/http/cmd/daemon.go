@@ -27,7 +27,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var logger = logc.Logger("cmd")
+var (
+	logger = logc.Logger("cmd")
+	// quit chan
+	quit = make(chan os.Signal, 1)
+)
 
 var DaemonCmd = &cli.Command{
 	Name:  "daemon",
@@ -141,8 +145,6 @@ var runCmd = &cli.Command{
 			}
 		}()
 
-		// chan
-		quit := make(chan os.Signal, 1)
 		// notify signal to chan
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		// wait for signal and block the app
@@ -173,13 +175,14 @@ var stopCmd = &cli.Command{
 		if err != nil {
 			return nil
 		}
-
 		pd, _ := os.ReadFile(path.Join(pidpath, "pid"))
-
 		err = kill(string(pd))
 		if err != nil {
 			return err
 		}
+
+		quit <- syscall.SIGTERM
+
 		log.Println("gateway gracefully exit...")
 
 		return nil
