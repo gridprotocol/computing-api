@@ -153,7 +153,7 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	}
 
 	// gas
-	authProvider.GasLimit = 500000
+	authProvider.GasLimit = 2000000
 	// 50 gwei
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
