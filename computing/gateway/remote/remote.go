@@ -146,6 +146,7 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	}
 
 	sk := config.GetConfig().Key.Key
+	cp := config.GetConfig().Addr.Addr
 	// make auth for sending transaction
 	authProvider, err := eth.MakeAuth(chainID, sk)
 	if err != nil {
@@ -153,13 +154,13 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	}
 
 	// gas
-	authProvider.GasLimit = 2000000
+	authProvider.GasLimit = 100000
 	// 50 gwei
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
 	// provider call activate with user as param
 	logger.Debug("provider activate an order")
-	tx, err := marketIns.Activate(authProvider, eth.Addr1)
+	tx, err := marketIns.Activate(authProvider, common.Address(common.HexToAddress(user)))
 	if err != nil {
 		return err
 	}
@@ -174,7 +175,7 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	logger.Debug("activate order gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: eth.Addr1}, eth.Addr1, eth.Addr2)
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
 	if err != nil {
 		return err
 	}
