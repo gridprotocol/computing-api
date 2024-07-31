@@ -92,7 +92,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	// get cp address from config file
 	cp := config.GetConfig().Addr.Addr
 
-	logger.Debug("user:"+user, " cp:"+cp)
+	logger.Debug("user:", user)
+	logger.Debug("cp:", cp)
 
 	// get order info with params
 	orderInfo, err := hc.gw.GetOrder(user, cp)

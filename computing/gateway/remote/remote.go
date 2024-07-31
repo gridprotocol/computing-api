@@ -196,6 +196,8 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
 
+	logger.Debug("market address:", MarketAddr)
+
 	// get contract instance
 	marketIns, err := market.NewMarket(MarketAddr, backend)
 	if err != nil {
@@ -305,6 +307,8 @@ func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.Marke
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
+
+	logger.Debug("market:", MarketAddr)
 
 	// get market instance
 	marketIns, err := market.NewMarket(MarketAddr, backend)
