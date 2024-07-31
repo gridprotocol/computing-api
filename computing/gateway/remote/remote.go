@@ -189,6 +189,61 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	return nil
 }
 
+// call user cancel
+func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) error {
+
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
+	logger.Debug("chain id:", chainID)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(MarketAddr, backend)
+	if err != nil {
+		return fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	cp := config.GetConfig().Addr.Addr
+	// make auth for sending transaction
+	authUser, err := eth.MakeAuth(chainID, userSK)
+	if err != nil {
+		return err
+	}
+
+	// gas
+	authUser.GasLimit = 1000000
+	// 50 gwei
+	authUser.GasPrice = new(big.Int).SetUint64(50000000000)
+
+	logger.Debug("user cancels an order")
+	tx, err := marketIns.UserCancel(authUser, common.Address(common.HexToAddress(cp)))
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("waiting for tx to be ok")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
+	if err != nil {
+		return err
+	}
+
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
+	logger.Debug("activate order gas used:", receipt.GasUsed)
+
+	// get order
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(cp))
+	if err != nil {
+		return err
+	}
+	logger.Debug("order status:", orderInfo.Status)
+
+	// check order status
+	if orderInfo.Status != 3 {
+		return fmt.Errorf("cancel failed, status not 3")
+	}
+
+	return nil
+}
+
 // check the order expire
 func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.MarketOrder) (bool, error) {
 	activate := orderInfo.ActivateTime

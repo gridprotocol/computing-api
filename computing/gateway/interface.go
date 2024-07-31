@@ -40,6 +40,7 @@ type GatewayRemoteProcessAPI interface {
 	ProviderConfirm(user string) error
 	// provider activate an order
 	Activate(user string) error
+	UserCancel(userAddr string, userSK string) error
 
 	// check the order's payee to be the provider itself
 	PayeeCheck(orderInfo market.MarketOrder) (bool, error)

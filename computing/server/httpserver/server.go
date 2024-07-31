@@ -342,6 +342,31 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order activated"})
 
+		// user cancel
+	case "7":
+		sk := c.Query("sk")
+
+		logger.Debug("user:", user)
+		logger.Debug("sk:", sk)
+
+		// check order status
+		if orderInfo.Status != 2 {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Error] only activated order can be cancelled"})
+			return
+		}
+
+		logger.Debug("cancelling order")
+
+		// cancel order
+		err = hc.gw.UserCancel(user, sk)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] Failed to cancel: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order cancelled"})
+
 	// illegal type
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"err": "unsupported msg type"})
