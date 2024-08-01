@@ -1,8 +1,24 @@
-2024/07/31 16:29:16 Current Version: 0.3.5+b9f06ca+2024-07-31.16:28:47CST
-badger 2024/07/31 16:29:16 INFO: All 1 tables opened in 0s
-badger 2024/07/31 16:29:16 INFO: Replaying file id: 0 at offset: 2397
-badger 2024/07/31 16:29:16 INFO: Replay took: 15.125µs
-{"level":"INFO","time":"2024-07-31T16:29:16+08:00","sub":"http","caller":"httpserver/server.go:31","msg":"Starting server"}
-{"level":"INFO","time":"2024-07-31T16:29:16+08:00","sub":"http","caller":"httpserver/server.go:48","msg":"create new router ok"}
-[GIN] 2024/07/31 - 16:29:26 | 200 |  6.160658333s |             ::1 | GET      "/greet?type=7&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8"
-[GIN] 2024/07/31 - 16:34:24 | 500 |  115.534667ms |             ::1 | GET      "/greet?type=7&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8"
+2024/08/01 11:12:54 Current Version: 0.3.5+41e8599+2024-08-01.11:11:25CST
+badger 2024/08/01 11:12:54 INFO: All 1 tables opened in 0s
+badger 2024/08/01 11:12:54 INFO: Replaying file id: 0 at offset: 2397
+badger 2024/08/01 11:12:54 INFO: Replay took: 15.708µs
+{"level":"INFO","time":"2024-08-01T11:12:54+08:00","sub":"http","caller":"httpserver/server.go:31","msg":"Starting server"}
+{"level":"INFO","time":"2024-08-01T11:12:54+08:00","sub":"http","caller":"httpserver/server.go:48","msg":"create new router ok"}
+[GIN] 2024/08/01 - 11:13:04 | 200 |   47.267625ms |             ::1 | GET      "/greet?type=0&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/08/01 - 11:13:08 | 200 |   35.695625ms |             ::1 | GET      "/greet?type=1&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/08/01 - 11:13:17 | 200 |  6.125261958s |             ::1 | GET      "/greet?type=2&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/08/01 - 11:13:27 | 200 |   42.239834ms |             ::1 | GET      "/greet?type=3&ts=1705053750&user=0x0090675FD3ef5031d7719A758163E73Fd58AF1EB&sig=0x47923ee7a90546d87186beca95fb2b7e6015e753daa1acbf891fbe3ae4d93f6a31cd09bd87de0de1aac9e4ac061a01f0377360a97a9cf19a3e02e3cdfc80f11c1b"
+{"level":"INFO","time":"2024-08-01T11:14:04+08:00","sub":"http","caller":"httpserver/server.go:270","msg":"cookie check passed, addr:0x0090675FD3ef5031d7719A758163E73Fd58AF1EB"}
+{"level":"INFO","time":"2024-08-01T11:14:04+08:00","sub":"http","caller":"httpserver/server.go:286","msg":"yaml path from id:./yamls/nginx.yaml"}
+app name: nginx-0x0090675fd3ef5031d7719a758163e73fd58af1eb
+nodePort service is created.
+service name: svc-nginx-0x0090675fd3ef5031d7719a758163e73fd58af1eb
+port:8081
+targetPort:8081
+NodePort: 31400
+all app is ready
+entrance: http://localhost:31400
+[GIN] 2024/08/01 - 11:14:10 | 200 |     5.504367s |             ::1 | GET      "/greet?type=5&id=1"
+[GIN] 2024/08/01 - 11:14:36 | 200 |  6.111462291s |             ::1 | GET      "/greet?type=6&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/08/01 - 11:14:48 | 500 |    37.22125ms |             ::1 | GET      "/greet?type=7&user=0xCD4d6B1Ab0130D5052438805bD6C2a739DADc94a&sk=d2ccd13550fb53cb97a7a9cd6156f814b2eaa66a86adfa921f556aa36ec3b8d4"
+[GIN] 2024/08/01 - 11:15:33 | 200 |  6.672341458s |             ::1 | GET      "/greet?type=7&user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8"
