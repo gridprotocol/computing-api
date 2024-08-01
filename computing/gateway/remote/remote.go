@@ -229,10 +229,10 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 	}
 
 	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
-	logger.Debug("activate order gas used:", receipt.GasUsed)
+	logger.Debug("cancel order gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(userAddr)}, common.HexToAddress(userAddr), common.HexToAddress(cp))
 	if err != nil {
 		return err
 	}
