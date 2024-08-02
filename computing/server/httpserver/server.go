@@ -343,7 +343,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order activated"})
 
-		// user cancel
+	// user cancel
 	case "7":
 		sk := c.Query("sk")
 
@@ -367,6 +367,42 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order cancelled"})
+
+	// reset order to status 1(unactive), called by cp
+	case "8":
+		prob := c.Query("prob")
+		dur := c.Query("dur")
+
+		logger.Debug("user:", user)
+		logger.Debug("cp:", cp)
+
+		logger.Debug("reseting order")
+
+		// reset order
+		err = hc.gw.Reset(user, cp, prob, dur)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] Failed to reset: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order reset to status 1 (unactive)"})
+
+	// provider settle
+	case "9":
+		logger.Debug("user:", user)
+
+		logger.Debug("settling order")
+
+		// cancel order
+		err = hc.gw.Settle(user)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] Failed to settle: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order settle ok"})
 
 	// illegal type
 	default:

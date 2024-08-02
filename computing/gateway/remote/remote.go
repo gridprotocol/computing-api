@@ -246,6 +246,115 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 	return nil
 }
 
+// reset order
+func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur string) error {
+
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
+	logger.Debug("chain id:", chainID)
+
+	logger.Debug("market address:", MarketAddr)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(MarketAddr, backend)
+	if err != nil {
+		return fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	sk := config.GetConfig().Key.Key
+	// make auth for sending transaction
+	authProvider, err := eth.MakeAuth(chainID, sk)
+	if err != nil {
+		return err
+	}
+
+	// gas
+	authProvider.GasLimit = 1000000
+	// 50 gwei
+	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
+
+	bigProb, _ := new(big.Int).SetString(prob, 10)
+	bigDur, _ := new(big.Int).SetString(dur, 10)
+	logger.Debug("reset an order")
+	tx, err := marketIns.Reset(authProvider, common.Address(common.HexToAddress(user)), common.Address(common.HexToAddress(cp)), bigProb, bigDur)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("waiting for tx to be ok")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
+	if err != nil {
+		return err
+	}
+
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
+	logger.Debug("gas used:", receipt.GasUsed)
+
+	// get order
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(user)}, common.HexToAddress(user), common.HexToAddress(cp))
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("order info after reset:", orderInfo)
+
+	return nil
+}
+
+// provider settle
+func (grp *GatewayRemoteProcess) Settle(user string) error {
+
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
+	logger.Debug("chain id:", chainID)
+
+	logger.Debug("market address:", MarketAddr)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(MarketAddr, backend)
+	if err != nil {
+		return fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	cp := config.GetConfig().Addr.Addr
+	sk := config.GetConfig().Key.Key
+	// make auth for sending transaction
+	authProvider, err := eth.MakeAuth(chainID, sk)
+	if err != nil {
+		return err
+	}
+
+	// gas
+	authProvider.GasLimit = 1000000
+	// 50 gwei
+	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
+
+	logger.Debug("settle an order")
+	tx, err := marketIns.ProSettle(authProvider, common.Address(common.HexToAddress(user)))
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("waiting for tx to be ok")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
+	if err != nil {
+		return err
+	}
+
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
+	logger.Debug("gas used:", receipt.GasUsed)
+
+	// get order
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(user)}, common.HexToAddress(user), common.HexToAddress(cp))
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("order info after settle:", orderInfo)
+
+	return nil
+}
+
 // check the order expire
 func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.MarketOrder) (bool, error) {
 	activate := orderInfo.ActivateTime
@@ -292,15 +401,15 @@ func (grp *GatewayRemoteProcess) SetWatcher(contract string) error {
 	return nil
 }
 
-func (grp *GatewayRemoteProcess) Settle() error {
-	return grp.settle(nil)
-}
+// func (grp *GatewayRemoteProcess) Settle() error {
+// 	return grp.settle(nil)
+// }
 
-func (grp *GatewayRemoteProcess) settle(signer interface{}) error {
-	// sign a transaction to retrieve remuneration
-	_ = signer
-	return nil
-}
+// func (grp *GatewayRemoteProcess) settle(signer interface{}) error {
+// 	// sign a transaction to retrieve remuneration
+// 	_ = signer
+// 	return nil
+// }
 
 // get an order with user and cp
 func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.MarketOrder, error) {

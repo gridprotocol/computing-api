@@ -42,11 +42,15 @@ type GatewayRemoteProcessAPI interface {
 	Activate(user string) error
 	UserCancel(userAddr string, userSK string) error
 
+	// reset an order
+	Reset(user string, cp string, prob string, dur string) error
+
+	// provider settle an order to retrieve remueration
+	Settle(user string) error
+
 	// check the order's payee to be the provider itself
 	PayeeCheck(orderInfo market.MarketOrder) (bool, error)
 	SetWatcher(contract string) error
-	// Retrieve remuneration.
-	Settle() error
 
 	// get order with user and cp
 	GetOrder(user string, cp string) (*market.MarketOrder, error)
