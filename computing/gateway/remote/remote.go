@@ -111,7 +111,7 @@ func (grp *GatewayRemoteProcess) ProviderConfirm(user string) error {
 		return err
 	}
 
-	logger.Debug("waiting for tx to be ok")
+	logger.Debug("waiting for tx to be ok:", tx.Hash())
 	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
 	if err != nil {
 		return err
@@ -426,7 +426,7 @@ func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.Marke
 	}
 
 	// get order info
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(user)}, common.HexToAddress(user), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
 	if err != nil {
 		return nil, fmt.Errorf("getorder failed: %v, %s", err, MarketAddr)
 	}
