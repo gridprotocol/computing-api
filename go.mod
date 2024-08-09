@@ -8,12 +8,14 @@ replace github.com/grid/contracts => ../grid-contracts
 
 require (
 	github.com/BurntSushi/toml v1.4.0
+	github.com/btcsuite/btcd v0.22.1
 	github.com/dgraph-io/badger/v2 v2.2007.4
 	github.com/docker/docker v24.0.6+incompatible
 	github.com/ethereum/go-ethereum v1.14.5
 	github.com/gin-gonic/gin v1.9.1
 	github.com/grid/contracts v0.0.0-00010101000000-000000000000
 	github.com/mitchellh/go-ps v1.0.0
+	github.com/zeebo/blake3 v0.2.3
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.58.2
 	google.golang.org/protobuf v1.33.0
@@ -33,7 +35,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect
-	github.com/btcsuite/btcd/btcec/v2 v2.2.1 // indirect
+	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
@@ -102,7 +104,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.2
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/crypto v0.22.0
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
@@ -111,7 +113,7 @@ require (
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
+	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

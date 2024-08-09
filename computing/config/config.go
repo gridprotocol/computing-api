@@ -67,6 +67,27 @@ func GetConfig() *GatewayConfig {
 	return conf
 }
 
+// 写回配置文件
+func WriteConf(conf *GatewayConfig) error {
+	// config path
+	currentDir, _ := os.Getwd()
+	configFile := filepath.Join(currentDir, "config.toml")
+
+	// 打开文件
+	file, err := os.OpenFile(configFile, os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// 编码为TOML格式并写入文件
+	if err := toml.NewEncoder(file).Encode(conf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 	requiredFields := [][]string{
 		{"Grpc"},
@@ -83,9 +104,6 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Local", "SignExpire"},
 
 		{"Remote", "Wallet"},
-
-		{"Key", "Key"},
-		{"Addr", "Addr"},
 	}
 
 	for _, v := range requiredFields {

@@ -1,30 +1,20 @@
 [Grpc]
-Listen = "0.0.0.0:12345"
+  Listen = "0.0.0.0:12345"
 
 [Http]
-# computing backend
-Listen = "0.0.0.0:12346"
-# key to sign for cookie
-HSKey = "memo.io"
-# cookie's expire timestamp
-Expire = 86400
+  Listen = "0.0.0.0:12346"
+  HSKey = "memo.io"
+  Expire = 86400
 
 [Local]
-DBPath = "./testdb"
-# expire for signature in type2
-SignExpire = 86400000
+  DBPath = "./testdb"
+  SignExpire = 86400000
 
 [Remote]
-Wallet = "0x123456"
+  Wallet = "0x123456"
 
-# cp on local
 [Key]
-Key = "234fe73f5154570065a202f185dca074f1d7482a5e08ce093a92ed96807a6cf0"
-[Addr]
-Addr = "0xEf95c72C836605203F7f66788E450Af2a4141957"
+  Key = "234fe73f5154570065a202f185dca074f1d7482a5e08ce093a92ed96807a6cf0"
 
-# cp on remote
-#[Key]
-#Key = "d2ccd13550fb53cb97a7a9cd6156f814b2eaa66a86adfa921f556aa36ec3b8d4"
-#[Addr]
-#Addr = "0xCD4d6B1Ab0130D5052438805bD6C2a739DADc94a"
+[Addr]
+  Addr = "0xEf95c72C836605203F7f66788E450Af2a4141957"

@@ -10,7 +10,7 @@ import (
 var VersionCmd = &cli.Command{
 	Name:    "version",
 	Usage:   "print computing version",
-	Aliases: []string{"V"},
+	Aliases: []string{"v"},
 	Action: func(_ *cli.Context) error {
 		fmt.Println(version.CurrentVersion())
 		return nil

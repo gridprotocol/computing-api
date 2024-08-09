@@ -13,10 +13,10 @@ func main() {
 	local := make([]*cli.Command, 0, 1)
 	local = append(local, cmd.DaemonCmd)
 	local = append(local, cmd.VersionCmd)
+	local = append(local, cmd.WalletCmd)
 
 	app := cli.App{
 		Commands: local,
-
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "version",
@@ -26,7 +26,7 @@ func main() {
 		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.Bool("version") {
-				fmt.Println(version.Version + "+" + version.BuildFlag)
+				fmt.Println(version.CurrentVersion())
 			}
 			return nil
 		},

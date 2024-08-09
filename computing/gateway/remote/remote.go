@@ -232,7 +232,7 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 	logger.Debug("cancel order gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(userAddr)}, common.HexToAddress(userAddr), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(cp))
 	if err != nil {
 		return err
 	}
@@ -291,7 +291,7 @@ func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur 
 	logger.Debug("gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(user)}, common.HexToAddress(user), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
 	if err != nil {
 		return err
 	}
@@ -345,7 +345,7 @@ func (grp *GatewayRemoteProcess) Settle(user string) error {
 	logger.Debug("gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(user)}, common.HexToAddress(user), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
 	if err != nil {
 		return err
 	}
