@@ -90,7 +90,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 	user := c.Query("user")
 
 	// get cp address from config file
-	cp := config.GetConfig().Addr.Addr
+	cp := config.GetConfig().Remote.Wallet
 
 	logger.Debug("user:", user)
 	logger.Debug("cp:", cp)
@@ -426,7 +426,7 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 
 	// get order info and do expire check for it
 	// get cp address from config file
-	cp := config.GetConfig().Addr.Addr
+	cp := config.GetConfig().Remote.Wallet
 	// get order info with params
 	orderInfo, err := hc.gw.GetOrder(addr, cp)
 	if err != nil {

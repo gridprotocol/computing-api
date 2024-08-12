@@ -30,10 +30,10 @@ func init() {
 		os.Exit(0)
 	}
 
-	err := config.InitConfig()
-	if err != nil {
-		log.Fatalf("failed to init the config: %v", err)
-	}
+	// err := config.InitConfig()
+	// if err != nil {
+	// 	log.Fatalf("failed to init the config: %v", err)
+	// }
 
 	// remote
 	grp := remote.NewGatewayRemoteProcess("ep")

@@ -16,8 +16,6 @@ type GatewayConfig struct {
 	Http   Http
 	Local  Local
 	Remote Remote
-	Key    Key
-	Addr   Addr
 }
 
 type Local struct {
@@ -26,7 +24,8 @@ type Local struct {
 }
 
 type Remote struct {
-	Wallet string
+	KeyStore string
+	Wallet   string
 }
 
 type Grpc struct {
@@ -39,12 +38,13 @@ type Http struct {
 	Expire int // cookie expire time in second
 }
 
-type Key struct {
-	Key string
-}
-
-type Addr struct {
-	Addr string
+// load config.toml
+func init() {
+	// parse config file
+	err := InitConfig()
+	if err != nil {
+		log.Fatalf("failed to init the config: %v", err)
+	}
 }
 
 // read and decode config file
@@ -103,6 +103,7 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Local", "DBPath"},
 		{"Local", "SignExpire"},
 
+		{"Remote", "KeyStore"},
 		{"Remote", "Wallet"},
 	}
 

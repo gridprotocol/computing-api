@@ -16,12 +16,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/grid/contracts/eth"
 	"github.com/grid/contracts/eth/contracts"
+	com "github.com/gridprotocol/computing-api/common"
 	"github.com/gridprotocol/computing-api/common/version"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/gateway"
 	"github.com/gridprotocol/computing-api/computing/gateway/local"
 	"github.com/gridprotocol/computing-api/computing/gateway/remote"
 	"github.com/gridprotocol/computing-api/computing/server/httpserver"
+	"github.com/gridprotocol/computing-api/keystore"
 	"github.com/gridprotocol/computing-api/lib/logc"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli/v2"
@@ -59,10 +61,30 @@ var runCmd = &cli.Command{
 			Usage:   "chain to interactivate, local: use local test chain, sepo: use sepo test chain",
 			Value:   "local",
 		},
+		&cli.StringFlag{
+			Name:    "password",
+			Aliases: []string{"pw"},
+			Usage:   "password of current wallet",
+			Value:   "grid",
+		},
 	},
 	Action: func(ctx *cli.Context) error {
 		test := ctx.Bool("test")
 		chain := ctx.String("chain")
+		pw := ctx.String("pw")
+
+		// get wallet and sk
+		repo := keystore.Repo
+		wallet := config.GetConfig().Remote.Wallet
+		ki, err := repo.Get(wallet, pw)
+		if err != nil {
+			panic(err)
+		}
+
+		// save all info into common
+		com.Password = pw
+		com.CP = wallet
+		com.SK = ki.SK()
 
 		// check version
 		if version.CheckVersion() {
@@ -70,11 +92,11 @@ var runCmd = &cli.Command{
 		}
 		log.Println("Current Version:", version.CurrentVersion())
 
-		// parse config file
-		err := config.InitConfig()
-		if err != nil {
-			log.Fatalf("failed to init the config: %v", err)
-		}
+		// // parse config file
+		// err := config.InitConfig()
+		// if err != nil {
+		// 	log.Fatalf("failed to init the config: %v", err)
+		// }
 
 		// chain select for remote gw
 		var chain_endpoint string
@@ -140,7 +162,7 @@ var runCmd = &cli.Command{
 		svr := httpserver.NewServer(config.GetConfig().Http.Listen, gw)
 		// listen
 		go func() {
-			if err = svr.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			if err := svr.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				log.Fatalf("fail to start serving: %v", err)
 			}
 		}()

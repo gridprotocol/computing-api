@@ -9,8 +9,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/grid/contracts/eth"
 	"github.com/grid/contracts/go/market"
+	com "github.com/gridprotocol/computing-api/common"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/model"
+	"github.com/gridprotocol/computing-api/keystore"
 	"github.com/gridprotocol/computing-api/lib/logc"
 )
 
@@ -91,7 +93,7 @@ func (grp *GatewayRemoteProcess) ProviderConfirm(user string) error {
 	}
 
 	// get sk from conf
-	sk := config.GetConfig().Key.Key
+	sk := com.SK
 
 	// make auth for sending transaction
 	authProvider, err := eth.MakeAuth(chainID, sk)
@@ -145,8 +147,16 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 		return fmt.Errorf("new contract instance failed: %s", err.Error())
 	}
 
-	sk := config.GetConfig().Key.Key
-	cp := config.GetConfig().Addr.Addr
+	// get wallet and sk
+	repo := keystore.Repo
+	pw := com.Password
+	cp := config.GetConfig().Remote.Wallet
+	ki, err := repo.Get(cp, pw)
+	if err != nil {
+		return err
+	}
+	sk := ki.SK()
+
 	// make auth for sending transaction
 	authProvider, err := eth.MakeAuth(chainID, sk)
 	if err != nil {
@@ -204,7 +214,6 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 		return fmt.Errorf("new contract instance failed: %s", err.Error())
 	}
 
-	cp := config.GetConfig().Addr.Addr
 	// make auth for sending transaction
 	authUser, err := eth.MakeAuth(chainID, userSK)
 	if err != nil {
@@ -217,7 +226,7 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 	authUser.GasPrice = new(big.Int).SetUint64(50000000000)
 
 	logger.Debug("user cancels an order")
-	tx, err := marketIns.UserCancel(authUser, common.Address(common.HexToAddress(cp)))
+	tx, err := marketIns.UserCancel(authUser, common.Address(common.HexToAddress(com.CP)))
 	if err != nil {
 		return err
 	}
@@ -232,7 +241,7 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 	logger.Debug("cancel order gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(com.CP))
 	if err != nil {
 		return err
 	}
@@ -261,9 +270,8 @@ func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur 
 		return fmt.Errorf("new contract instance failed: %s", err.Error())
 	}
 
-	sk := config.GetConfig().Key.Key
 	// make auth for sending transaction
-	authProvider, err := eth.MakeAuth(chainID, sk)
+	authProvider, err := eth.MakeAuth(chainID, com.SK)
 	if err != nil {
 		return err
 	}
@@ -316,10 +324,8 @@ func (grp *GatewayRemoteProcess) Settle(user string) error {
 		return fmt.Errorf("new contract instance failed: %s", err.Error())
 	}
 
-	cp := config.GetConfig().Addr.Addr
-	sk := config.GetConfig().Key.Key
 	// make auth for sending transaction
-	authProvider, err := eth.MakeAuth(chainID, sk)
+	authProvider, err := eth.MakeAuth(chainID, com.SK)
 	if err != nil {
 		return err
 	}
@@ -345,7 +351,7 @@ func (grp *GatewayRemoteProcess) Settle(user string) error {
 	logger.Debug("gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(com.CP))
 	if err != nil {
 		return err
 	}
@@ -387,10 +393,7 @@ func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.MarketOrder) (bool
 
 // check the order's payee to be the provider itself
 func (grp *GatewayRemoteProcess) PayeeCheck(orderInfo market.MarketOrder) (bool, error) {
-	// get provider addr from conf
-	addr := config.GetConfig().Addr.Addr
-
-	if orderInfo.Provider.String() != addr {
+	if orderInfo.Provider.String() != com.CP {
 		return false, fmt.Errorf("the provider in order is invalid")
 	}
 

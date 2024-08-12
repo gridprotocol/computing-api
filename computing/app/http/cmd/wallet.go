@@ -9,12 +9,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var RepoPath string
+
 // init config
 func init() {
-	// parse config file
-	err := config.InitConfig()
-	if err != nil {
-		log.Fatalf("failed to init the config: %v", err)
+	// load repo path from config
+	RepoPath = config.GetConfig().Remote.KeyStore
+	if RepoPath == "" {
+		log.Fatalf("the repo path must be given")
 	}
 }
 
@@ -26,6 +28,8 @@ var WalletCmd = &cli.Command{
 		importCmd,
 		showCmd,
 		useCmd,
+		listCmd,
+		delCmd,
 	},
 }
 
@@ -34,14 +38,6 @@ var initCmd = &cli.Command{
 	Name:  "init",
 	Usage: "create a new wallet",
 	Flags: []cli.Flag{
-
-		&cli.StringFlag{
-			Name:    "path",
-			Aliases: []string{"p"},
-			Usage:   "set the keystore path",
-			Value:   "./.keystore",
-		},
-
 		&cli.StringFlag{
 			Name:    "password",
 			Aliases: []string{"pw"},
@@ -50,20 +46,15 @@ var initCmd = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-
-		p := ctx.String("path")
 		pw := ctx.String("pw")
 
-		if p == "" {
-			return fmt.Errorf("the repo path must be given")
-		}
 		if pw == "" {
 			return fmt.Errorf("the password of the wallet must be given")
 		}
 
 		logger.Debug("new keystore")
 		// keystore
-		ks, err := keystore.NewKeyStore(p)
+		ks, err := keystore.NewKeyStore(RepoPath)
 		if err != nil {
 			return err
 		}
@@ -80,7 +71,7 @@ var initCmd = &cli.Command{
 		ks.Put(ki.Address(), pw, *ki)
 
 		// set address
-		config.GetConfig().Addr.Addr = ki.Address()
+		config.GetConfig().Remote.Wallet = ki.Address()
 		// update config file
 		config.WriteConf(config.GetConfig())
 
@@ -93,12 +84,6 @@ var importCmd = &cli.Command{
 	Name:  "import",
 	Usage: "import a wallet with an sk",
 	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "path",
-			Aliases: []string{"p"},
-			Usage:   "set the keystore path",
-			Value:   "./.keystore",
-		},
 		&cli.StringFlag{
 			Name:    "secretkey",
 			Aliases: []string{"sk"},
@@ -113,13 +98,9 @@ var importCmd = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		p := ctx.String("path")
 		sk := ctx.String("sk")
 		pw := ctx.String("pw")
 
-		if p == "" {
-			return fmt.Errorf("the repo path must be given")
-		}
 		if sk == "" {
 			return fmt.Errorf("a sk must be given")
 		}
@@ -128,7 +109,7 @@ var importCmd = &cli.Command{
 		}
 
 		// keystore
-		ks, err := keystore.NewKeyStore(p)
+		ks, err := keystore.NewKeyStore(RepoPath)
 		if err != nil {
 			return err
 		}
@@ -143,7 +124,7 @@ var importCmd = &cli.Command{
 		ks.Put(ki.Address(), pw, *ki)
 
 		// set address
-		config.GetConfig().Addr.Addr = ki.Address()
+		config.GetConfig().Remote.Wallet = ki.Address()
 		// update config file
 		config.WriteConf(config.GetConfig())
 
@@ -157,12 +138,6 @@ var useCmd = &cli.Command{
 	Usage: "select an wallet address",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:    "path",
-			Aliases: []string{"p"},
-			Usage:   "set the keystore path",
-			Value:   "./.keystore",
-		},
-		&cli.StringFlag{
 			Name:    "address",
 			Aliases: []string{"addr"},
 			Usage:   "wallet address",
@@ -170,18 +145,14 @@ var useCmd = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		p := ctx.String("path")
 		addr := ctx.String("address")
 
-		if p == "" {
-			return fmt.Errorf("the repo path must be given")
-		}
 		if addr == "" {
 			return fmt.Errorf("an wallet address must be given")
 		}
 
 		// keystore
-		ks, err := keystore.NewKeyStore(p)
+		ks, err := keystore.NewKeyStore(RepoPath)
 		if err != nil {
 			return err
 		}
@@ -197,7 +168,7 @@ var useCmd = &cli.Command{
 		}
 
 		// set address
-		config.GetConfig().Addr.Addr = addr
+		config.GetConfig().Remote.Wallet = addr
 		// update config file
 		config.WriteConf(config.GetConfig())
 
@@ -209,12 +180,6 @@ var showCmd = &cli.Command{
 	Name:  "show",
 	Usage: "show the sk of an account",
 	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "path",
-			Aliases: []string{"p"},
-			Usage:   "set the keystore path",
-			Value:   "./.keystore",
-		},
 		&cli.StringFlag{
 			Name:    "address",
 			Aliases: []string{"addr"},
@@ -229,7 +194,6 @@ var showCmd = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		p := ctx.String("path")
 		addr := ctx.String("address")
 		pw := ctx.String("pw")
 
@@ -238,7 +202,7 @@ var showCmd = &cli.Command{
 		}
 
 		// keystore
-		ks, err := keystore.NewKeyStore(p)
+		ks, err := keystore.NewKeyStore(RepoPath)
 		if err != nil {
 			return err
 		}
@@ -250,6 +214,73 @@ var showCmd = &cli.Command{
 		}
 
 		fmt.Println("sk: ", ki.SK())
+
+		return nil
+	},
+}
+
+var listCmd = &cli.Command{
+	Name:  "list",
+	Usage: "list all wallets",
+	Flags: []cli.Flag{},
+	Action: func(ctx *cli.Context) error {
+		// keystore
+		ks, err := keystore.NewKeyStore(RepoPath)
+		if err != nil {
+			return err
+		}
+
+		// key
+		list, err := ks.List()
+		if err != nil {
+			return err
+		}
+
+		// list all wallets
+		for _, v := range list {
+			fmt.Println(v)
+		}
+
+		return nil
+	},
+}
+
+var delCmd = &cli.Command{
+	Name:  "delete",
+	Usage: "delete a wallet",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "address",
+			Aliases: []string{"addr"},
+			Usage:   "address",
+			Value:   "",
+		},
+		&cli.StringFlag{
+			Name:    "password",
+			Aliases: []string{"pw"},
+			Usage:   "set the key password",
+			Value:   "computing",
+		},
+	},
+	Action: func(ctx *cli.Context) error {
+		addr := ctx.String("address")
+		pw := ctx.String("pw")
+
+		if addr == "" {
+			return fmt.Errorf("an wallet address must be given")
+		}
+
+		// keystore
+		ks, err := keystore.NewKeyStore(RepoPath)
+		if err != nil {
+			return err
+		}
+
+		// delete
+		err = ks.Delete(addr, pw)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	},

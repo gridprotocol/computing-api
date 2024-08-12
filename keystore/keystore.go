@@ -10,12 +10,26 @@ import (
 
 	"golang.org/x/xerrors"
 	//"github.com/grid/test-ks/types"
+
+	"github.com/gridprotocol/computing-api/computing/config"
 )
 
 var _ KeyStore = (*keyStore)(nil)
+var Repo KeyStore
 
 type keyStore struct {
 	path string
+}
+
+// load repo from config
+func init() {
+	repoPath := config.GetConfig().Remote.KeyStore
+	repo, err := NewKeyStore(repoPath)
+	if err != nil {
+		panic(err)
+	}
+
+	Repo = repo
 }
 
 // create a repo to store keyfile
