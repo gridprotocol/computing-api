@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const Version = "0.3.6"
+const Version = "0.3.7"
 
 var BuildFlag string
 
