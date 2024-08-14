@@ -134,6 +134,64 @@ func (grp *GatewayRemoteProcess) ProviderConfirm(user string) error {
 	return nil
 }
 
+// set the app name in contract
+func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
+	logger.Debug("chain id:", chainID)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(MarketAddr, backend)
+	if err != nil {
+		return fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	// get wallet and sk
+	repo := keystore.Repo
+	pw := com.Password
+	cp := config.GetConfig().Remote.Wallet
+	ki, err := repo.Get(cp, pw)
+	if err != nil {
+		return err
+	}
+	sk := ki.SK()
+
+	// make auth for sending transaction
+	authProvider, err := eth.MakeAuth(chainID, sk)
+	if err != nil {
+		return err
+	}
+
+	// gas
+	authProvider.GasLimit = 1000000
+	// 50 gwei
+	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
+
+	logger.Debug("provider set the app name for this order")
+	tx, err := marketIns.SetApp(authProvider, common.Address(common.HexToAddress(user)), app)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("waiting for tx to be ok")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
+	if err != nil {
+		return err
+	}
+
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
+	logger.Debug("set app name gas used:", receipt.GasUsed)
+
+	// get order
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
+	if err != nil {
+		return err
+	}
+	logger.Debug("app name:", orderInfo.AppName)
+
+	return nil
+}
+
 // provider activate an order
 func (grp *GatewayRemoteProcess) Activate(user string) error {
 

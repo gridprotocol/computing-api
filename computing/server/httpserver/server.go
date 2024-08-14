@@ -306,7 +306,22 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy from file ok"})
+		logger.Debug("app name:", deps[0].Name)
+		// set the app name in order
+		err = hc.gw.SetApp(user, deps[0].Name)
+		if err != nil {
+			// clean all deployments from k8s if error happend when deploy
+			for _, dep := range deps {
+				// todo: what if delete failed
+				_ = deploy.CleanDeploy(dep.Name)
+			}
+
+			msg := fmt.Sprintf("[Fail] Failed to set app: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy ok"})
 
 		// activate order
 	case "6":
