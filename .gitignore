@@ -1,5 +1,5 @@
 *.exe
-testdb
+*db
 computing-api-rpc
 computing-api
 user-example
