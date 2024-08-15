@@ -20,10 +20,10 @@ import (
 	"github.com/gridprotocol/computing-api/common/version"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/gateway"
-	"github.com/gridprotocol/computing-api/computing/gateway/local"
 	"github.com/gridprotocol/computing-api/computing/gateway/remote"
 	"github.com/gridprotocol/computing-api/computing/server/httpserver"
 	"github.com/gridprotocol/computing-api/keystore"
+	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli/v2"
@@ -33,6 +33,9 @@ var (
 	logger = logc.Logger("cmd")
 	// quit chan
 	quit = make(chan os.Signal, 1)
+
+	// user db records
+	userDB kv.Database
 )
 
 var DaemonCmd = &cli.Command{
@@ -92,12 +95,6 @@ var runCmd = &cli.Command{
 		}
 		log.Println("Current Version:", version.CurrentVersion())
 
-		// // parse config file
-		// err := config.InitConfig()
-		// if err != nil {
-		// 	log.Fatalf("failed to init the config: %v", err)
-		// }
-
 		// chain select for remote gw
 		var chain_endpoint string
 		switch chain {
@@ -140,32 +137,23 @@ var runCmd = &cli.Command{
 			remote.RegistryAddr = common.HexToAddress(s.Registry)
 		}
 
-		// remote gw
-		grp := remote.NewGatewayRemoteProcess(chain_endpoint)
-		// local gw
-		var glp gateway.GatewayLocalProcessAPI
-
-		// check for fake
-		if test {
-			glp = local.NewFakeImplementofLocalProcess()
-		} else {
-			glp = local.NewGatewayLocalProcess()
-		}
-
 		// make a gw object with local process and remote process
-		gw := gateway.NewComputingGateway(glp, grp)
+		gw := gateway.NewComputingGateway(chain_endpoint, test)
+		// close db
 		defer gw.Close()
 
 		logger.Debug("endpoint: ", config.GetConfig().Http.Listen)
 
 		// make an httpserver with endpoint and gw object
 		svr := httpserver.NewServer(config.GetConfig().Http.Listen, gw)
-		// listen
+		// statr server
 		go func() {
 			if err := svr.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				log.Fatalf("fail to start serving: %v", err)
 			}
 		}()
+
+		// todo: add order expire check for all users
 
 		// notify signal to chan
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

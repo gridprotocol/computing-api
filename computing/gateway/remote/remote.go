@@ -13,6 +13,7 @@ import (
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/model"
 	"github.com/gridprotocol/computing-api/keystore"
+	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
 )
 
@@ -34,7 +35,7 @@ type GatewayRemoteProcess struct {
 	wallet         string
 }
 
-func NewGatewayRemoteProcess(ep string) *GatewayRemoteProcess {
+func NewGatewayRemoteProcess(ep string, db *kv.Database) *GatewayRemoteProcess {
 	return &GatewayRemoteProcess{
 		chain_endpoint: ep,
 		wallet:         config.GetConfig().Remote.Wallet,
@@ -146,10 +147,11 @@ func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
 		return fmt.Errorf("new contract instance failed: %s", err.Error())
 	}
 
-	// get wallet and sk
+	// get wallet
+	cp := config.GetConfig().Remote.Wallet
+	// get sk with password
 	repo := keystore.Repo
 	pw := com.Password
-	cp := config.GetConfig().Remote.Wallet
 	ki, err := repo.Get(cp, pw)
 	if err != nil {
 		return err

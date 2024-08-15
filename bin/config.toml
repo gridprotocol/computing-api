@@ -7,7 +7,7 @@
   Expire = 86400
 
 [Local]
-  DBPath = "./testdb"
+  DBPath = "./db"
   SignExpire = 86400000
 
 [Remote]

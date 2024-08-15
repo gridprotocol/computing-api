@@ -8,7 +8,6 @@ import (
 	"github.com/gridprotocol/computing-api/computing/model"
 	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -21,22 +20,17 @@ const (
 
 // TODO: add cache
 type GatewayLocalProcess struct {
-	db         *kv.Database
 	signExpire int64
+
+	DB *kv.Database
 }
 
-func NewGatewayLocalProcess() *GatewayLocalProcess {
+func NewGatewayLocalProcess(db *kv.Database) *GatewayLocalProcess {
 	glp := new(GatewayLocalProcess)
 
-	// new kv db for local
-	db, err := kv.NewDatabase(config.GetConfig().Local.DBPath)
-	if err != nil {
-		logger.Error("Fail to open up the database, err: ", err)
-		panic(err)
-	}
-	glp.db = db
-
 	glp.signExpire = int64(config.GetConfig().Local.SignExpire)
+	glp.DB = db
+
 	return glp
 }
 
@@ -83,7 +77,7 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 	if len(user) == 0 {
 		return fmt.Errorf("user should not be empty")
 	}
-	if ok, err := glp.db.Has(prefixKey(user, leasePrefix)); err != nil {
+	if ok, err := glp.DB.Has(prefixKey(user, leasePrefix)); err != nil {
 		logger.Error("Error occurs when reading db, err:", err)
 		return err
 	} else {
@@ -97,7 +91,7 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 	if err != nil {
 		return err
 	}
-	err = glp.db.Put(prefixKey(user, leasePrefix), lb)
+	err = glp.DB.Put(prefixKey(user, leasePrefix), lb)
 	if err != nil {
 		return err
 	}
@@ -128,7 +122,7 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 	fmt.Println("entrance:", entrance)
 
 	// record entrance
-	err = glp.db.Put(prefixKey(user, entrancePrefix), []byte(entrance))
+	err = glp.DB.Put(prefixKey(user, entrancePrefix), []byte(entrance))
 	if err != nil {
 		// should delete deployment or pod
 		return err
@@ -137,7 +131,7 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 }
 
 func (glp *GatewayLocalProcess) GetEntrance(user string) (string, error) {
-	ent, err := glp.db.Get(prefixKey(user, entrancePrefix))
+	ent, err := glp.DB.Get(prefixKey(user, entrancePrefix))
 	if err != nil {
 		return "", err
 	}
@@ -151,7 +145,7 @@ func (glp *GatewayLocalProcess) Terminate(user string) error {
 		prefixKey(user, entrancePrefix),
 		prefixKey(user, leasePrefix),
 	}
-	err := glp.db.MultiDelete(keys)
+	err := glp.DB.MultiDelete(keys)
 	if err != nil {
 		return err
 	}
@@ -159,7 +153,7 @@ func (glp *GatewayLocalProcess) Terminate(user string) error {
 }
 
 func (glp *GatewayLocalProcess) Close() error {
-	return glp.db.Close()
+	return glp.DB.Close()
 }
 
 // TODO: only forward the msg, not deal with it. Should use unified interface

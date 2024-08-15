@@ -142,12 +142,12 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 		logger.Debug("payee check ok")
 
-		// check authorize
-		if err := hc.gw.Authorize(user, model.Lease{}); err != nil {
-			logger.Error(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] authorization failed"})
-			return
-		}
+		// // check authorize
+		// if err := hc.gw.Authorize(user, model.Lease{}); err != nil {
+		// 	logger.Error(err)
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] authorization failed"})
+		// 	return
+		// }
 
 		// set watcher for the lease (current ver is empty)
 		hc.gw.SetWatcher(user)

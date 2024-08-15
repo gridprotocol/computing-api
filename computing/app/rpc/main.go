@@ -10,8 +10,6 @@ import (
 	"github.com/gridprotocol/computing-api/common/version"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/gateway"
-	"github.com/gridprotocol/computing-api/computing/gateway/local"
-	"github.com/gridprotocol/computing-api/computing/gateway/remote"
 	"github.com/gridprotocol/computing-api/computing/proto"
 	"github.com/gridprotocol/computing-api/computing/server/rpcserver"
 
@@ -30,24 +28,8 @@ func init() {
 		os.Exit(0)
 	}
 
-	// err := config.InitConfig()
-	// if err != nil {
-	// 	log.Fatalf("failed to init the config: %v", err)
-	// }
-
-	// remote
-	grp := remote.NewGatewayRemoteProcess("ep")
-
-	// local
-	var glp gateway.GatewayLocalProcessAPI
-	if test {
-		glp = local.NewFakeImplementofLocalProcess()
-	} else {
-		glp = local.NewGatewayLocalProcess()
-	}
-
 	// gw
-	gw = gateway.NewComputingGateway(glp, grp)
+	gw = gateway.NewComputingGateway("ep", test)
 }
 
 func main() {

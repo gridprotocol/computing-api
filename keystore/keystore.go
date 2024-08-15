@@ -9,12 +9,11 @@ import (
 	"strings"
 
 	"golang.org/x/xerrors"
-	//"github.com/grid/test-ks/types"
 
 	"github.com/gridprotocol/computing-api/computing/config"
 )
 
-var _ KeyStore = (*keyStore)(nil)
+// var _ KeyStore = (*keyStore)(nil)
 var Repo KeyStore
 
 type keyStore struct {
