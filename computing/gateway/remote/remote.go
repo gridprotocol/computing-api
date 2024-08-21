@@ -318,7 +318,7 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 */
 
 // user renew an order
-func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur string, pay string) error {
+func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur string) error {
 
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
@@ -347,13 +347,9 @@ func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur strin
 	if !ok {
 		return fmt.Errorf("dur setString failed")
 	}
-	_pay, ok := new(big.Int).SetString(pay, 10)
-	if !ok {
-		return fmt.Errorf("pay setString failed")
-	}
 
 	logger.Debug("user renews an order")
-	tx, err := marketIns.Renew(authUser, common.Address(common.HexToAddress(com.CP)), _dur, _pay)
+	tx, err := marketIns.Renew(authUser, common.Address(common.HexToAddress(com.CP)), _dur)
 	if err != nil {
 		return err
 	}
@@ -580,9 +576,20 @@ func (grp *GatewayRemoteProcess) OrderCheck(user string, cp string) (bool, error
 	}
 	logger.Debug("payee check ok")
 
-	// check activation
+	// check status must be activated
 	if orderInfo.Status != 2 {
-		return false, fmt.Errorf("order not activated")
+		var status string
+		switch orderInfo.Status {
+		case 0:
+			status = "order not exist"
+		case 1:
+			status = "order unactive"
+		case 3:
+			status = "order cancelled"
+		case 4:
+			status = "order completed"
+		}
+		return false, fmt.Errorf("only active order can get cookie: %s", status)
 	}
 
 	// // check authorize

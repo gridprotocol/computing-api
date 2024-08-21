@@ -44,7 +44,7 @@ type GatewayRemoteProcessAPI interface {
 	SetApp(user string, app string) error
 	//UserCancel(userAddr string, userSK string) error
 	// user renew an order
-	Renew(userAddr string, userSK string, dur string, pay string) error
+	Renew(userAddr string, userSK string, dur string) error
 
 	// reset an order
 	Reset(user string, cp string, prob string, dur string) error
