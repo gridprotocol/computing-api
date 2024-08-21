@@ -137,14 +137,14 @@ var runCmd = &cli.Command{
 			remote.RegistryAddr = common.HexToAddress(s.Registry)
 		}
 
-		// make a gw object with local process and remote process
+		// make a gw object
 		gw := gateway.NewComputingGateway(chain_endpoint, test)
 		// close db
 		defer gw.Close()
 
-		logger.Debug("endpoint: ", config.GetConfig().Http.Listen)
+		logger.Debug("listen address: ", config.GetConfig().Http.Listen)
 
-		// make an httpserver with endpoint and gw object
+		// make an httpserver with listen addr and gw object
 		svr := httpserver.NewServer(config.GetConfig().Http.Listen, gw)
 		// statr server
 		go func() {

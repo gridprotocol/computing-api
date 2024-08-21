@@ -42,7 +42,9 @@ type GatewayRemoteProcessAPI interface {
 	Activate(user string) error
 	// provider set the app name when deploy ok
 	SetApp(user string, app string) error
-	UserCancel(userAddr string, userSK string) error
+	//UserCancel(userAddr string, userSK string) error
+	// user renew an order
+	Renew(userAddr string, userSK string, dur string, pay string) error
 
 	// reset an order
 	Reset(user string, cp string, prob string, dur string) error

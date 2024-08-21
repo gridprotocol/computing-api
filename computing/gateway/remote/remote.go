@@ -260,6 +260,7 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 }
 
 // call user cancel
+/*
 func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) error {
 
 	// connect to an eth node with ep
@@ -311,6 +312,60 @@ func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) erro
 	if orderInfo.Status != 3 {
 		return fmt.Errorf("cancel failed, status not 3")
 	}
+
+	return nil
+}
+*/
+
+// user renew an order
+func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur string, pay string) error {
+
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
+	logger.Debug("chain id:", chainID)
+
+	logger.Debug("market address:", MarketAddr)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(MarketAddr, backend)
+	if err != nil {
+		return fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	// make auth for sending transaction
+	authUser, err := eth.MakeAuth(chainID, userSK)
+	if err != nil {
+		return err
+	}
+
+	// gas
+	authUser.GasLimit = 1000000
+	// 50 gwei
+	authUser.GasPrice = new(big.Int).SetUint64(50000000000)
+
+	_dur, ok := new(big.Int).SetString(dur, 10)
+	if !ok {
+		return fmt.Errorf("dur setString failed")
+	}
+	_pay, ok := new(big.Int).SetString(pay, 10)
+	if !ok {
+		return fmt.Errorf("pay setString failed")
+	}
+
+	logger.Debug("user renews an order")
+	tx, err := marketIns.Renew(authUser, common.Address(common.HexToAddress(com.CP)), _dur, _pay)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("waiting for tx to be ok")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
+	if err != nil {
+		return err
+	}
+
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
+	logger.Debug("renew order gas used:", receipt.GasUsed)
 
 	return nil
 }

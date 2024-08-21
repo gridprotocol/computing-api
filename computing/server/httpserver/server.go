@@ -106,19 +106,8 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 	// for each greet type
 	switch msgType {
-	// static check
+	// order check
 	case "0":
-		ok, err := hc.gw.StaticCheck(*orderInfo)
-		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order static check failed: " + err.Error()})
-			return
-		}
-
-		logger.Debug("static check ok")
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] the lease static check ok"})
-
-	// all status check
-	case "1":
 		if len(user) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
 			return
@@ -152,29 +141,73 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		// set watcher for the lease (current ver is empty)
 		hc.gw.SetWatcher(user)
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] status check ok"})
-
-	// provider confirm
-	case "2":
-		if len(user) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing address in request"})
-			return
-		}
-
 		// provider confirm this order after all check passed
-		logger.Debug("provider confirming")
-		err := hc.gw.ProviderConfirm(user)
+		logger.Debug("order check passed, proccess provider confirming")
+		err = hc.gw.ProviderConfirm(user)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] confirm failed:%s", err.Error())})
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] provider confirm failed: %s", err.Error())})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] provider confirm ok"})
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order check passed and confirmed"})
+
+	// activate order
+	case "1":
+		// already activated
+		if orderInfo.Status == 2 {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Note] order already activated"})
+			return
+		}
+
+		// check order status
+		if orderInfo.Status != 1 {
+			var status string
+			switch orderInfo.Status {
+			case 0:
+				status = "order not exist"
+			case 3:
+				status = "order cancelled"
+			case 4:
+				status = "order completed"
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] only unactive order can be activated, current order status:" + status})
+			return
+		}
+
+		logger.Debug("activating order")
+
+		// activate this order after app deployed
+		err = hc.gw.Activate(user)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] Failed to activate: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order activated"})
 
 	// send cookie to user
-	case "3":
+	case "2":
 		ts := c.Query("ts")
 		sig := c.Query("sig")
+
+		/*
+			//todo: release when sig scripts is ok
+			// check status must be activated
+			if orderInfo.Status != 2 {
+				var status string
+				switch orderInfo.Status {
+				case 0:
+					status = "order not exist"
+				case 3:
+					status = "order cancelled"
+				case 4:
+					status = "order completed"
+				}
+				c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] only activated order can get cookie:" + status})
+				return
+			}
+		*/
 
 		if len(ts) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing timestamp in request"})
@@ -202,7 +235,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		}
 
 	// deploy with yaml url
-	case "4":
+	case "3":
 		// inject a cookie into request header, in case the cookie is refused by the client(browser)
 		cks := injectCookie(c)
 
@@ -249,7 +282,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy from url ok"})
 
 	// deploy by id
-	case "5":
+	case "4":
 		yamlID := c.Query("id")
 		if len(yamlID) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
@@ -323,68 +356,35 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy ok"})
 
-		// activate order
-	case "6":
-		// already activated
-		if orderInfo.Status == 2 {
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Note] order already activated"})
-			return
-		}
-
-		// check order status
-		if orderInfo.Status != 1 {
-			var status string
-			switch orderInfo.Status {
-			case 0:
-				status = "order not exist"
-			case 3:
-				status = "order cancelled"
-			case 4:
-				status = "order completed"
-			}
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] only unactive order can be activated, current order status:" + status})
-			return
-		}
-
-		logger.Debug("activating order")
-
-		// activate this order after app deployed
-		err = hc.gw.Activate(user)
-		if err != nil {
-			msg := fmt.Sprintf("[Fail] Failed to activate: %s", err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order activated"})
-
-	// user cancel
-	case "7":
+	// order renew
+	case "5":
 		sk := c.Query("sk")
+		dur := c.Query("dur")
+		pay := c.Query("pay")
 
 		logger.Debug("user:", user)
 		logger.Debug("sk:", sk)
 
 		// check order status
 		if orderInfo.Status != 2 {
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Error] only activated order can be cancelled"})
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Error] only activated order can be renewed"})
 			return
 		}
 
-		logger.Debug("cancelling order")
+		logger.Debug("renewing order")
 
-		// cancel order
-		err = hc.gw.UserCancel(user, sk)
+		// renew order
+		err = hc.gw.Renew(user, sk, dur, pay)
 		if err != nil {
-			msg := fmt.Sprintf("[Fail] Failed to cancel: %s", err.Error())
+			msg := fmt.Sprintf("[Fail] Failed to renew: %s", err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order cancelled"})
+		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order renewed"})
 
 	// reset order to status 1(unactive), called by cp
-	case "8":
+	case "6":
 		prob := c.Query("prob")
 		dur := c.Query("dur")
 
@@ -404,7 +404,7 @@ func (hc *handlerCore) handlerGreet(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order reset to status 1 (unactive)"})
 
 	// provider settle
-	case "9":
+	case "7":
 		logger.Debug("user:", user)
 
 		logger.Debug("settling order")
