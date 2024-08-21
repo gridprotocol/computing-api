@@ -37,9 +37,12 @@ type GatewayRemoteProcessAPI interface {
 	// check expire
 	ExpireCheck(orderInfo market.MarketOrder) (bool, error)
 	// provider confirm an order
-	ProviderConfirm(user string) error
-	// provider confirm an order
-	Confirm(user string) error
+	//Confirm(user string) error
+
+	// provider activate and deactivate an order
+	//Activate(user string) error
+	//Deactivate(user string) error
+
 	// provider set the app name when deploy ok
 	SetApp(user string, app string) error
 	//UserCancel(userAddr string, userSK string) error

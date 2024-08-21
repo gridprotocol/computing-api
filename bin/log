@@ -1,16 +1,40 @@
-2024/08/21 15:19:11 Current Version: 0.4.2+fe37d63+2024-08-21.15:18:57CST
-{"level":"DEBUG","time":"2024-08-21T15:19:11+08:00","sub":"cmd","caller":"cmd/daemon.go:105","msg":"load addresses"}
-{"level":"DEBUG","time":"2024-08-21T15:19:11+08:00","sub":"cmd","caller":"cmd/daemon.go:109","msg":"{Contracts:{Utils: Market:0xD3D79C45D0E9310d7dF7DE4482B7B698C38DB1Df Access:0x093a02CaA12f0CF013b9f07534A4bE1a1b999520 Credit:0x1CC26ea9b3dD2A3d369021626E72924C9C3ffB2a Token: Registry:0xc0C8C437Ec6F01e20BC58BB7daA4a590E7E5F509 Swap: Pledge:}}\n"}
-badger 2024/08/21 15:19:11 INFO: All 0 tables opened in 0s
-badger 2024/08/21 15:19:11 INFO: Replaying file id: 0 at offset: 0
-badger 2024/08/21 15:19:11 INFO: Replay took: 38.875µs
-{"level":"DEBUG","time":"2024-08-21T15:19:11+08:00","sub":"cmd","caller":"cmd/daemon.go:145","msg":"listen address: 0.0.0.0:12346"}
-{"level":"INFO","time":"2024-08-21T15:19:11+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
-{"level":"INFO","time":"2024-08-21T15:19:11+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
-{"level":"INFO","time":"2024-08-21T15:19:16+08:00","sub":"http","caller":"httpserver/handler.go:287","msg":"cookies:[cpuser_0x0090675FD3ef5031d7719A758163E73Fd58AF1EB=1724297439_QDg4dINa2Kh_JZmU_-qDLAaqc06GQWjOiB35lJHvrhY cpuser_0x0d2897e7e3ad18df4a0571a7bacb3ffe417d3b06=1803549530_bO5Q1IOJX-StFBT5quCoPgfwcZwe3Kk2FR1AhC01LYc]"}
-{"level":"INFO","time":"2024-08-21T15:19:16+08:00","sub":"http","caller":"httpserver/handler.go:301","msg":"user in cookie: 0x0090675FD3ef5031d7719A758163E73Fd58AF1EB"}
-{"level":"INFO","time":"2024-08-21T15:19:16+08:00","sub":"http","caller":"httpserver/handler.go:302","msg":"cp: 0xEf95c72C836605203F7f66788E450Af2a4141957"}
-{"level":"DEBUG","time":"2024-08-21T15:19:16+08:00","sub":"remote","caller":"remote/remote.go:532","msg":"chain id:1337"}
-{"level":"DEBUG","time":"2024-08-21T15:19:16+08:00","sub":"remote","caller":"remote/remote.go:534","msg":"market:0xD3D79C45D0E9310d7dF7DE4482B7B698C38DB1Df"}
-{"level":"DEBUG","time":"2024-08-21T15:19:16+08:00","sub":"http","caller":"httpserver/handler.go:313","msg":"order info:&{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 nginx-0x82379862a857c98ab391fa7f66957afde97ef528 {1 1 1 1} {1 1 1 1} 4000 4000 0 true false 0 0 5 1000 1}"}
-[GIN] 2024/08/21 - 15:19:16 | 400 |   97.059417ms |             ::1 | GET      "/"
+2024/08/21 17:22:58 Current Version: 0.4.3+3052825+2024-08-21.17:22:42CST
+{"level":"DEBUG","time":"2024-08-21T17:22:58+08:00","sub":"cmd","caller":"cmd/daemon.go:105","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-08-21T17:22:58+08:00","sub":"cmd","caller":"cmd/daemon.go:109","msg":"{Contracts:{Utils: Market:0x455440a5FceD93C83De9c9fe0D3fC27D8A4CE976 Access:0x31AF76796a7c19ed26F509821ae5Ad6F41B8C3ae Credit:0xa616776Da4B2E18cf21E8836d2E893E13FbAC75A Token: Registry:0x0CAE4364f466072eCF423F0a232Ae594dDca83f9 Swap: Pledge:}}\n"}
+badger 2024/08/21 17:22:58 INFO: All 0 tables opened in 0s
+badger 2024/08/21 17:22:58 INFO: Replaying file id: 0 at offset: 0
+badger 2024/08/21 17:22:58 INFO: Replay took: 29.75µs
+{"level":"DEBUG","time":"2024-08-21T17:22:58+08:00","sub":"cmd","caller":"cmd/daemon.go:145","msg":"listen address: 0.0.0.0:12346"}
+{"level":"INFO","time":"2024-08-21T17:22:58+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
+{"level":"INFO","time":"2024-08-21T17:22:58+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
+{"level":"DEBUG","time":"2024-08-21T17:23:14+08:00","sub":"http","caller":"httpserver/handler.go:283","msg":"user:0x82379862a857C98aB391Fa7F66957AfDE97EF528"}
+{"level":"DEBUG","time":"2024-08-21T17:23:14+08:00","sub":"http","caller":"httpserver/handler.go:284","msg":"cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
+{"level":"DEBUG","time":"2024-08-21T17:23:14+08:00","sub":"http","caller":"httpserver/handler.go:286","msg":"reseting order"}
+{"level":"DEBUG","time":"2024-08-21T17:23:14+08:00","sub":"remote","caller":"remote/remote.go:454","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-08-21T17:23:14+08:00","sub":"remote","caller":"remote/remote.go:456","msg":"market address:0x455440a5FceD93C83De9c9fe0D3fC27D8A4CE976"}
+{"level":"DEBUG","time":"2024-08-21T17:23:14+08:00","sub":"remote","caller":"remote/remote.go:477","msg":"reset an order"}
+{"level":"DEBUG","time":"2024-08-21T17:23:14+08:00","sub":"remote","caller":"remote/remote.go:483","msg":"waiting for tx to be ok"}
+{"level":"DEBUG","time":"2024-08-21T17:23:20+08:00","sub":"remote","caller":"remote/remote.go:490","msg":"gas used:55462"}
+{"level":"DEBUG","time":"2024-08-21T17:23:20+08:00","sub":"remote","caller":"remote/remote.go:498","msg":"order info after reset:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  {1 1 1 1} {1 1 1 1} 4000 4000 0 1724232194 1724232194 5 1000 2}"}
+[GIN] 2024/08/21 - 17:23:20 | 200 |  6.092230667s |             ::1 | GET      "/greet/reset?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957&prob=5&dur=1000"
+{"level":"DEBUG","time":"2024-08-21T17:23:54+08:00","sub":"http","caller":"httpserver/handler.go:302","msg":"user:0x82379862a857C98aB391Fa7F66957AfDE97EF528"}
+{"level":"DEBUG","time":"2024-08-21T17:23:54+08:00","sub":"http","caller":"httpserver/handler.go:304","msg":"settling order"}
+{"level":"DEBUG","time":"2024-08-21T17:23:54+08:00","sub":"remote","caller":"remote/remote.go:508","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-08-21T17:23:54+08:00","sub":"remote","caller":"remote/remote.go:510","msg":"market address:0x455440a5FceD93C83De9c9fe0D3fC27D8A4CE976"}
+{"level":"DEBUG","time":"2024-08-21T17:23:54+08:00","sub":"remote","caller":"remote/remote.go:529","msg":"settle an order"}
+{"level":"DEBUG","time":"2024-08-21T17:23:54+08:00","sub":"remote","caller":"remote/remote.go:535","msg":"waiting for tx to be ok"}
+{"level":"DEBUG","time":"2024-08-21T17:24:00+08:00","sub":"remote","caller":"remote/remote.go:542","msg":"gas used:76265"}
+{"level":"DEBUG","time":"2024-08-21T17:24:00+08:00","sub":"remote","caller":"remote/remote.go:550","msg":"order info after settle:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  {1 1 1 1} {1 1 1 1} 4000 3860 140 1724232194 1724232234 5 1000 2}"}
+[GIN] 2024/08/21 - 17:24:00 | 200 |  6.088673292s |             ::1 | GET      "/greet/settle?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"http","caller":"httpserver/handler.go:245","msg":"user:0x82379862a857C98aB391Fa7F66957AfDE97EF528"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"http","caller":"httpserver/handler.go:246","msg":"sk:e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"remote","caller":"remote/remote.go:612","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"remote","caller":"remote/remote.go:614","msg":"market:0x455440a5FceD93C83De9c9fe0D3fC27D8A4CE976"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"http","caller":"httpserver/handler.go:254","msg":"order info:&{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  {1 1 1 1} {1 1 1 1} 4000 3860 140 1724232194 1724232234 5 1000 2}"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"http","caller":"httpserver/handler.go:262","msg":"renewing order"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"remote","caller":"remote/remote.go:405","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"remote","caller":"remote/remote.go:407","msg":"market address:0x455440a5FceD93C83De9c9fe0D3fC27D8A4CE976"}
+{"level":"DEBUG","time":"2024-08-21T17:24:12+08:00","sub":"remote","caller":"remote/remote.go:431","msg":"user renews an order"}
+{"level":"DEBUG","time":"2024-08-21T17:24:13+08:00","sub":"remote","caller":"remote/remote.go:437","msg":"waiting for tx to be ok"}
+{"level":"DEBUG","time":"2024-08-21T17:24:19+08:00","sub":"remote","caller":"remote/remote.go:444","msg":"renew order gas used:120868"}
+[GIN] 2024/08/21 - 17:24:19 | 200 |  6.086821041s |             ::1 | GET      "/greet/renew?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8&dur=20"

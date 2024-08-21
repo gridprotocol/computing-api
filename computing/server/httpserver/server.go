@@ -61,7 +61,9 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 
 	// register routes
 	//r.Any("/*path", hc.handlerAllRequests)
-	r.GET("/greet/confirm", hc.handlerConfirm)
+	//r.GET("/greet/confirm", hc.handlerConfirm)
+	//r.GET("/greet/activate", hc.handlerActivate)
+	//r.GET("/greet/deactivate", hc.handlerDeactivate)
 	r.GET("/greet/cookie", hc.handlerCookie)
 	r.GET("/greet/deployurl", hc.handlerDeployUrl)
 	r.GET("/greet/deployid", hc.handlerDeployID)

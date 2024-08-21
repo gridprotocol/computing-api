@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
 func (hc *handlerCore) handlerConfirm(c *gin.Context) {
 	user := c.Query("user")
 
@@ -29,6 +30,39 @@ func (hc *handlerCore) handlerConfirm(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order confirmed and activated"})
 
 }
+*/
+
+/*
+func (hc *handlerCore) handlerActivate(c *gin.Context) {
+	user := c.Query("user")
+
+	// call confirm
+	err := hc.gw.Activate(user)
+	if err != nil {
+		msg := fmt.Sprintf("[Fail] Failed to confirm: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order activated"})
+
+}
+
+func (hc *handlerCore) handlerDeactivate(c *gin.Context) {
+	user := c.Query("user")
+
+	// call confirm
+	err := hc.gw.Deactivate(user)
+	if err != nil {
+		msg := fmt.Sprintf("[Fail] Failed to confirm: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order deactivated"})
+
+}
+*/
 
 func (hc *handlerCore) handlerCookie(c *gin.Context) {
 	user := c.Query("user")
