@@ -194,8 +194,8 @@ func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
 	return nil
 }
 
-// provider activate an order
-func (grp *GatewayRemoteProcess) Activate(user string) error {
+// provider confirm an order
+func (grp *GatewayRemoteProcess) Confirm(user string) error {
 
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
@@ -228,9 +228,9 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	// 50 gwei
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
-	// provider call activate with user as param
-	logger.Debug("provider activate an order")
-	tx, err := marketIns.Activate(authProvider, common.Address(common.HexToAddress(user)))
+	// provider call confirm with user as param
+	logger.Debug("provider confirm an order")
+	tx, err := marketIns.ProviderConfirm(authProvider, common.Address(common.HexToAddress(user)))
 	if err != nil {
 		return err
 	}
@@ -242,7 +242,7 @@ func (grp *GatewayRemoteProcess) Activate(user string) error {
 	}
 
 	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
-	logger.Debug("activate order gas used:", receipt.GasUsed)
+	logger.Debug("confirm order gas used:", receipt.GasUsed)
 
 	// get order
 	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
@@ -550,4 +550,58 @@ func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.Marke
 	}
 
 	return &orderInfo, nil
+}
+
+// process the order check
+func (grp *GatewayRemoteProcess) OrderCheck(user string, cp string) (bool, error) {
+
+	// get order info with params
+	orderInfo, err := grp.GetOrder(user, cp)
+	if err != nil {
+		return false, fmt.Errorf("get order failed: %s", err.Error())
+	}
+	logger.Debug("order info:", orderInfo)
+
+	// TODO: cache check
+
+	// static check
+	ok, err := grp.StaticCheck(*orderInfo)
+	if !ok {
+
+		return false, fmt.Errorf("the order static check failed: %s", err.Error())
+	}
+	logger.Debug("static check ok")
+
+	// check payee (send activate tx if necessary)
+	ok, err = grp.PayeeCheck(*orderInfo)
+	if !ok {
+		//c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order payee check failed: " + err.Error()})
+		return false, fmt.Errorf("the order payee check failed: %s", err.Error())
+	}
+	logger.Debug("payee check ok")
+
+	// check activation
+	if orderInfo.Status != 2 {
+		return false, fmt.Errorf("order not activated")
+	}
+
+	// // check authorize
+	// if err := hc.gw.Authorize(user, model.Lease{}); err != nil {
+	// 	logger.Error(err)
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"msg": "[Fail] authorization failed"})
+	// 	return
+	// }
+
+	// // set watcher for the lease (current ver is empty)
+	// grp.SetWatcher(user)
+
+	// // provider confirm this order after all check passed
+	// logger.Debug("order check passed, proccess provider confirming")
+	// err = hc.gw.ProviderConfirm(user)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] provider confirm failed: %s", err.Error())})
+	// 	return
+	// }
+
+	return true, nil
 }

@@ -38,8 +38,8 @@ type GatewayRemoteProcessAPI interface {
 	ExpireCheck(orderInfo market.MarketOrder) (bool, error)
 	// provider confirm an order
 	ProviderConfirm(user string) error
-	// provider activate an order
-	Activate(user string) error
+	// provider confirm an order
+	Confirm(user string) error
 	// provider set the app name when deploy ok
 	SetApp(user string, app string) error
 	//UserCancel(userAddr string, userSK string) error
@@ -58,4 +58,7 @@ type GatewayRemoteProcessAPI interface {
 
 	// get order with user and cp
 	GetOrder(user string, cp string) (*market.MarketOrder, error)
+
+	// check order
+	OrderCheck(user string, cp string) (bool, error)
 }
