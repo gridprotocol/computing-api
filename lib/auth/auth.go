@@ -3,6 +3,7 @@ package auth
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"fmt"
 	"log"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -83,4 +84,9 @@ func GetPubKey(sk string) ([]byte, error) {
 	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
 
 	return publicKeyBytes, nil
+}
+
+// enclose the msg with eth message for sign
+func EncloseEth(msg string) string {
+	return fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(msg), msg)
 }

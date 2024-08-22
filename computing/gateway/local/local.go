@@ -35,13 +35,14 @@ func NewGatewayLocalProcess(db *kv.Database) *GatewayLocalProcess {
 }
 
 // TODO: cache
-func (glp *GatewayLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool {
+// verify auth info, signature and it's expire
+func (glp *GatewayLocalProcess) CheckAuthInfo(ainfo *model.AuthInfo) bool {
 	// check msg (time), if input=cheat, always ok
 	if ainfo.Msg == testWhitelistMsg {
 		return true
 	}
 
-	// check expire for the signature in type2
+	// check the expire of signature in a cookie, must within ts+signExpire
 	if ok, err := checkExpire(ainfo.Msg, glp.signExpire); err != nil {
 		logger.Error("Invalid time", err)
 		return false

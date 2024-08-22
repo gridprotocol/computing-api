@@ -37,7 +37,7 @@ func TestCookieProcess(t *testing.T) {
 	if err != nil {
 		t.Error("cookie should be expired")
 	} else {
-		t.Log("Expire test is ok")
+		t.Log("cookie Expire test is ok")
 	}
 
 	// bad signature

@@ -60,7 +60,7 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 		return &proto.GreetFromServer{Result: "[ACK] authorized ok"}, nil
 	case 2: // check authority
 		logger.Debug("Greet - check authority")
-		ok := es.gw.VerifyAccessibility(&model.AuthInfo{Msg: gfc.GetInput()})
+		ok := es.gw.CheckAuthInfo(&model.AuthInfo{Msg: gfc.GetInput()})
 		if !ok {
 			return &proto.GreetFromServer{Result: "[Fail] Failed to verify your account"}, nil
 		}
@@ -76,7 +76,7 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 			return &proto.GreetFromServer{Result: "[Fail] user's address is required"}, nil
 		}
 		// TODO: api_key verify
-		if !es.gw.VerifyAccessibility(&model.AuthInfo{Address: addr}) {
+		if !es.gw.CheckAuthInfo(&model.AuthInfo{Address: addr}) {
 			return &proto.GreetFromServer{Result: "[Fail] user is not authorized"}, nil
 		}
 		// 'true' for url deploy, 'false' for local
@@ -95,7 +95,7 @@ func (es *EntranceService) Process(ctx context.Context, gfc *proto.Request) (*pr
 	addr := gfc.GetAddress()
 	// check authority
 	// TODO: temp ignore this part
-	if ok := es.gw.VerifyAccessibility(&model.AuthInfo{Address: addr, Msg: gfc.GetApiKey()}); !ok {
+	if ok := es.gw.CheckAuthInfo(&model.AuthInfo{Address: addr, Msg: gfc.GetApiKey()}); !ok {
 		return &proto.Response{Response: nil}, fmt.Errorf("[Fail] Failed to verify your account %s", addr)
 	}
 

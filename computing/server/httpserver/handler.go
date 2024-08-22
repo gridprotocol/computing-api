@@ -7,10 +7,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gridprotocol/computing-api/common/utils"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/deploy"
 	"github.com/gridprotocol/computing-api/computing/model"
+	"github.com/gridprotocol/computing-api/lib/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -67,20 +67,18 @@ func (hc *handlerCore) handlerDeactivate(c *gin.Context) {
 func (hc *handlerCore) handlerCookie(c *gin.Context) {
 	user := c.Query("user")
 	// get cp address from config file
-	//cp := config.GetConfig().Remote.Wallet
+	cp := config.GetConfig().Remote.Wallet
 
 	ts := c.Query("ts")
 	sig := c.Query("sig")
 
-	//todo: release when sig scripts is ok
 	// check order before send cookie
-	// ok, err := hc.gw.OrderCheck(user, cp)
-	// if !ok {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] %s", err.Error())})
-	// 	return
-	// }
+	ok, err := hc.gw.OrderCheck(user, cp)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] %s", err.Error())})
+		return
+	}
 
-	// verify ts and sig
 	if len(ts) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing timestamp in request"})
 		return
@@ -90,10 +88,11 @@ func (hc *handlerCore) handlerCookie(c *gin.Context) {
 		return
 	}
 
-	// verify signature in type2
-	ok := hc.gw.VerifyAccessibility(&model.AuthInfo{Address: user, Sig: sig, Msg: ts})
+	// check auth info, signature and it's expire
+	ok = hc.gw.CheckAuthInfo(&model.AuthInfo{Address: user, Sig: sig, Msg: ts})
+	// check passed, make and send a cookie
 	if ok {
-		// make cookie from addr and expire
+		// make cookie from addr and cookie expire
 		cookie := hc.cm.MakeCookie(user)
 
 		// set cookie into response
@@ -175,9 +174,6 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	}
 
 	logger.Info("cookie check passed, addr:", user)
-
-	// todo: this user value should be delete when sig is available
-	user = "0x82379862a857C98aB391Fa7F66957AfDE97EF528"
 
 	// if no remote yaml is provided either, response error
 	if len(yamlID) == 0 {
@@ -334,9 +330,6 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 
 	logger.Info("user in cookie: ", user)
 	logger.Info("cp: ", cp)
-
-	// todo: delete this user value when sig is available
-	user = "0x82379862a857C98aB391Fa7F66957AfDE97EF528"
 
 	// get order info with params
 	orderInfo, err := hc.gw.GetOrder(user, cp)

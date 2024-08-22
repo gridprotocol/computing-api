@@ -20,7 +20,7 @@ func NewFakeImplementofLocalProcess() *FakeImplementofLocalProcess {
 	}
 }
 
-func (filp *FakeImplementofLocalProcess) VerifyAccessibility(ainfo *model.AuthInfo) bool {
+func (filp *FakeImplementofLocalProcess) CheckAuthInfo(ainfo *model.AuthInfo) bool {
 	key := prefixKey(ainfo.Address, leasePrefix)
 	if _, ok := filp.get(string(key)); !ok {
 		return false

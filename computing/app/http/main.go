@@ -14,6 +14,7 @@ func main() {
 	local = append(local, cmd.DaemonCmd)
 	local = append(local, cmd.VersionCmd)
 	local = append(local, cmd.WalletCmd)
+	local = append(local, cmd.SignCmd)
 
 	app := cli.App{
 		Commands: local,

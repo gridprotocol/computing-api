@@ -33,9 +33,9 @@ type Grpc struct {
 }
 
 type Http struct {
-	Listen string
-	HSKey  string
-	Expire int // cookie expire time in second
+	Listen       string
+	HSKey        string
+	CookieExpire int // cookie expire time in second
 }
 
 // load config.toml
@@ -98,7 +98,7 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Grpc", "Listen"},
 		{"Http", "Listen"},
 		{"Http", "HSKey"},
-		{"Http", "Expire"},
+		{"Http", "CookieExpire"},
 
 		{"Local", "DBPath"},
 		{"Local", "SignExpire"},

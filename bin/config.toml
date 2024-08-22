@@ -4,11 +4,11 @@
 [Http]
   Listen = "0.0.0.0:12346"
   HSKey = "memo.io"
-  Expire = 86400
+  CookieExpire = 86400
 
 [Local]
   DBPath = "./db"
-  SignExpire = 86400000
+  SignExpire = 86400
 
 [Remote]
   KeyStore = "./.keystore"

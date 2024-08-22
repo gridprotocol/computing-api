@@ -23,7 +23,7 @@ type cookieManager struct {
 func newCookieManager() *cookieManager {
 	return &cookieManager{
 		signKey: []byte(config.GetConfig().Http.HSKey),
-		expire:  time.Duration(time.Duration(config.GetConfig().Http.Expire) * time.Second),
+		expire:  time.Duration(time.Duration(config.GetConfig().Http.CookieExpire) * time.Second),
 	}
 }
 
