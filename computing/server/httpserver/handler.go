@@ -140,14 +140,9 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	}
 
 	logger.Debug("deploying app")
-	// deploy with remote yaml file
 	err = hc.gw.Deploy(deps, svcs, addr)
 	if err != nil {
-		// clean all failed deployments from k8s
-		for _, dep := range deps {
-			// todo: what if delete failed
-			_ = deploy.CleanDeploy(dep.Name)
-		}
+		deploy.Clean(deps)
 
 		msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
@@ -206,11 +201,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	// deploy with local yaml file data
 	err = hc.gw.Deploy(deps, svcs, user)
 	if err != nil {
-		// clean all deployments from k8s if error happend when deploy
-		for _, dep := range deps {
-			// todo: what if delete failed
-			_ = deploy.CleanDeploy(dep.Name)
-		}
+		deploy.Clean(deps)
 
 		msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
@@ -221,11 +212,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	// set the app name in order
 	err = hc.gw.SetApp(user, deps[0].Name)
 	if err != nil {
-		// clean all deployments from k8s if error happend when deploy
-		for _, dep := range deps {
-			// todo: what if delete failed
-			_ = deploy.CleanDeploy(dep.Name)
-		}
+		deploy.Clean(deps)
 
 		msg := fmt.Sprintf("[Fail] Failed to set app: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
@@ -233,6 +220,41 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy ok"})
+}
+
+// clean deploy
+func (hc *handlerCore) handlerClean(c *gin.Context) {
+	// inject a cookie into request header, in case the cookie is refused by the client(browser)
+	//cks := injectCookie(c)
+
+	// get all cookie in the request
+	cks := c.Request.Cookies()
+
+	// try to find a valid cookie
+	user, err := hc.cm.FindCookie(cks)
+	if err != nil {
+		msg := fmt.Sprintf("[Fail] invalid cookie: %s", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"err": msg})
+		return
+	}
+	logger.Info("cookie check passed, addr:", user)
+
+	// get cp address from config file
+	cp := config.GetConfig().Remote.Wallet
+	logger.Info("cp addr:", cp)
+
+	// get order info with params
+	orderInfo, err := hc.gw.GetOrder(user, cp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+		return
+	}
+	logger.Debug("order info:", orderInfo)
+
+	// delete app
+	deploy.DelDeploy(orderInfo.AppName)
+
+	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] clean ok"})
 }
 
 func (hc *handlerCore) handlerRenew(c *gin.Context) {

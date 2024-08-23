@@ -13,7 +13,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 )
 
 var logger = logc.Logger("deploy")
@@ -216,8 +215,8 @@ func ParseYamlUrl(url string) ([]*appsv1.Deployment, []*corev1.Service, error) {
 	return deps, svcs, nil
 }
 
-// delete a deployment and it's svc with yaml path
-func CleanDeploy(depName string) error {
+// delete a deployment and it's svc with name
+func DelDeploy(depName string) error {
 	// get k8s service
 	k8s := docker.NewK8sService()
 
@@ -232,6 +231,17 @@ func CleanDeploy(depName string) error {
 	logger.Debug("delete svc: ", "svc-", depName)
 	err = k8s.DeleteService(context.Background(), "default", fmt.Sprintf("svc-%s", depName))
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// clean all deploys on node
+func Clean(deps []*appsv1.Deployment) error {
+	// clean all deployments from k8s if error happend when deploy
+	for _, dep := range deps {
+		err := DelDeploy(dep.Name)
 		return err
 	}
 

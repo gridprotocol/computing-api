@@ -8,7 +8,7 @@
 
 [Local]
   DBPath = "./db"
-  SignExpire = 86400
+  SignExpire = 3600
 
 [Remote]
   KeyStore = "./.keystore"
