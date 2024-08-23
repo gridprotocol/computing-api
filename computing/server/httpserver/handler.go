@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -9,10 +10,14 @@ import (
 
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/deploy"
+	"github.com/gridprotocol/computing-api/computing/docker"
 	"github.com/gridprotocol/computing-api/computing/model"
 	"github.com/gridprotocol/computing-api/lib/utils"
 
 	"github.com/gin-gonic/gin"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 /*
@@ -255,6 +260,73 @@ func (hc *handlerCore) handlerClean(c *gin.Context) {
 	deploy.DelDeploy(orderInfo.AppName)
 
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] clean ok"})
+}
+
+// show current app
+func (hc *handlerCore) handlerShow(c *gin.Context) {
+	// inject a cookie into request header, in case the cookie is refused by the client(browser)
+	//cks := injectCookie(c)
+
+	// get all cookie in the request
+	cks := c.Request.Cookies()
+
+	// try to find a valid cookie
+	user, err := hc.cm.FindCookie(cks)
+	if err != nil {
+		msg := fmt.Sprintf("[Fail] invalid cookie: %s", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"err": msg})
+		return
+	}
+	logger.Info("cookie check passed, addr:", user)
+
+	// get cp address from config file
+	cp := config.GetConfig().Remote.Wallet
+	logger.Info("cp addr:", cp)
+
+	// get order info with params
+	orderInfo, err := hc.gw.GetOrder(user, cp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+		return
+	}
+	logger.Debug("order info:", orderInfo)
+
+	// get app name from order
+	deployName := orderInfo.AppName
+
+	if deployName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] no app deployed for this order"})
+		return
+	}
+
+	// get k8s service
+	k8s := docker.NewK8sService()
+	// get current version of deployment
+	deploymentsClient := k8s.Clientset.AppsV1().Deployments(corev1.NamespaceDefault)
+	result, err := deploymentsClient.Get(context.TODO(), deployName, metav1.GetOptions{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get deployment info failed: " + err.Error()})
+		return
+	}
+
+	// deployment status
+	avail := false
+	progress := false
+
+	// get deployment conditions
+	conditions := result.Status.Conditions
+	for _, c := range conditions {
+		// check available to be True
+		if c.Type == "Available" && c.Status == "True" {
+			avail = true
+		}
+		// progress status
+		if c.Type == "Progressing" && c.Status == "True" {
+			progress = true
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"deployment": deployName, "available": avail, "progressing": progress})
 }
 
 func (hc *handlerCore) handlerRenew(c *gin.Context) {
