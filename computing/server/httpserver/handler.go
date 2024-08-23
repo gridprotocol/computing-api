@@ -95,8 +95,11 @@ func (hc *handlerCore) handlerCookie(c *gin.Context) {
 		// make cookie from addr and cookie expire
 		cookie := hc.cm.MakeCookie(user)
 
-		// set cookie into response
-		http.SetCookie(c.Writer, cookie)
+		logger.Debug("new cookie:", cookie)
+
+		// set cookie
+		//http.SetCookie(c.Writer, cookie)
+		c.SetCookie(cookie.Name, cookie.Value, cookie.MaxAge, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
 
 		// response with cookie content
 		c.JSON(http.StatusOK, gin.H{
@@ -112,8 +115,7 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
 	cks := injectCookie(c)
 
-	// check the cookie's expire and sig
-	addr, err := hc.cm.CheckCookie(cks)
+	addr, err := hc.cm.FindCookie(cks)
 	if err != nil {
 		msg := fmt.Sprintf("invalid cookie: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"err": msg})
@@ -163,10 +165,13 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	}
 
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
-	cks := injectCookie(c)
+	//cks := injectCookie(c)
 
-	// check cookies‘ expire and sig
-	user, err := hc.cm.CheckCookie(cks)
+	// get all cookie in the request
+	cks := c.Request.Cookies()
+
+	// try to find a valid cookie
+	user, err := hc.cm.FindCookie(cks)
 	if err != nil {
 		msg := fmt.Sprintf("[Fail] invalid cookie: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"err": msg})
@@ -313,11 +318,14 @@ func (hc *handlerCore) handlerSettle(c *gin.Context) {
 // for all other requests, forward them to a proxy, and return the response from the proxy to the client
 func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
-	cks := injectCookie(c)
+	//cks := injectCookie(c)
+
+	// get all cookies in the request
+	cks := c.Request.Cookies()
 	logger.Info("cookies:", cks)
 
-	// check cookie's expire and sig, return the user addr in cookie name
-	user, err := hc.cm.CheckCookie(cks)
+	// find a valid cookie
+	user, err := hc.cm.FindCookie(cks)
 	if err != nil {
 		msg := fmt.Sprintf("cookie check failed: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})

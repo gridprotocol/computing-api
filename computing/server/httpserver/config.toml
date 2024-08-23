@@ -1,0 +1,15 @@
+[Grpc]
+  Listen = "0.0.0.0:12345"
+
+[Http]
+  Listen = "0.0.0.0:12346"
+  HSKey = "memo.io"
+  CookieExpire = 86400
+
+[Local]
+  DBPath = "./db"
+  SignExpire = 86400
+
+[Remote]
+  KeyStore = "./.keystore"
+  Wallet = "0xEf95c72C836605203F7f66788E450Af2a4141957"
