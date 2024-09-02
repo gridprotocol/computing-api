@@ -1,5 +1,5 @@
 [
-    {"name": "hello-world", "id": 0,"path":"./yamls/hello-world.yaml"},
-    {"name": "nginx", "id": 1,"path":"./yamls/nginx.yaml"},
-    {"name": "ubuntu", "id": 2,"path":"./yamls/ubuntu.yaml"}
+    {"name": "hello-world", "id": 0,"path":"./yamls/hello-world.yaml","desc":"a hello app","gpu":"A800","mem":"16G","disk":"1T"},
+    {"name": "nginx", "id": 1,"path":"./yamls/nginx.yaml","desc":"an nginx server app","gpu":"A800","mem":"16G","disk":"1T"},
+    {"name": "ubuntu", "id": 2,"path":"./yamls/ubuntu.yaml","desc":"a ubuntu os","gpu":"A800","mem":"16G","disk":"1T"}
 ]

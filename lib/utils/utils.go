@@ -7,10 +7,13 @@ import (
 	"strconv"
 )
 
-type Yaml struct {
+type Model struct {
 	Name string `json:"name"`
 	ID   uint64 `json:"id"`
 	Path string `json:"path"`
+	GPU  string `json:"gpu"`
+	MEM  string `json:"mem"`
+	DISK string `json:"disk"`
 }
 
 // get a yaml's path by it's id in the list file
@@ -21,19 +24,19 @@ func GetPathByID(id string) (string, error) {
 	}
 
 	// read list file data
-	listData, err := LoadYaml("./list.json")
+	listData, err := LoadModel("./list.json")
 	if err != nil {
 		return "", err
 	}
 
 	// unmarshal data into yaml structs
-	var yamls []Yaml
-	if err := json.Unmarshal(listData, &yamls); err != nil {
+	var models []Model
+	if err := json.Unmarshal(listData, &models); err != nil {
 		panic(err)
 	}
 
 	// get path with id
-	for _, yaml := range yamls {
+	for _, yaml := range models {
 		// check id
 		if yaml.ID == uID {
 			return yaml.Path, nil
@@ -54,8 +57,8 @@ func SaveYaml(encData []byte, pathName string) error {
 	return nil
 }
 
-// load yaml  from pathName
-func LoadYaml(pathName string) ([]byte, error) {
+// load model info from json
+func LoadModel(pathName string) ([]byte, error) {
 	b, err := os.ReadFile(pathName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading JSON: %v", err)

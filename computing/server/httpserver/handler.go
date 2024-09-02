@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -510,6 +511,38 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 
 	// redirect requests to proxy, and get response from it
 	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
+type Model struct {
+	Name string `json:"name"`
+	Desc string `json:"desc"`
+	GPU  string `json:"gpu"`
+	MEM  string `json:"mem"`
+	DISK string `json:"disk"`
+}
+
+// get the model list supported
+func (hc *handlerCore) handlerModelList(c *gin.Context) {
+	logger.Debug("read model list")
+
+	// load model info
+	b, err := utils.LoadModel("./list.json")
+	if err != nil {
+		msg := fmt.Sprintf("[Fail] load model list failed: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+		return
+	}
+
+	// 将JSON数据解码到一个Person切片
+	var models []Model
+	err = json.Unmarshal([]byte(b), &models)
+	if err != nil {
+		msg := fmt.Sprintf("[Fail] Error unmarshalling JSON: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"models": models})
 }
 
 // make a cookie from the auth data in the request header, and inject it into the request header, return all cookies
