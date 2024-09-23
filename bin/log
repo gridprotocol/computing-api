@@ -1,7 +1,9 @@
-2024/09/02 17:30:38 Current Version: 0.4.8+243afa7+2024-09-02.17:30:26CST
-badger 2024/09/02 17:30:38 INFO: All 1 tables opened in 0s
-badger 2024/09/02 17:30:38 INFO: Replaying file id: 0 at offset: 2251
-badger 2024/09/02 17:30:38 INFO: Replay took: 4.125µs
-{"level":"INFO","time":"2024-09-02T17:30:38+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
-{"level":"INFO","time":"2024-09-02T17:30:38+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
-[GIN] 2024/09/02 - 17:31:31 | 200 |    1.089292ms |             ::1 | GET      "/greet/modellist"
+2024/09/23 16:27:00 Current Version: 0.4.9+4c810e7+2024-09-23.16:26:48CST
+badger 2024/09/23 16:27:00 INFO: All 1 tables opened in 0s
+badger 2024/09/23 16:27:00 INFO: Replaying file id: 0 at offset: 2251
+badger 2024/09/23 16:27:00 INFO: Replay took: 12.125µs
+{"level":"INFO","time":"2024-09-23T16:27:00+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
+{"level":"INFO","time":"2024-09-23T16:27:00+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
+[GIN] 2024/09/23 - 16:27:17 | 500 |  113.676333ms |             ::1 | GET      "/greet/renew?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8&dur=2000"
+[GIN] 2024/09/23 - 16:27:30 | 200 |    6.1144645s |             ::1 | GET      "/greet/reset?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957&prob=5&dur=1000"
+[GIN] 2024/09/23 - 16:27:56 | 200 |  6.113807834s |             ::1 | GET      "/greet/renew?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8&dur=2000"

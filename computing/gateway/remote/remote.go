@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/grid/contracts/eth"
 	"github.com/grid/contracts/go/market"
+	"github.com/grid/contracts/go/registry"
 	com "github.com/gridprotocol/computing-api/common"
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/model"
@@ -47,22 +48,18 @@ func (grp *GatewayRemoteProcess) Register(ability model.Resources) error {
 }
 
 // static check for an order
-func (grp *GatewayRemoteProcess) StaticCheck(orderInfo market.MarketOrder) (bool, error) {
+func (grp *GatewayRemoteProcess) StaticCheck(orderInfo market.IMarketOrder) (bool, error) {
 	// calc value with resource and price
-	valueShould := orderValue(orderInfo)
+	feeShould, err := grp.fee(orderInfo)
+	if err != nil {
+		return false, err
+	}
 
-	logger.Debug("order value should be: ", valueShould.String())
-	logger.Debug("order total value: ", orderInfo.TotalValue.String())
-
-	// check all items
-
-	// // check user confirm
-	// if !orderInfo.UserConfirm {
-	// 	return false, fmt.Errorf("need user confirm")
-	// }
+	logger.Debug("order fee should be: ", feeShould.String())
+	logger.Debug("order fee: ", orderInfo.TotalValue.String())
 
 	// check total value
-	if valueShould.Cmp(orderInfo.TotalValue) != 0 {
+	if feeShould.Cmp(orderInfo.TotalValue) != 0 {
 		return false, fmt.Errorf("static check error: total value of the order is invalid")
 	}
 
@@ -79,6 +76,46 @@ func (grp *GatewayRemoteProcess) StaticCheck(orderInfo market.MarketOrder) (bool
 	}
 
 	return true, nil
+}
+
+// calc the total fee of an order
+func (grp *GatewayRemoteProcess) fee(order market.IMarketOrder) (*big.Int, error) {
+	// get node resource
+
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
+	logger.Debug("chain id:", chainID)
+
+	// get contract instance
+	regIns, err := registry.NewRegistry(RegistryAddr, backend)
+	if err != nil {
+		return nil, fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	logger.Debug("provider set the app name for this order")
+	node, err := regIns.GetNode(&bind.CallOpts{}, common.Address(order.Provider), order.NodeId)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Debug("node info:", node)
+
+	// get order duration
+	dur := order.Duration
+
+	// calc orde fee with node resource and dur
+	vcpu := node.Cpu.Price
+	vgpu := node.Gpu.Price
+	vmem := new(big.Int).Mul(node.Mem.Num, node.Mem.Price)
+	vdisk := new(big.Int).Mul(node.Disk.Num, node.Disk.Price)
+
+	v1 := new(big.Int).Add(vcpu, vgpu)
+	v2 := new(big.Int).Add(vmem, vdisk)
+	v3 := new(big.Int).Add(v1, v2)
+
+	total := new(big.Int).Mul(v3, dur)
+
+	return total, nil
 }
 
 // set the app name in contract
@@ -553,7 +590,7 @@ func (grp *GatewayRemoteProcess) Settle(user string) error {
 }
 
 // check the order expire
-func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.MarketOrder) (bool, error) {
+func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.IMarketOrder) (bool, error) {
 	activate := orderInfo.ActivateTime
 	probation := orderInfo.Probation
 	duration := orderInfo.Duration
@@ -583,7 +620,7 @@ func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.MarketOrder) (bool
 }
 
 // check the order's payee to be the provider itself
-func (grp *GatewayRemoteProcess) PayeeCheck(orderInfo market.MarketOrder) (bool, error) {
+func (grp *GatewayRemoteProcess) PayeeCheck(orderInfo market.IMarketOrder) (bool, error) {
 	if orderInfo.Provider.String() != com.CP {
 		return false, fmt.Errorf("the provider in order is invalid")
 	}
@@ -606,7 +643,7 @@ func (grp *GatewayRemoteProcess) SetWatcher(contract string) error {
 // }
 
 // get an order with user and cp
-func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.MarketOrder, error) {
+func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.IMarketOrder, error) {
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)

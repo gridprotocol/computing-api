@@ -47,7 +47,7 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 		// }
 
 		// check payee (send activate tx if necessary)
-		ok, err := es.gw.PayeeCheck(market.MarketOrder{})
+		ok, err := es.gw.PayeeCheck(market.IMarketOrder{})
 		if !ok {
 			return &proto.GreetFromServer{Result: "[Fail] Authorize failed"}, err
 		}

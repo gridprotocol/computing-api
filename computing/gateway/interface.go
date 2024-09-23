@@ -33,9 +33,9 @@ type GatewayRemoteProcessAPI interface {
 	Register(ability model.Resources) error
 
 	// Check the settlement contract to decide whether to offer the service.
-	StaticCheck(orderInfo market.MarketOrder) (bool, error)
+	StaticCheck(orderInfo market.IMarketOrder) (bool, error)
 	// check expire
-	ExpireCheck(orderInfo market.MarketOrder) (bool, error)
+	ExpireCheck(orderInfo market.IMarketOrder) (bool, error)
 	// provider confirm an order
 	//Confirm(user string) error
 
@@ -56,11 +56,11 @@ type GatewayRemoteProcessAPI interface {
 	Settle(user string) error
 
 	// check the order's payee to be the provider itself
-	PayeeCheck(orderInfo market.MarketOrder) (bool, error)
+	PayeeCheck(orderInfo market.IMarketOrder) (bool, error)
 	SetWatcher(contract string) error
 
 	// get order with user and cp
-	GetOrder(user string, cp string) (*market.MarketOrder, error)
+	GetOrder(user string, cp string) (*market.IMarketOrder, error)
 
 	// check order
 	OrderCheck(user string, cp string) (bool, error)
