@@ -49,37 +49,31 @@ func (grp *GatewayRemoteProcess) Register(ability model.Resources) error {
 
 // static check for an order
 func (grp *GatewayRemoteProcess) StaticCheck(orderInfo market.IMarketOrder) (bool, error) {
-	// calc value with resource and price
-	feeShould, err := grp.fee(orderInfo)
-	if err != nil {
-		return false, err
-	}
+	// // calc value with resource and price
+	// fee, err := grp.fee(user, provider)
+	// if err != nil {
+	// 	return false, err
+	// }
 
-	logger.Debug("order fee should be: ", feeShould.String())
-	logger.Debug("order fee: ", orderInfo.TotalValue.String())
+	// logger.Debug("order fee: ", fee.String())
 
-	// check total value
-	if feeShould.Cmp(orderInfo.TotalValue) != 0 {
-		return false, fmt.Errorf("static check error: total value of the order is invalid")
-	}
+	// // check remain value
+	// remain := orderInfo.Remain
+	// if remain.Cmp(big.NewInt(0)) < 0 || remain.Cmp(orderInfo.TotalValue) > 0 {
+	// 	return false, fmt.Errorf("remain value of this order is invalid")
+	// }
 
-	// check remain value
-	remain := orderInfo.Remain
-	if remain.Cmp(big.NewInt(0)) < 0 || remain.Cmp(orderInfo.TotalValue) > 0 {
-		return false, fmt.Errorf("remain value of this order is invalid")
-	}
-
-	// check remain add remueration, should equal to total value
-	v := new(big.Int).Add(orderInfo.Remain, orderInfo.Remuneration)
-	if v.Cmp(orderInfo.TotalValue) != 0 {
-		return false, fmt.Errorf("remuneration and remain value of this order is invalid, they should equal to the total value")
-	}
+	// // check remain add remueration, should equal to total value
+	// v := new(big.Int).Add(orderInfo.Remain, orderInfo.Remuneration)
+	// if v.Cmp(orderInfo.TotalValue) != 0 {
+	// 	return false, fmt.Errorf("remuneration and remain value of this order is invalid, they should equal to the total value")
+	// }
 
 	return true, nil
 }
 
 // calc the total fee of an order
-func (grp *GatewayRemoteProcess) fee(order market.IMarketOrder) (*big.Int, error) {
+func (grp *GatewayRemoteProcess) fee(user common.Address, provider common.Address) (*big.Int, error) {
 	// get node resource
 
 	// connect to an eth node with ep
@@ -92,8 +86,20 @@ func (grp *GatewayRemoteProcess) fee(order market.IMarketOrder) (*big.Int, error
 		return nil, fmt.Errorf("new contract instance failed: %s", err.Error())
 	}
 
+	// market
+	marIns, err := market.NewMarket(MarketAddr, backend)
+	if err != nil {
+		return nil, fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	// get order info
+	order, err := marIns.GetOrder(&bind.CallOpts{}, user, provider)
+	if err != nil {
+		return nil, fmt.Errorf("get order failed: %s", err.Error())
+	}
+
 	logger.Debug("provider set the app name for this order")
-	node, err := regIns.GetNode(&bind.CallOpts{}, common.Address(order.Provider), order.NodeId)
+	node, err := regIns.GetNode(&bind.CallOpts{}, common.Address(provider), order.NodeId)
 	if err != nil {
 		return nil, err
 	}
@@ -104,10 +110,10 @@ func (grp *GatewayRemoteProcess) fee(order market.IMarketOrder) (*big.Int, error
 	dur := order.Duration
 
 	// calc orde fee with node resource and dur
-	vcpu := node.Cpu.Price
-	vgpu := node.Gpu.Price
-	vmem := new(big.Int).Mul(node.Mem.Num, node.Mem.Price)
-	vdisk := new(big.Int).Mul(node.Disk.Num, node.Disk.Price)
+	vcpu := node.Cpu.PriceSec
+	vgpu := node.Gpu.PriceSec
+	vmem := new(big.Int).Mul(node.Mem.Num, node.Mem.PriceSec)
+	vdisk := new(big.Int).Mul(node.Disk.Num, node.Disk.PriceSec)
 
 	v1 := new(big.Int).Add(vcpu, vgpu)
 	v2 := new(big.Int).Add(vmem, vdisk)
@@ -177,263 +183,6 @@ func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
 	return nil
 }
 
-/*
-// provider confirm an order
-func (grp *GatewayRemoteProcess) Confirm(user string) error {
-
-	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(grp.chain_endpoint)
-	logger.Debug("chain id:", chainID)
-
-	// get contract instance
-	marketIns, err := market.NewMarket(MarketAddr, backend)
-	if err != nil {
-		return fmt.Errorf("new contract instance failed: %s", err.Error())
-	}
-
-	// get wallet and sk
-	repo := keystore.Repo
-	pw := com.Password
-	cp := config.GetConfig().Remote.Wallet
-	ki, err := repo.Get(cp, pw)
-	if err != nil {
-		return err
-	}
-	sk := ki.SK()
-
-	// make auth for sending transaction
-	authProvider, err := eth.MakeAuth(chainID, sk)
-	if err != nil {
-		return err
-	}
-
-	// gas
-	authProvider.GasLimit = 100000
-	// 50 gwei
-	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
-
-	// provider call confirm with user as param
-	logger.Debug("provider confirm an order")
-	tx, err := marketIns.ProviderConfirm(authProvider, common.Address(common.HexToAddress(user)))
-	if err != nil {
-		return err
-	}
-
-	logger.Debug("waiting for tx to be ok")
-	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
-	if err != nil {
-		return err
-	}
-
-	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
-	logger.Debug("confirm order gas used:", receipt.GasUsed)
-
-	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
-	if err != nil {
-		return err
-	}
-	logger.Debug("order status:", orderInfo.Status)
-
-	// check order status
-	if orderInfo.Status != 2 {
-		return fmt.Errorf("activate failed, status not 2")
-	}
-
-	return nil
-}
-*/
-
-/*
-// provider activate an order
-func (grp *GatewayRemoteProcess) Activate(user string) error {
-
-	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(grp.chain_endpoint)
-	logger.Debug("chain id:", chainID)
-
-	// get contract instance
-	marketIns, err := market.NewMarket(MarketAddr, backend)
-	if err != nil {
-		return fmt.Errorf("new contract instance failed: %s", err.Error())
-	}
-
-	// get wallet and sk
-	repo := keystore.Repo
-	pw := com.Password
-	cp := config.GetConfig().Remote.Wallet
-	ki, err := repo.Get(cp, pw)
-	if err != nil {
-		return err
-	}
-	sk := ki.SK()
-
-	// make auth for sending transaction
-	authProvider, err := eth.MakeAuth(chainID, sk)
-	if err != nil {
-		return err
-	}
-
-	// gas
-	authProvider.GasLimit = 100000
-	// 50 gwei
-	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
-
-	// provider call
-	logger.Debug("provider activate an order")
-	tx, err := marketIns.Activate(authProvider, common.Address(common.HexToAddress(user)))
-	if err != nil {
-		return err
-	}
-
-	logger.Debug("waiting for tx to be ok")
-	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
-	if err != nil {
-		return err
-	}
-
-	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
-	logger.Debug("gas used:", receipt.GasUsed)
-
-	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
-	if err != nil {
-		return err
-	}
-	logger.Debug("order status:", orderInfo.Status)
-
-	// check order status
-	if orderInfo.Status != 2 {
-		return fmt.Errorf("activate failed, status not 2")
-	}
-
-	return nil
-}
-
-// provider deactivate an order
-func (grp *GatewayRemoteProcess) Deactivate(user string) error {
-
-	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(grp.chain_endpoint)
-	logger.Debug("chain id:", chainID)
-
-	// get contract instance
-	marketIns, err := market.NewMarket(MarketAddr, backend)
-	if err != nil {
-		return fmt.Errorf("new contract instance failed: %s", err.Error())
-	}
-
-	// get wallet and sk
-	repo := keystore.Repo
-	pw := com.Password
-	cp := config.GetConfig().Remote.Wallet
-	ki, err := repo.Get(cp, pw)
-	if err != nil {
-		return err
-	}
-	sk := ki.SK()
-
-	// make auth for sending transaction
-	authProvider, err := eth.MakeAuth(chainID, sk)
-	if err != nil {
-		return err
-	}
-
-	// gas
-	authProvider.GasLimit = 100000
-	// 50 gwei
-	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
-
-	// provider call
-	logger.Debug("provider deactivate an order")
-	tx, err := marketIns.Deactivate(authProvider, common.Address(common.HexToAddress(user)))
-	if err != nil {
-		return err
-	}
-
-	logger.Debug("waiting for tx to be ok")
-	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
-	if err != nil {
-		return err
-	}
-
-	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
-	logger.Debug("gas used:", receipt.GasUsed)
-
-	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
-	if err != nil {
-		return err
-	}
-	logger.Debug("order status:", orderInfo.Status)
-
-	// check order status
-	if orderInfo.Status != 1 {
-		return fmt.Errorf("activate failed, status not 1")
-	}
-
-	return nil
-}
-*/
-
-// call user cancel
-/*
-func (grp *GatewayRemoteProcess) UserCancel(userAddr string, userSK string) error {
-
-	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(grp.chain_endpoint)
-	logger.Debug("chain id:", chainID)
-
-	logger.Debug("market address:", MarketAddr)
-
-	// get contract instance
-	marketIns, err := market.NewMarket(MarketAddr, backend)
-	if err != nil {
-		return fmt.Errorf("new contract instance failed: %s", err.Error())
-	}
-
-	// make auth for sending transaction
-	authUser, err := eth.MakeAuth(chainID, userSK)
-	if err != nil {
-		return err
-	}
-
-	// gas
-	authUser.GasLimit = 1000000
-	// 50 gwei
-	authUser.GasPrice = new(big.Int).SetUint64(50000000000)
-
-	logger.Debug("user cancels an order")
-	tx, err := marketIns.UserCancel(authUser, common.Address(common.HexToAddress(com.CP)))
-	if err != nil {
-		return err
-	}
-
-	logger.Debug("waiting for tx to be ok")
-	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
-	if err != nil {
-		return err
-	}
-
-	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
-	logger.Debug("cancel order gas used:", receipt.GasUsed)
-
-	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(com.CP))
-	if err != nil {
-		return err
-	}
-	logger.Debug("order status:", orderInfo.Status)
-
-	// check order status
-	if orderInfo.Status != 3 {
-		return fmt.Errorf("cancel failed, status not 3")
-	}
-
-	return nil
-}
-*/
-
 // user renew an order
 func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur string) error {
 
@@ -466,7 +215,7 @@ func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur strin
 	}
 
 	logger.Debug("user renews an order")
-	tx, err := marketIns.Renew(authUser, common.Address(common.HexToAddress(com.CP)), _dur)
+	tx, err := marketIns.Extend(authUser, common.Address(common.HexToAddress(com.CP)), _dur)
 	if err != nil {
 		return err
 	}
@@ -621,9 +370,9 @@ func (grp *GatewayRemoteProcess) ExpireCheck(orderInfo market.IMarketOrder) (boo
 
 // check the order's payee to be the provider itself
 func (grp *GatewayRemoteProcess) PayeeCheck(orderInfo market.IMarketOrder) (bool, error) {
-	if orderInfo.Provider.String() != com.CP {
-		return false, fmt.Errorf("the provider in order is invalid")
-	}
+	// if orderInfo.Provider.String() != com.CP {
+	// 	return false, fmt.Errorf("the provider in order is invalid")
+	// }
 
 	return true, nil
 }

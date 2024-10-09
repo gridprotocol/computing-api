@@ -1,9 +1,14 @@
-2024/09/23 16:27:00 Current Version: 0.4.9+4c810e7+2024-09-23.16:26:48CST
-badger 2024/09/23 16:27:00 INFO: All 1 tables opened in 0s
-badger 2024/09/23 16:27:00 INFO: Replaying file id: 0 at offset: 2251
-badger 2024/09/23 16:27:00 INFO: Replay took: 12.125µs
-{"level":"INFO","time":"2024-09-23T16:27:00+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
-{"level":"INFO","time":"2024-09-23T16:27:00+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
-[GIN] 2024/09/23 - 16:27:17 | 500 |  113.676333ms |             ::1 | GET      "/greet/renew?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8&dur=2000"
-[GIN] 2024/09/23 - 16:27:30 | 200 |    6.1144645s |             ::1 | GET      "/greet/reset?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957&prob=5&dur=1000"
-[GIN] 2024/09/23 - 16:27:56 | 200 |  6.113807834s |             ::1 | GET      "/greet/renew?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8&dur=2000"
+2024/10/09 16:32:44 Current Version: 0.4.9+194af38+2024-10-09.16:32:31CST
+badger 2024/10/09 16:32:44 INFO: All 1 tables opened in 1ms
+badger 2024/10/09 16:32:44 INFO: Replaying file id: 0 at offset: 2363
+badger 2024/10/09 16:32:44 INFO: Replay took: 2.625µs
+{"level":"INFO","time":"2024-10-09T16:32:44+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
+{"level":"INFO","time":"2024-10-09T16:32:44+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
+{"level":"ERROR","time":"2024-10-09T16:32:52+08:00","sub":"local","caller":"local/local.go:51","msg":"Expired time1727071470"}
+[GIN] 2024/10/09 - 16:32:52 | 400 |   66.647542ms |             ::1 | GET      "/greet/cookie?ts=1727071470&user=0x82379862a857c98ab391fa7f66957afde97ef528&sig=0x3649853a38a9349898d520d5fcb1ccd07a4fb93ed7efc583ebec2f696f7b78456ed32abdf21a30ea939902ec516193f9df8adf04f0bfb48fa2357269c7d09c0d00"
+[GIN] 2024/10/09 - 16:33:37 | 200 |   35.367833ms |             ::1 | GET      "/greet/cookie?ts=1728462808&user=0x82379862a857c98ab391fa7f66957afde97ef528&sig=0x53b313ccece7bca68e721e7c19a01c2adbb3679c2a23bba2ce55c7db86d01b332ce53de5db5f28e2e263fc02daebd939d2e6a87be9f78bc7844c9326422f6dc601"
+[GIN] 2024/10/09 - 16:34:05 | 200 |     6.158225s |             ::1 | GET      "/greet/settle?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/10/09 - 16:34:22 | 200 |  6.099277417s |             ::1 | GET      "/greet/reset?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957&prob=5&dur=1000"
+[GIN] 2024/10/09 - 16:34:36 | 200 |  6.120634667s |             ::1 | GET      "/greet/renew?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8&dur=2000"
+[GIN] 2024/10/09 - 16:34:52 | 200 |  6.107005667s |             ::1 | GET      "/greet/settle?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/10/09 - 16:35:07 | 200 |  6.114331959s |             ::1 | GET      "/greet/settle?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"

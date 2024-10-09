@@ -389,7 +389,7 @@ func (hc *handlerCore) handlerReset(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order reset to status 1 (unactive)"})
+	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order reset to status 2 (active)"})
 }
 
 func (hc *handlerCore) handlerSettle(c *gin.Context) {
