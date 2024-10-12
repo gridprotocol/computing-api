@@ -154,6 +154,9 @@ var runCmd = &cli.Command{
 			remote.AccessAddr = common.HexToAddress(d.Access)
 			remote.CreditAddr = common.HexToAddress(d.Credit)
 			remote.RegistryAddr = common.HexToAddress(d.Registry)
+
+		default:
+			log.Fatal("unsupport chain")
 		}
 
 		// make a gw object
