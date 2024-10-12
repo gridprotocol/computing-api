@@ -135,6 +135,25 @@ var runCmd = &cli.Command{
 			remote.AccessAddr = common.HexToAddress(s.Access)
 			remote.CreditAddr = common.HexToAddress(s.Credit)
 			remote.RegistryAddr = common.HexToAddress(s.Registry)
+
+		case "dev":
+			chain_endpoint = eth.DevChain
+
+			// load all addresses from json
+			logger.Debug("load addresses")
+			// loading contracts
+			d := contracts.Dev{}
+			d.Load()
+			logger.Debugf("%+v\n", d)
+
+			if d.Market == "" || d.Access == "" || d.Credit == "" || d.Registry == "" {
+				logger.Debug("all contract addresses must exist in json file")
+			}
+			// save address
+			remote.MarketAddr = common.HexToAddress(d.Market)
+			remote.AccessAddr = common.HexToAddress(d.Access)
+			remote.CreditAddr = common.HexToAddress(d.Credit)
+			remote.RegistryAddr = common.HexToAddress(d.Registry)
 		}
 
 		// make a gw object
