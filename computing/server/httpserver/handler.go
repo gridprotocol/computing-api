@@ -158,6 +158,7 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy from url ok"})
 }
 
+// deploy app by id
 func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	yamlID := c.Query("id")
 	if len(yamlID) == 0 {
@@ -204,7 +205,22 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 
-	// deploy with local yaml file data
+	// get cp address from config file
+	cp := config.GetConfig().Remote.Wallet
+	logger.Info("cp addr:", cp)
+
+	// get order info with params
+	orderInfo, err := hc.gw.GetOrder(user, cp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+		return
+	}
+	logger.Debug("node id:", orderInfo.NodeId)
+
+	// set node id for the first deploy
+	deps[0].Spec.Template.Spec.NodeSelector["id"] = orderInfo.NodeId.String()
+
+	// deploy deps
 	err = hc.gw.Deploy(deps, svcs, user)
 	if err != nil {
 		deploy.Clean(deps)

@@ -20,3 +20,12 @@ spec:
         name: nginx
         ports:
         - containerPort: 8081
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "250m"
+          limits:
+            memory: "32Mi"
+            cpu: "500m"
+      nodeSelector:
+        id: "1"

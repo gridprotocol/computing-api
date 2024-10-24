@@ -29,6 +29,7 @@ func NewComputingGateway(ep string, test bool) *ComputingGateway {
 
 	// remote gw
 	grp := remote.NewGatewayRemoteProcess(ep, db)
+
 	// local gw
 	var glp GatewayLocalProcessAPI
 	// check for fake
