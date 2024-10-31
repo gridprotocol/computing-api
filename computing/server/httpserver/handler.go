@@ -218,7 +218,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	logger.Debug("node id:", orderInfo.NodeId)
 
 	// set node id for the first deploy
-	deps[0].Spec.Template.Spec.NodeSelector["id"] = orderInfo.NodeId.String()
+	deps[0].Spec.Template.Spec.NodeSelector["id"] = utils.Uint64ToString(orderInfo.NodeId)
 
 	// deploy deps
 	err = hc.gw.Deploy(deps, svcs, user)

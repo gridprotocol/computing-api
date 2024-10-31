@@ -1,33 +1,4 @@
-2024/10/23 15:13:57 Current Version: 0.4.9+a4c5c82+2024-10-23.15:13:11CST
-badger 2024/10/23 15:13:57 INFO: All 1 tables opened in 2ms
-badger 2024/10/23 15:13:57 INFO: Replaying file id: 0 at offset: 2363
-badger 2024/10/23 15:13:57 INFO: Replay took: 15.125µs
-{"level":"INFO","time":"2024-10-23T15:13:57+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
-{"level":"INFO","time":"2024-10-23T15:13:57+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
-[GIN] 2024/10/23 - 15:14:08 | 200 |  150.313041ms |             ::1 | GET      "/greet/cookie?ts=1729667621&user=0x82379862a857c98ab391fa7f66957afde97ef528&sig=0xa5a3492b9c1881ebf6011f6d6d22b7c78fbc5586cce0eb6c2d4f7c1dba9a54c9568adf629cc63ba2f17471a50c2292621405e394dfb1fd41e1068142f894ecc800"
-{"level":"INFO","time":"2024-10-23T15:14:14+08:00","sub":"http","caller":"httpserver/handler.go:297","msg":"cookie check passed, addr:0x82379862a857c98ab391fa7f66957afde97ef528"}
-{"level":"INFO","time":"2024-10-23T15:14:14+08:00","sub":"http","caller":"httpserver/handler.go:301","msg":"cp addr:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-[GIN] 2024/10/23 - 15:14:14 | 400 |   36.200042ms |             ::1 | GET      "/greet/show"
-{"level":"INFO","time":"2024-10-23T15:14:37+08:00","sub":"http","caller":"httpserver/handler.go:183","msg":"cookie check passed, addr:0x82379862a857c98ab391fa7f66957afde97ef528"}
-{"level":"INFO","time":"2024-10-23T15:14:37+08:00","sub":"http","caller":"httpserver/handler.go:199","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"INFO","time":"2024-10-23T15:14:37+08:00","sub":"http","caller":"httpserver/handler.go:210","msg":"cp addr:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-app name: nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-nodePort service is created.
-service name: svc-nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-port:8081
-targetPort:8081
-NodePort: 30429
-{"level":"ERROR","time":"2024-10-23T15:15:37+08:00","sub":"local","caller":"local/local.go:117","msg":"fail to deploy: deployment is failed to be ready after retrys"}
-[GIN] 2024/10/23 - 15:15:37 | 500 |          1m0s |             ::1 | GET      "/greet/deployid?id=1"
-{"level":"INFO","time":"2024-10-23T15:15:44+08:00","sub":"http","caller":"httpserver/handler.go:183","msg":"cookie check passed, addr:0x82379862a857c98ab391fa7f66957afde97ef528"}
-{"level":"INFO","time":"2024-10-23T15:15:44+08:00","sub":"http","caller":"httpserver/handler.go:199","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"INFO","time":"2024-10-23T15:15:44+08:00","sub":"http","caller":"httpserver/handler.go:210","msg":"cp addr:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-app name: nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-nodePort service is created.
-service name: svc-nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-port:8081
-targetPort:8081
-NodePort: 30398
-all app is ready
-entrance: http://localhost:30398
-[GIN] 2024/10/23 - 15:15:55 | 200 | 10.985902166s |             ::1 | GET      "/greet/deployid?id=1"
+2024/10/31 11:21:17 Current Version: 0.4.10+5296b9f+2024-10-30.17:06:42CST
+badger 2024/10/31 11:21:17 INFO: All 0 tables opened in 0s
+{"level":"INFO","time":"2024-10-31T11:21:17+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
+{"level":"INFO","time":"2024-10-31T11:21:17+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}

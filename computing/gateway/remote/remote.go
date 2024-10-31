@@ -16,6 +16,7 @@ import (
 	"github.com/gridprotocol/computing-api/keystore"
 	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
+	"github.com/gridprotocol/computing-api/lib/utils"
 )
 
 var (
@@ -112,8 +113,8 @@ func (grp *GatewayRemoteProcess) fee(user common.Address, provider common.Addres
 	// calc orde fee with node resource and dur
 	vcpu := node.Cpu.PriceSec
 	vgpu := node.Gpu.PriceSec
-	vmem := new(big.Int).Mul(node.Mem.Num, node.Mem.PriceSec)
-	vdisk := new(big.Int).Mul(node.Disk.Num, node.Disk.PriceSec)
+	vmem := new(big.Int).Mul(new(big.Int).SetUint64(node.Mem.Num), node.Mem.PriceSec)
+	vdisk := new(big.Int).Mul(new(big.Int).SetUint64(node.Disk.Num), node.Disk.PriceSec)
 
 	v1 := new(big.Int).Add(vcpu, vgpu)
 	v2 := new(big.Int).Add(vmem, vdisk)
@@ -209,9 +210,9 @@ func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur strin
 	// 50 gwei
 	authUser.GasPrice = new(big.Int).SetUint64(50000000000)
 
-	_dur, ok := new(big.Int).SetString(dur, 10)
-	if !ok {
-		return fmt.Errorf("dur setString failed")
+	_dur, err := utils.StringToUint64(dur)
+	if err != nil {
+		return err
 	}
 
 	logger.Debug("user renews an order")
@@ -258,10 +259,17 @@ func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur 
 	// 50 gwei
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
-	bigProb, _ := new(big.Int).SetString(prob, 10)
-	bigDur, _ := new(big.Int).SetString(dur, 10)
+	_prob, err := utils.StringToUint64(prob)
+	if err != nil {
+		return err
+	}
+	_dur, err := utils.StringToUint64(dur)
+	if err != nil {
+		return err
+	}
+
 	logger.Debug("reset an order")
-	tx, err := marketIns.Reset(authProvider, common.Address(common.HexToAddress(user)), common.Address(common.HexToAddress(cp)), bigProb, bigDur)
+	tx, err := marketIns.Reset(authProvider, common.Address(common.HexToAddress(user)), common.Address(common.HexToAddress(cp)), _prob, _dur)
 	if err != nil {
 		return err
 	}
