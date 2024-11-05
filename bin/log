@@ -1,33 +1,38 @@
-2024/10/23 15:13:57 Current Version: 0.4.9+a4c5c82+2024-10-23.15:13:11CST
-badger 2024/10/23 15:13:57 INFO: All 1 tables opened in 2ms
-badger 2024/10/23 15:13:57 INFO: Replaying file id: 0 at offset: 2363
-badger 2024/10/23 15:13:57 INFO: Replay took: 15.125µs
-{"level":"INFO","time":"2024-10-23T15:13:57+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
-{"level":"INFO","time":"2024-10-23T15:13:57+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
-[GIN] 2024/10/23 - 15:14:08 | 200 |  150.313041ms |             ::1 | GET      "/greet/cookie?ts=1729667621&user=0x82379862a857c98ab391fa7f66957afde97ef528&sig=0xa5a3492b9c1881ebf6011f6d6d22b7c78fbc5586cce0eb6c2d4f7c1dba9a54c9568adf629cc63ba2f17471a50c2292621405e394dfb1fd41e1068142f894ecc800"
-{"level":"INFO","time":"2024-10-23T15:14:14+08:00","sub":"http","caller":"httpserver/handler.go:297","msg":"cookie check passed, addr:0x82379862a857c98ab391fa7f66957afde97ef528"}
-{"level":"INFO","time":"2024-10-23T15:14:14+08:00","sub":"http","caller":"httpserver/handler.go:301","msg":"cp addr:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-[GIN] 2024/10/23 - 15:14:14 | 400 |   36.200042ms |             ::1 | GET      "/greet/show"
-{"level":"INFO","time":"2024-10-23T15:14:37+08:00","sub":"http","caller":"httpserver/handler.go:183","msg":"cookie check passed, addr:0x82379862a857c98ab391fa7f66957afde97ef528"}
-{"level":"INFO","time":"2024-10-23T15:14:37+08:00","sub":"http","caller":"httpserver/handler.go:199","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"INFO","time":"2024-10-23T15:14:37+08:00","sub":"http","caller":"httpserver/handler.go:210","msg":"cp addr:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-app name: nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-nodePort service is created.
-service name: svc-nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-port:8081
-targetPort:8081
-NodePort: 30429
-{"level":"ERROR","time":"2024-10-23T15:15:37+08:00","sub":"local","caller":"local/local.go:117","msg":"fail to deploy: deployment is failed to be ready after retrys"}
-[GIN] 2024/10/23 - 15:15:37 | 500 |          1m0s |             ::1 | GET      "/greet/deployid?id=1"
-{"level":"INFO","time":"2024-10-23T15:15:44+08:00","sub":"http","caller":"httpserver/handler.go:183","msg":"cookie check passed, addr:0x82379862a857c98ab391fa7f66957afde97ef528"}
-{"level":"INFO","time":"2024-10-23T15:15:44+08:00","sub":"http","caller":"httpserver/handler.go:199","msg":"yaml path from id:./yamls/nginx.yaml"}
-{"level":"INFO","time":"2024-10-23T15:15:44+08:00","sub":"http","caller":"httpserver/handler.go:210","msg":"cp addr:0xEf95c72C836605203F7f66788E450Af2a4141957"}
-app name: nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-nodePort service is created.
-service name: svc-nginx-0x82379862a857c98ab391fa7f66957afde97ef528
-port:8081
-targetPort:8081
-NodePort: 30398
-all app is ready
-entrance: http://localhost:30398
-[GIN] 2024/10/23 - 15:15:55 | 200 | 10.985902166s |             ::1 | GET      "/greet/deployid?id=1"
+2024/11/04 17:52:50 Current Version: 0.4.10+5296b9f+2024-11-04.17:51:47CST
+{"level":"DEBUG","time":"2024-11-04T17:52:50+08:00","sub":"cmd","caller":"cmd/daemon.go:105","msg":"load addresses"}
+{"level":"DEBUG","time":"2024-11-04T17:52:50+08:00","sub":"cmd","caller":"cmd/daemon.go:109","msg":"{Contracts:{Ver:v0.3.7 Instances:0x5e450E56c0579E04E6b6e3fcD6908ab79CD5a676 Version:0x66e00b791d9e9fC1695CeA68178aC6DADF04b81B Utils: Market:0x4554Abaf4F51A664A7E0Ba98145c5a4615683A7B Access:0xAD3396904E85895A218e9420A6a5742f1A8241e0 Credit:0xD74B642d1a58BC7A852DA83A24220CbC8DE283ca Token: Registry:0x6Fe1D605e0e65bc073E294744E17deaa361C8D43 Swap: Pledge:}}\n"}
+badger 2024/11/04 17:52:50 INFO: All 0 tables opened in 0s
+{"level":"DEBUG","time":"2024-11-04T17:52:50+08:00","sub":"cmd","caller":"cmd/daemon.go:167","msg":"listen address: 0.0.0.0:12346"}
+{"level":"INFO","time":"2024-11-04T17:52:50+08:00","sub":"http","caller":"httpserver/server.go:24","msg":"Starting server"}
+{"level":"INFO","time":"2024-11-04T17:52:50+08:00","sub":"http","caller":"httpserver/server.go:41","msg":"create new router ok"}
+{"level":"DEBUG","time":"2024-11-04T17:52:57+08:00","sub":"http","caller":"httpserver/handler.go:414","msg":"user:0x82379862a857C98aB391Fa7F66957AfDE97EF528"}
+{"level":"DEBUG","time":"2024-11-04T17:52:57+08:00","sub":"http","caller":"httpserver/handler.go:416","msg":"settling order"}
+{"level":"DEBUG","time":"2024-11-04T17:52:57+08:00","sub":"remote","caller":"remote/remote.go:294","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-11-04T17:52:57+08:00","sub":"remote","caller":"remote/remote.go:296","msg":"market address:0x4554Abaf4F51A664A7E0Ba98145c5a4615683A7B"}
+{"level":"DEBUG","time":"2024-11-04T17:52:57+08:00","sub":"remote","caller":"remote/remote.go:315","msg":"settle an order"}
+{"level":"DEBUG","time":"2024-11-04T17:52:57+08:00","sub":"remote","caller":"remote/remote.go:321","msg":"waiting for tx to be ok"}
+{"level":"DEBUG","time":"2024-11-04T17:53:03+08:00","sub":"remote","caller":"remote/remote.go:328","msg":"gas used:101227"}
+{"level":"DEBUG","time":"2024-11-04T17:53:03+08:00","sub":"remote","caller":"remote/remote.go:336","msg":"order info after settle:{0xEf95c72C836605203F7f66788E450Af2a4141957 1  0 0 1730713855 1730713977 5 10 4}"}
+[GIN] 2024/11/04 - 17:53:03 | 200 |  6.181228084s |             ::1 | GET      "/greet/settle?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+{"level":"DEBUG","time":"2024-11-04T17:53:09+08:00","sub":"http","caller":"httpserver/handler.go:395","msg":"user:0x82379862a857C98aB391Fa7F66957AfDE97EF528"}
+{"level":"DEBUG","time":"2024-11-04T17:53:09+08:00","sub":"http","caller":"httpserver/handler.go:396","msg":"cp:0xEf95c72C836605203F7f66788E450Af2a4141957"}
+{"level":"DEBUG","time":"2024-11-04T17:53:09+08:00","sub":"http","caller":"httpserver/handler.go:398","msg":"reseting order"}
+{"level":"DEBUG","time":"2024-11-04T17:53:09+08:00","sub":"remote","caller":"remote/remote.go:240","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-11-04T17:53:09+08:00","sub":"remote","caller":"remote/remote.go:242","msg":"market address:0x4554Abaf4F51A664A7E0Ba98145c5a4615683A7B"}
+{"level":"DEBUG","time":"2024-11-04T17:53:09+08:00","sub":"remote","caller":"remote/remote.go:263","msg":"reset an order"}
+{"level":"DEBUG","time":"2024-11-04T17:53:09+08:00","sub":"remote","caller":"remote/remote.go:269","msg":"waiting for tx to be ok"}
+{"level":"DEBUG","time":"2024-11-04T17:53:15+08:00","sub":"remote","caller":"remote/remote.go:276","msg":"gas used:116353"}
+{"level":"DEBUG","time":"2024-11-04T17:53:15+08:00","sub":"remote","caller":"remote/remote.go:284","msg":"order info after reset:{0xEf95c72C836605203F7f66788E450Af2a4141957 1  4000 0 1730713989 1730713989 5 1000 2}"}
+[GIN] 2024/11/04 - 17:53:15 | 200 |  6.173951334s |             ::1 | GET      "/greet/reset?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957&prob=5&dur=1000"
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"http","caller":"httpserver/handler.go:357","msg":"user:0x82379862a857C98aB391Fa7F66957AfDE97EF528"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"http","caller":"httpserver/handler.go:358","msg":"sk:e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"remote","caller":"remote/remote.go:398","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"remote","caller":"remote/remote.go:400","msg":"market:0x4554Abaf4F51A664A7E0Ba98145c5a4615683A7B"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"http","caller":"httpserver/handler.go:366","msg":"order info:&{0xEf95c72C836605203F7f66788E450Af2a4141957 1  4000 0 1730713989 1730713989 5 1000 2}"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"http","caller":"httpserver/handler.go:374","msg":"renewing order"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"remote","caller":"remote/remote.go:191","msg":"chain id:1337"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"remote","caller":"remote/remote.go:193","msg":"market address:0x4554Abaf4F51A664A7E0Ba98145c5a4615683A7B"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"remote","caller":"remote/remote.go:217","msg":"user renews an order"}
+{"level":"DEBUG","time":"2024-11-04T17:53:20+08:00","sub":"remote","caller":"remote/remote.go:223","msg":"waiting for tx to be ok"}
+{"level":"DEBUG","time":"2024-11-04T17:53:26+08:00","sub":"remote","caller":"remote/remote.go:230","msg":"renew order gas used:210551"}
+[GIN] 2024/11/04 - 17:53:26 | 200 |  6.145331959s |             ::1 | GET      "/greet/renew?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&sk=e364150e354f539dec2b057f9ada914dd11c11535d65c5d57a302bf37f62acb8&dur=2000"
