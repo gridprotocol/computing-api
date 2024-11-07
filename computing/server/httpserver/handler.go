@@ -71,15 +71,21 @@ func (hc *handlerCore) handlerDeactivate(c *gin.Context) {
 */
 
 func (hc *handlerCore) handlerCookie(c *gin.Context) {
+	// user address
 	user := c.Query("user")
+
+	// order id
+	id := c.Query("id")
+	id64, _ := utils.StringToUint64(id)
+
 	// get cp address from config file
-	cp := config.GetConfig().Remote.Wallet
+	//cp := config.GetConfig().Remote.Wallet
 
 	ts := c.Query("ts")
 	sig := c.Query("sig")
 
 	// check order before send cookie
-	ok, err := hc.gw.OrderCheck(user, cp)
+	ok, err := hc.gw.OrderCheck(id64)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] %s", err.Error())})
 		return
@@ -158,8 +164,11 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy from url ok"})
 }
 
-// deploy app by id
+// deploy app by app id
 func (hc *handlerCore) handlerDeployID(c *gin.Context) {
+	oid := c.Query("oid")
+	oid64, _ := utils.StringToUint64(oid)
+
 	yamlID := c.Query("id")
 	if len(yamlID) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
@@ -210,7 +219,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	logger.Info("cp addr:", cp)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(user, cp)
+	orderInfo, err := hc.gw.GetOrder(oid64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
@@ -232,7 +241,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 
 	logger.Debug("app name:", deps[0].Name)
 	// set the app name in order
-	err = hc.gw.SetApp(user, deps[0].Name)
+	err = hc.gw.SetApp(oid64, deps[0].Name)
 	if err != nil {
 		deploy.Clean(deps)
 
@@ -248,6 +257,9 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 func (hc *handlerCore) handlerClean(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
 	//cks := injectCookie(c)
+
+	oid := c.Query("oid")
+	oid64, _ := utils.StringToUint64(oid)
 
 	// get all cookie in the request
 	cks := c.Request.Cookies()
@@ -266,7 +278,7 @@ func (hc *handlerCore) handlerClean(c *gin.Context) {
 	logger.Info("cp addr:", cp)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(user, cp)
+	orderInfo, err := hc.gw.GetOrder(oid64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
@@ -284,6 +296,9 @@ func (hc *handlerCore) handlerShow(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
 	//cks := injectCookie(c)
 
+	oid := c.Query("oid")
+	oid64, _ := utils.StringToUint64(oid)
+
 	// get all cookie in the request
 	cks := c.Request.Cookies()
 
@@ -301,7 +316,7 @@ func (hc *handlerCore) handlerShow(c *gin.Context) {
 	logger.Info("cp addr:", cp)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(user, cp)
+	orderInfo, err := hc.gw.GetOrder(oid64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
@@ -346,10 +361,14 @@ func (hc *handlerCore) handlerShow(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deployment": deployName, "available": avail, "progressing": progress})
 }
 
-func (hc *handlerCore) handlerRenew(c *gin.Context) {
+func (hc *handlerCore) handlerExtend(c *gin.Context) {
+	// order id
+	id := c.Query("id")
+	id64, _ := utils.StringToUint64(id)
+
 	user := c.Query("user")
 	// get cp address from config file
-	cp := config.GetConfig().Remote.Wallet
+	//cp := config.GetConfig().Remote.Wallet
 
 	sk := c.Query("sk")
 	dur := c.Query("dur")
@@ -358,7 +377,7 @@ func (hc *handlerCore) handlerRenew(c *gin.Context) {
 	logger.Debug("sk:", sk)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(user, cp)
+	orderInfo, err := hc.gw.GetOrder(id64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
@@ -374,7 +393,7 @@ func (hc *handlerCore) handlerRenew(c *gin.Context) {
 	logger.Debug("renewing order")
 
 	// renew order
-	err = hc.gw.Renew(user, sk, dur)
+	err = hc.gw.Extend(sk, id64, dur)
 	if err != nil {
 		msg := fmt.Sprintf("[Fail] Failed to renew: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
@@ -385,6 +404,11 @@ func (hc *handlerCore) handlerRenew(c *gin.Context) {
 }
 
 func (hc *handlerCore) handlerReset(c *gin.Context) {
+	// order id
+	id := c.Query("id")
+	id64, _ := utils.StringToUint64(id)
+
+	// user addr
 	user := c.Query("user")
 	// get cp address from config file
 	cp := config.GetConfig().Remote.Wallet
@@ -398,7 +422,7 @@ func (hc *handlerCore) handlerReset(c *gin.Context) {
 	logger.Debug("reseting order")
 
 	// reset order
-	err := hc.gw.Reset(user, cp, prob, dur)
+	err := hc.gw.Reset(id64, prob, dur)
 	if err != nil {
 		msg := fmt.Sprintf("[Fail] Failed to reset: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
@@ -409,6 +433,11 @@ func (hc *handlerCore) handlerReset(c *gin.Context) {
 }
 
 func (hc *handlerCore) handlerSettle(c *gin.Context) {
+	// order id
+	id := c.Query("id")
+	id64, _ := utils.StringToUint64(id)
+
+	// user addr
 	user := c.Query("user")
 
 	logger.Debug("user:", user)
@@ -416,7 +445,7 @@ func (hc *handlerCore) handlerSettle(c *gin.Context) {
 	logger.Debug("settling order")
 
 	// cancel order
-	err := hc.gw.Settle(user)
+	err := hc.gw.Settle(id64)
 	if err != nil {
 		msg := fmt.Sprintf("[Fail] Failed to settle: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
@@ -430,6 +459,10 @@ func (hc *handlerCore) handlerSettle(c *gin.Context) {
 func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
 	//cks := injectCookie(c)
+
+	// order id
+	id := c.Query("id")
+	id64, _ := utils.StringToUint64(id)
 
 	// get all cookies in the request
 	cks := c.Request.Cookies()
@@ -451,7 +484,7 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	logger.Info("cp: ", cp)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(user, cp)
+	orderInfo, err := hc.gw.GetOrder(id64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return

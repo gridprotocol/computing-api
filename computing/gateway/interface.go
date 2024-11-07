@@ -44,24 +44,24 @@ type GatewayRemoteProcessAPI interface {
 	//Deactivate(user string) error
 
 	// provider set the app name when deploy ok
-	SetApp(user string, app string) error
+	SetApp(id uint64, app string) error
 	//UserCancel(userAddr string, userSK string) error
 	// user renew an order
-	Renew(userAddr string, userSK string, dur string) error
+	Extend(userSK string, id uint64, dur string) error
 
 	// reset an order
-	Reset(user string, cp string, prob string, dur string) error
+	Reset(id uint64, prob string, dur string) error
 
 	// provider settle an order to retrieve remueration
-	Settle(user string) error
+	Settle(id uint64) error
 
 	// check the order's payee to be the provider itself
 	PayeeCheck(orderInfo market.IMarketOrder) (bool, error)
 	SetWatcher(contract string) error
 
 	// get order with user and cp
-	GetOrder(user string, cp string) (*market.IMarketOrder, error)
+	GetOrder(id uint64) (*market.IMarketOrder, error)
 
 	// check order
-	OrderCheck(user string, cp string) (bool, error)
+	OrderCheck(id uint64) (bool, error)
 }

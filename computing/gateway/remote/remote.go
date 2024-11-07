@@ -74,7 +74,7 @@ func (grp *GatewayRemoteProcess) StaticCheck(orderInfo market.IMarketOrder) (boo
 }
 
 // calc the total fee of an order
-func (grp *GatewayRemoteProcess) fee(user common.Address, provider common.Address) (*big.Int, error) {
+func (grp *GatewayRemoteProcess) fee(id uint64) (*big.Int, error) {
 	// get node resource
 
 	// connect to an eth node with ep
@@ -94,13 +94,13 @@ func (grp *GatewayRemoteProcess) fee(user common.Address, provider common.Addres
 	}
 
 	// get order info
-	order, err := marIns.GetOrder(&bind.CallOpts{}, user, provider)
+	order, err := marIns.GetOrder(&bind.CallOpts{}, id)
 	if err != nil {
 		return nil, fmt.Errorf("get order failed: %s", err.Error())
 	}
 
 	logger.Debug("provider set the app name for this order")
-	node, err := regIns.GetNode(&bind.CallOpts{}, common.Address(provider), order.NodeId)
+	node, err := regIns.GetNode(&bind.CallOpts{}, common.Address(order.Provider), order.NodeId)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (grp *GatewayRemoteProcess) fee(user common.Address, provider common.Addres
 }
 
 // set the app name in contract
-func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
+func (grp *GatewayRemoteProcess) SetApp(id uint64, app string) error {
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
@@ -160,7 +160,7 @@ func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
 	logger.Debug("provider set the app name for this order")
-	tx, err := marketIns.SetApp(authProvider, common.Address(common.HexToAddress(user)), app)
+	tx, err := marketIns.SetApp(authProvider, id, app)
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
 	logger.Debug("set app name gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, id)
 	if err != nil {
 		return err
 	}
@@ -184,8 +184,8 @@ func (grp *GatewayRemoteProcess) SetApp(user string, app string) error {
 	return nil
 }
 
-// user renew an order
-func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur string) error {
+// user extend an order
+func (grp *GatewayRemoteProcess) Extend(userSK string, id uint64, dur string) error {
 
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
@@ -215,8 +215,8 @@ func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur strin
 		return err
 	}
 
-	logger.Debug("user renews an order")
-	tx, err := marketIns.Extend(authUser, common.Address(common.HexToAddress(com.CP)), _dur)
+	logger.Debug("user extend an order")
+	tx, err := marketIns.Extend(authUser, id, _dur)
 	if err != nil {
 		return err
 	}
@@ -228,13 +228,13 @@ func (grp *GatewayRemoteProcess) Renew(userAddr string, userSK string, dur strin
 	}
 
 	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
-	logger.Debug("renew order gas used:", receipt.GasUsed)
+	logger.Debug("extend order gas used:", receipt.GasUsed)
 
 	return nil
 }
 
 // reset order
-func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur string) error {
+func (grp *GatewayRemoteProcess) Reset(id uint64, prob string, dur string) error {
 
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
@@ -259,6 +259,7 @@ func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur 
 	// 50 gwei
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
+	// type transform
 	_prob, err := utils.StringToUint64(prob)
 	if err != nil {
 		return err
@@ -269,7 +270,7 @@ func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur 
 	}
 
 	logger.Debug("reset an order")
-	tx, err := marketIns.Reset(authProvider, common.Address(common.HexToAddress(user)), common.Address(common.HexToAddress(cp)), _prob, _dur)
+	tx, err := marketIns.Reset(authProvider, id, _prob, _dur)
 	if err != nil {
 		return err
 	}
@@ -284,7 +285,7 @@ func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur 
 	logger.Debug("gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, id)
 	if err != nil {
 		return err
 	}
@@ -295,7 +296,7 @@ func (grp *GatewayRemoteProcess) Reset(user string, cp string, prob string, dur 
 }
 
 // provider settle
-func (grp *GatewayRemoteProcess) Settle(user string) error {
+func (grp *GatewayRemoteProcess) Settle(id uint64) error {
 
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
@@ -320,8 +321,8 @@ func (grp *GatewayRemoteProcess) Settle(user string) error {
 	// 50 gwei
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
-	logger.Debug("settle an order")
-	tx, err := marketIns.ProSettle(authProvider, common.Address(common.HexToAddress(user)))
+	logger.Debug("provider settle an order")
+	tx, err := marketIns.ProSettle(authProvider, id)
 	if err != nil {
 		return err
 	}
@@ -336,7 +337,7 @@ func (grp *GatewayRemoteProcess) Settle(user string) error {
 	logger.Debug("gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(com.CP))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, id)
 	if err != nil {
 		return err
 	}
@@ -400,7 +401,7 @@ func (grp *GatewayRemoteProcess) SetWatcher(contract string) error {
 // }
 
 // get an order with user and cp
-func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.IMarketOrder, error) {
+func (grp *GatewayRemoteProcess) GetOrder(id uint64) (*market.IMarketOrder, error) {
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
@@ -414,7 +415,7 @@ func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.IMark
 	}
 
 	// get order info
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(user), common.HexToAddress(cp))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, id)
 	if err != nil {
 		return nil, fmt.Errorf("getorder failed: %v, %s", err, MarketAddr)
 	}
@@ -423,10 +424,10 @@ func (grp *GatewayRemoteProcess) GetOrder(user string, cp string) (*market.IMark
 }
 
 // process the order check
-func (grp *GatewayRemoteProcess) OrderCheck(user string, cp string) (bool, error) {
+func (grp *GatewayRemoteProcess) OrderCheck(id uint64) (bool, error) {
 
 	// get order info with params
-	orderInfo, err := grp.GetOrder(user, cp)
+	orderInfo, err := grp.GetOrder(id)
 	if err != nil {
 		return false, fmt.Errorf("get order failed: %s", err.Error())
 	}
