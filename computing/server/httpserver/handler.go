@@ -74,22 +74,20 @@ func (hc *handlerCore) handlerCookie(c *gin.Context) {
 	// user address
 	user := c.Query("user")
 
-	// order id
-	id := c.Query("id")
-	id64, _ := utils.StringToUint64(id)
-
 	// get cp address from config file
 	//cp := config.GetConfig().Remote.Wallet
 
 	ts := c.Query("ts")
 	sig := c.Query("sig")
 
-	// check order before send cookie
-	ok, err := hc.gw.OrderCheck(id64)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] %s", err.Error())})
-		return
-	}
+	/*
+		// check order before send cookie
+		ok, err := hc.gw.OrderCheck(oid64)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("[Fail] %s", err.Error())})
+			return
+		}
+	*/
 
 	if len(ts) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing timestamp in request"})
@@ -101,7 +99,7 @@ func (hc *handlerCore) handlerCookie(c *gin.Context) {
 	}
 
 	// check auth info, signature and it's expire
-	ok = hc.gw.CheckAuthInfo(&model.AuthInfo{Address: user, Sig: sig, Msg: ts})
+	ok := hc.gw.CheckAuthInfo(&model.AuthInfo{Address: user, Sig: sig, Msg: ts})
 	// check passed, make and send a cookie
 	if ok {
 		// make cookie from addr and cookie expire
@@ -363,8 +361,8 @@ func (hc *handlerCore) handlerShow(c *gin.Context) {
 
 func (hc *handlerCore) handlerExtend(c *gin.Context) {
 	// order id
-	id := c.Query("id")
-	id64, _ := utils.StringToUint64(id)
+	oid := c.Query("oid")
+	oid64, _ := utils.StringToUint64(oid)
 
 	user := c.Query("user")
 	// get cp address from config file
@@ -377,7 +375,7 @@ func (hc *handlerCore) handlerExtend(c *gin.Context) {
 	logger.Debug("sk:", sk)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(id64)
+	orderInfo, err := hc.gw.GetOrder(oid64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
@@ -393,7 +391,7 @@ func (hc *handlerCore) handlerExtend(c *gin.Context) {
 	logger.Debug("renewing order")
 
 	// renew order
-	err = hc.gw.Extend(sk, id64, dur)
+	err = hc.gw.Extend(sk, oid64, dur)
 	if err != nil {
 		msg := fmt.Sprintf("[Fail] Failed to renew: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
@@ -405,8 +403,8 @@ func (hc *handlerCore) handlerExtend(c *gin.Context) {
 
 func (hc *handlerCore) handlerReset(c *gin.Context) {
 	// order id
-	id := c.Query("id")
-	id64, _ := utils.StringToUint64(id)
+	oid := c.Query("oid")
+	id64, _ := utils.StringToUint64(oid)
 
 	// user addr
 	user := c.Query("user")
@@ -434,8 +432,8 @@ func (hc *handlerCore) handlerReset(c *gin.Context) {
 
 func (hc *handlerCore) handlerSettle(c *gin.Context) {
 	// order id
-	id := c.Query("id")
-	id64, _ := utils.StringToUint64(id)
+	oid := c.Query("oid")
+	oid64, _ := utils.StringToUint64(oid)
 
 	// user addr
 	user := c.Query("user")
@@ -445,7 +443,7 @@ func (hc *handlerCore) handlerSettle(c *gin.Context) {
 	logger.Debug("settling order")
 
 	// cancel order
-	err := hc.gw.Settle(id64)
+	err := hc.gw.Settle(oid64)
 	if err != nil {
 		msg := fmt.Sprintf("[Fail] Failed to settle: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})

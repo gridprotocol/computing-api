@@ -302,6 +302,8 @@ func (grp *GatewayRemoteProcess) Settle(id uint64) error {
 	backend, chainID := eth.ConnETH(grp.chain_endpoint)
 	logger.Debug("chain id:", chainID)
 
+	logger.Debug("order id:", id)
+
 	logger.Debug("market address:", MarketAddr)
 
 	// get contract instance
@@ -321,6 +323,13 @@ func (grp *GatewayRemoteProcess) Settle(id uint64) error {
 	// 50 gwei
 	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
 
+	// get order
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, id)
+	if err != nil {
+		return err
+	}
+	logger.Debug("order info before settle:", orderInfo)
+
 	logger.Debug("provider settle an order")
 	tx, err := marketIns.ProSettle(authProvider, id)
 	if err != nil {
@@ -337,11 +346,10 @@ func (grp *GatewayRemoteProcess) Settle(id uint64) error {
 	logger.Debug("gas used:", receipt.GasUsed)
 
 	// get order
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, id)
+	orderInfo, err = marketIns.GetOrder(&bind.CallOpts{}, id)
 	if err != nil {
 		return err
 	}
-
 	logger.Debug("order info after settle:", orderInfo)
 
 	return nil
