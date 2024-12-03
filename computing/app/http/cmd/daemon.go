@@ -23,7 +23,6 @@ import (
 	"github.com/gridprotocol/computing-api/computing/gateway/remote"
 	"github.com/gridprotocol/computing-api/computing/server/httpserver"
 	"github.com/gridprotocol/computing-api/keystore"
-	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
 	"github.com/gridprotocol/computing-api/prover"
 	"github.com/mitchellh/go-homedir"
@@ -36,7 +35,7 @@ var (
 	quit = make(chan os.Signal, 1)
 
 	// user db records
-	userDB kv.Database
+	//userDB kv.Database
 )
 
 var DaemonCmd = &cli.Command{
@@ -100,6 +99,7 @@ var runCmd = &cli.Command{
 		log.Println("Current Version:", version.CurrentVersion())
 
 		// new provder and start
+		logger.Info("starting prover")
 		prover, err := prover.NewGRIDProver(chain, validator_url, ki.SK(), 1)
 		if err != nil {
 			log.Fatalf("new light node prover: %s\n", err)

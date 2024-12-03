@@ -1,17 +1,23 @@
+LIB_NAME=libpow.so
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
 BUILD_TIME = $(shell TZ=Asia/Shanghai date +'%Y-%m-%d.%H:%M:%S%Z')
 BUILD_FLAGS = -ldflags "-X 'github.com/gridprotocol/computing-api/common/version.BuildFlag=$(GIT_COMMIT)+$(BUILD_TIME)'"
 
-computing-api-rpc:
-	go build $(BUILD_FLAGS) -o ../bin/computing-api-rpc ../computing/app/rpc
+all: clean cuda computing-api
+
+clean:
+	rm -rf gateway-rpc gateway user-example
+
+cuda:
+	nvcc --ptxas-options=-v --compiler-options '-fPIC' -o ${LIB_NAME} --shared CudaSha256/pow.cu
 
 computing-api:
 	go build ${BUILD_FLAGS} -o ../bin/computing-api ../computing/app/http
 
+computing-api-rpc:
+	go build $(BUILD_FLAGS) -o ../bin/computing-api-rpc ../computing/app/rpc
+
 user-example:
 	go build ${BUILD_FLAGS} -o ../bin/user-example ../user/backend/example
-
-clean:
-	rm -rf gateway-rpc gateway user-example
 
 .PHONY: clean
