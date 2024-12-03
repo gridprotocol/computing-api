@@ -12,10 +12,11 @@ import (
 var conf *GatewayConfig
 
 type GatewayConfig struct {
-	Grpc   Grpc
-	Http   Http
-	Local  Local
-	Remote Remote
+	Grpc      Grpc
+	Http      Http
+	Local     Local
+	Remote    Remote
+	Validator Validator
 }
 
 type Local struct {
@@ -36,6 +37,9 @@ type Http struct {
 	Listen       string
 	HSKey        string
 	CookieExpire int // cookie expire time in second
+}
+type Validator struct {
+	Url string
 }
 
 // load config.toml
@@ -105,6 +109,8 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 
 		{"Remote", "KeyStore"},
 		{"Remote", "Wallet"},
+
+		{"Validator", "Url"},
 	}
 
 	for _, v := range requiredFields {

@@ -25,6 +25,7 @@ import (
 	"github.com/gridprotocol/computing-api/keystore"
 	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
+	"github.com/gridprotocol/computing-api/prover"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli/v2"
 )
@@ -76,7 +77,7 @@ var runCmd = &cli.Command{
 		chain := ctx.String("chain")
 		pw := ctx.String("pw")
 
-		// get wallet and sk
+		// get wallet and sk from keystore
 		repo := keystore.Repo
 		wallet := config.GetConfig().Remote.Wallet
 		ki, err := repo.Get(wallet, pw)
@@ -90,11 +91,20 @@ var runCmd = &cli.Command{
 		com.CP = wallet
 		com.SK = ki.SK()
 
+		validator_url := config.GetConfig().Validator.Url
+
 		// check version
 		if version.CheckVersion() {
 			os.Exit(0)
 		}
 		log.Println("Current Version:", version.CurrentVersion())
+
+		// new provder and start
+		prover, err := prover.NewGRIDProver(chain, validator_url, ki.SK(), 1)
+		if err != nil {
+			log.Fatalf("new light node prover: %s\n", err)
+		}
+		go prover.Start(context.Background())
 
 		// chain select for remote gw
 		var chain_endpoint string

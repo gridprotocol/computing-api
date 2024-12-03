@@ -13,3 +13,6 @@
 [Remote]
   KeyStore = "./.keystore"
   Wallet = "0xEf95c72C836605203F7f66788E450Af2a4141957"
+
+[Validator]
+  Url = "http://localhost:8081"
