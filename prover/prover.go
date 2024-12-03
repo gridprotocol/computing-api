@@ -15,8 +15,7 @@ import (
 var logger = logs.Logger("grid prover")
 
 type GRIDProver struct {
-	provider string
-	nodeID   types.NodeID
+	nodeID types.NodeID
 
 	last            int64
 	prepareInterval time.Duration
@@ -84,7 +83,8 @@ func (p *GRIDProver) Start(ctx context.Context) {
 		case <-time.After(wait):
 		}
 
-		cnt, err := p.Client.GetV1OrderCount(ctx, p.provider)
+		fmt.Println("provider: ", p.nodeID.Address)
+		cnt, err := p.Client.GetV1OrderCount(ctx, p.nodeID.Address)
 		if err != nil {
 			logger.Error(err.Error())
 			continue
