@@ -83,14 +83,14 @@ func (p *GRIDProver) Start(ctx context.Context) {
 		case <-time.After(wait):
 		}
 
-		fmt.Println("provider: ", p.nodeID.Address)
+		logger.Info("provider: ", p.nodeID.Address)
 		cnt, err := p.Client.GetV1OrderCount(ctx, p.nodeID.Address)
 		if err != nil {
 			logger.Error(err.Error())
 			continue
 		}
 
-		fmt.Println("order count for provider: ", cnt)
+		logger.Info("order count for provider: ", cnt)
 
 		if cnt <= 0 {
 			fmt.Println("no order for this provider, skip proof generation")
