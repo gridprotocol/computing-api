@@ -6,16 +6,16 @@ BUILD_FLAGS = -ldflags "-X 'github.com/gridprotocol/computing-api/common/version
 all: clean cuda computing-api
 
 clean:
-	rm -rf gateway-rpc gateway user-example
+	rm -f computing-api ${LIB_NAME}
 
 cuda:
-	nvcc --ptxas-options=-v --compiler-options '-fPIC' -o ${LIB_NAME} --shared CudaSha256/pow.cu
+	nvcc --ptxas-options=-v --compiler-options '-fPIC' -o ${LIB_NAME} --shared ../prover/CudaSha256/pow.cu
 
 computing-api:
-	go build ${BUILD_FLAGS} -o ../bin/computing-api ../computing/app/http
+	go build ${BUILD_FLAGS} -o computing-api ../computing/app/http
 
 computing-api-rpc:
-	go build $(BUILD_FLAGS) -o ../bin/computing-api-rpc ../computing/app/rpc
+	go build $(BUILD_FLAGS) -o computing-api-rpc ../computing/app/rpc
 
 user-example:
 	go build ${BUILD_FLAGS} -o ../bin/user-example ../user/backend/example
