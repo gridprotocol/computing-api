@@ -68,7 +68,7 @@ var runCmd = &cli.Command{
 			Name:    "password",
 			Aliases: []string{"pw"},
 			Usage:   "password of current wallet",
-			Value:   "grid",
+			Value:   "computing",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
