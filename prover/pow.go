@@ -2,7 +2,7 @@ package prover
 
 /*
 int generatePOW(char *rand, int len, int diffcult, long long *index);
-#cgo LDFLAGS: -L../.. -lpow -lrt
+#cgo LDFLAGS: -L../bin -lpow -lrt
 */
 import "C"
 
