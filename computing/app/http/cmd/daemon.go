@@ -81,7 +81,8 @@ var runCmd = &cli.Command{
 		wallet := config.GetConfig().Remote.Wallet
 		ki, err := repo.Get(wallet, pw)
 		if err != nil {
-			panic(err)
+			fmt.Println("get key info from wallet failed: ", err.Error())
+			return err
 		}
 
 		// save all info into common
