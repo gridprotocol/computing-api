@@ -125,7 +125,8 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
 	cks := injectCookie(c)
 
-	addr, err := hc.cm.FindCookie(cks)
+	// find a valid cookie in request, and return the user address in this cookie
+	user, err := hc.cm.FindCookie(cks)
 	if err != nil {
 		msg := fmt.Sprintf("invalid cookie: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"err": msg})
@@ -150,7 +151,7 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	}
 
 	logger.Debug("deploying app")
-	err = hc.gw.Deploy(deps, svcs, addr)
+	err = hc.gw.Deploy(deps, svcs, user)
 	if err != nil {
 		deploy.Clean(deps)
 
