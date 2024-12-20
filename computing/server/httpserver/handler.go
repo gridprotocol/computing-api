@@ -179,16 +179,10 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	st := c.Request.Header.Get("SignToken")
 	sm := c.Request.Header.Get("SignMessage")
 
-	fmt.Println("st:", st)
-	fmt.Println("sm:", sm)
-
 	// 分割符
 	separator := []byte{92, 110}
 	// 使用Split函数拆分字符串
 	result := strings.Split(sm, string(separator))
-	fmt.Println("result:", result[0])
-	fmt.Println("result:", result[1])
-	fmt.Println("result:", result[2])
 
 	// 构造msg
 	msg := fmt.Sprintf("%s\n%s\n%s", result[0], result[1], result[2])
@@ -196,7 +190,20 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 
 	// recover address with sign and msg
 	user := recover(st, msg)
-	fmt.Println("user:", user)
+	fmt.Println("recover user:", user)
+
+	// get address from result[2]
+	prefix := "Address:"
+	// 使用TrimPrefix函数提取Address:后面的字符串
+	addr := strings.TrimPrefix(result[2], prefix)
+
+	// verify
+	if user != addr {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "signature error"})
+		return
+	}
+
+	fmt.Println("signature verify ok")
 
 	/*
 		// if no remote yaml is provided either, response error
