@@ -165,15 +165,15 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 
 // deploy app by app id
 func (hc *handlerCore) handlerDeployID(c *gin.Context) {
-	oid := c.Query("oid")
-	oid64, _ := utils.StringToUint64(oid)
-	_ = oid64
+	// oid := c.Query("oid")
+	// oid64, _ := utils.StringToUint64(oid)
+	// _ = oid64
 
-	yamlID := c.Query("id")
-	if len(yamlID) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
-		return
-	}
+	// yamlID := c.Query("id")
+	// if len(yamlID) == 0 {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
+	// 	return
+	// }
 
 	// get token and msg
 	st := c.Request.Header.Get("SignToken")
@@ -183,19 +183,33 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	separator := []byte{92, 110}
 	// 使用Split函数拆分字符串
 	result := strings.Split(sm, string(separator))
+	fmt.Println(result)
 
 	// 构造msg
-	msg := fmt.Sprintf("%s\n%s\n%s", result[0], result[1], result[2])
+	msg := fmt.Sprintf("%s\n%s\n%s\n%s", result[0], result[1], result[2], result[3])
 	fmt.Println("msg:", msg)
 
 	// recover address with sign and msg
 	user := recover(st, msg)
 	fmt.Println("recover user:", user)
 
-	// get address from result[2]
-	prefix := "Address:"
-	// 使用TrimPrefix函数提取Address:后面的字符串
-	addr := strings.TrimPrefix(result[2], prefix)
+	// get oid from result[0]
+	prefix := "Order Id:"
+	oid := strings.TrimPrefix(result[0], prefix)
+	oid64, _ := utils.StringToUint64(oid)
+	_ = oid64
+
+	// get id from result[1]
+	prefix = "Deploy Id:"
+	yamlID := strings.TrimPrefix(result[1], prefix)
+	if len(yamlID) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
+		return
+	}
+
+	// get address from result[3]
+	prefix = "Address:"
+	addr := strings.TrimPrefix(result[3], prefix)
 
 	// verify
 	if strings.EqualFold(user, addr) {
