@@ -191,7 +191,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	fmt.Println("result:", result[2])
 
 	// 构造msg
-	msg := fmt.Sprintf("Deploy Id:%s\n Deploy Time:%s\nAddress:%s", result[0], result[1], result[2])
+	msg := fmt.Sprintf("%s%s%s", result[0], result[1], result[2])
 
 	// recover address with sign and msg
 	user := recover(st, msg)
