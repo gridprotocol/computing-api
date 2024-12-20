@@ -182,8 +182,19 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	fmt.Println("st:", st)
 	fmt.Println("sm:", sm)
 
+	// 分割符
+	separator := []byte{92, 110}
+	// 使用Split函数拆分字符串
+	result := strings.Split(sm, string(separator))
+	fmt.Println("result:", result[0])
+	fmt.Println("result:", result[1])
+	fmt.Println("result:", result[2])
+
+	// 构造msg
+	msg := fmt.Sprintf("Deploy Id:%s\n Deploy Time:%s\nAddress:%s", result[0], result[1], result[2])
+
 	// recover address with sign and msg
-	user := recover(st, sm)
+	user := recover(st, msg)
 	fmt.Println("user:", user)
 
 	/*
