@@ -198,7 +198,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	addr := strings.TrimPrefix(result[2], prefix)
 
 	// verify
-	if strings.ToLower(user) != strings.ToLower(addr) {
+	if strings.EqualFold(user, addr) {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "signature error"})
 		return
 	}
