@@ -179,17 +179,19 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	st := c.Request.Header.Get("SignToken")
 	sm := c.Request.Header.Get("SignMessage")
 
-	msg1 := "1"
-	msg2 := "1734606709"
-	msg3 := "0x0090675FD3ef5031d7719A758163E73Fd58AF1EB"
-	// 签名消息
-	sm = fmt.Sprintf("Deploy Id:%s\n Deploy Time:%s\nAddress:%s", msg1, msg2, msg3)
+	// 分割符
+	separator := "\n"
+	// 使用Split函数拆分字符串
+	result := strings.Split(sm, separator)
+
+	// 构造签名消息
+	msg := fmt.Sprintf("Deploy Id:%s\n Deploy Time:%s\nAddress:%s", result[0], result[1], result[2])
 
 	fmt.Println("st:", st)
-	fmt.Println("sm:", sm)
+	fmt.Println("msg:", msg)
 
 	// recover address with sign and msg
-	user := recover(st, sm)
+	user := recover(st, msg)
 	fmt.Println("user:", user)
 
 	/*
