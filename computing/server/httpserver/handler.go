@@ -192,6 +192,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 
 	// 构造msg
 	msg := fmt.Sprintf("%s%s%s", result[0], result[1], result[2])
+	fmt.Println("msg:", msg)
 
 	// recover address with sign and msg
 	user := recover(st, msg)
