@@ -182,6 +182,10 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	fmt.Println("st:", st)
 	fmt.Println("sm:", sm)
 
+	// recover address with sign and msg
+	user := recover(st, sm)
+	fmt.Println("user:", user)
+
 	/*
 		// if no remote yaml is provided either, response error
 		if len(yamlID) == 0 {
