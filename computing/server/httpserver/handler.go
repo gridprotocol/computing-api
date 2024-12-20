@@ -252,11 +252,13 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
 	}
-	logger.Debug("node id:", orderInfo.NodeId)
+	logger.Debug("order info:", orderInfo)
+	logger.Info("node id: ", orderInfo.NodeId)
 
 	// set node id for the first deploy
 	deps[0].Spec.Template.Spec.NodeSelector["id"] = utils.Uint64ToString(orderInfo.NodeId)
 
+	fmt.Println("deploying..")
 	// deploy deps
 	err = hc.gw.Deploy(deps, svcs, user)
 	if err != nil {
@@ -267,7 +269,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 
-	logger.Debug("app name:", deps[0].Name)
+	logger.Info("app name:", deps[0].Name)
 	// set the app name in order
 	err = hc.gw.SetApp(oid64, deps[0].Name)
 	if err != nil {
