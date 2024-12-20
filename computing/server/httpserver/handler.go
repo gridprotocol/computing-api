@@ -183,6 +183,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	separator := "\n"
 	// 使用Split函数拆分字符串
 	result := strings.Split(sm, separator)
+	fmt.Println("result:", result)
 
 	// 构造签名消息
 	msg := fmt.Sprintf("Deploy Id:%s\n Deploy Time:%s\nAddress:%s", result[0], result[1], result[2])
