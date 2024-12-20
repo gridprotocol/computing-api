@@ -514,30 +514,20 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	//cks := injectCookie(c)
 
 	// order id
-	id := c.Query("id")
-	id64, _ := utils.StringToUint64(id)
+	oid := c.Query("OrderId")
+	oid64, _ := utils.StringToUint64(oid)
 
-	// get all cookies in the request
-	cks := c.Request.Cookies()
-	logger.Info("cookies:", cks)
-
-	// find a valid cookie
-	user, err := hc.cm.FindCookie(cks)
-	if err != nil {
-		msg := fmt.Sprintf("cookie check failed: %s", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
-		return
-	}
+	user := c.Query("UserAddress")
 
 	// get order info and do expire check for it
 	// get cp address from config file
 	cp := config.GetConfig().Remote.Wallet
 
-	logger.Info("user in cookie: ", user)
+	logger.Info("user: ", user)
 	logger.Info("cp: ", cp)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(id64)
+	orderInfo, err := hc.gw.GetOrder(oid64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
