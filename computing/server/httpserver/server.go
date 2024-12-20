@@ -4,10 +4,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"sync"
+	"time"
 
 	"github.com/gridprotocol/computing-api/computing/gateway"
 	"github.com/gridprotocol/computing-api/lib/logc"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,7 +48,16 @@ func NewServer(addr string, gw gateway.ComputingGatewayAPI) *http.Server {
 // register all routes
 func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 	// use middleware for
-	r.Use(cors())
+	//r.Use(cors())
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},                                                                   // 允许所有域名使用
+		AllowMethods:     []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "UPDATE"},                   // 允许的方法
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type", "SignToken", "SignMessage"}, // 允许的头部信息
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// new hc object with gw
 	hc := handlerCore{
@@ -77,21 +88,21 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 	r.Any("/", hc.handlerCompute)
 }
 
-// for the cross domain access
-func cors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		method := c.Request.Method
-		origin := c.Request.Header.Get("Origin")
-		if origin != "" {
-			c.Header("Access-Control-Allow-Origin", origin)
-			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-			c.Header("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, Authorization, Token, SignToken, SignMessage")
-			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
-			c.Header("Access-Control-Allow-Credentials", "true")
-		}
-		if method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusNoContent)
-		}
-		c.Next()
-	}
-}
+// // for the cross domain access
+// func cors() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		method := c.Request.Method
+// 		origin := c.Request.Header.Get("Origin")
+
+// 		c.Header("Access-Control-Allow-Origin", origin)
+// 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+// 		c.Header("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, Authorization, Token, SignToken, SignMessage")
+// 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
+// 		c.Header("Access-Control-Allow-Credentials", "true")
+
+// 		if method == "OPTIONS" {
+// 			c.AbortWithStatus(http.StatusNoContent)
+// 		}
+// 		c.Next()
+// 	}
+// }
