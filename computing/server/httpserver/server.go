@@ -82,6 +82,7 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 	r.GET("/greet/reset", hc.handlerReset)
 	r.GET("/greet/settle", hc.handlerSettle)
 	r.GET("/greet/clean", hc.handlerClean)
+	r.GET("/greet/cleanuser", hc.handlerCleanUser)
 	r.GET("/greet/show", hc.handlerShow)
 	r.GET("/greet/modellist", hc.handlerModelList)
 

@@ -286,7 +286,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy ok"})
 }
 
-// clean deploy
+// clean deploy by provider
 func (hc *handlerCore) handlerClean(c *gin.Context) {
 	// get token and msg
 	st := c.Request.Header.Get("SignToken")
@@ -338,6 +338,69 @@ func (hc *handlerCore) handlerClean(c *gin.Context) {
 	// get cp address from config file
 	cp := config.GetConfig().Remote.Wallet
 	logger.Info("cp addr:", cp)
+
+	// get order info with params
+	orderInfo, err := hc.gw.GetOrder(oid64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+		return
+	}
+	logger.Debug("order info:", orderInfo)
+
+	// delete app
+	deploy.DelDeploy(orderInfo.AppName)
+
+	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] clean ok"})
+}
+
+// clean deploy by user
+func (hc *handlerCore) handlerCleanUser(c *gin.Context) {
+	// get token and msg
+	st := c.Request.Header.Get("SignToken")
+	sm := c.Request.Header.Get("SignMessage")
+	// 对字符串进行解码
+	msg, err := url.QueryUnescape(sm)
+	if err != nil {
+		fmt.Println("Error decoding string:", err)
+		return
+	}
+
+	fmt.Println("msg: ", msg)
+
+	// recover address with sign and msg
+	recovered := recover(st, msg)
+	fmt.Println("recover user:", recovered)
+
+	// 分割符
+	separator := "\n"
+	// 使用Split函数拆分字符串
+	result := strings.Split(msg, string(separator))
+	fmt.Println(result)
+
+	// get oid from result[0]
+	prefix := "Order Id:"
+	oid := strings.TrimPrefix(result[0], prefix)
+	oid64, _ := utils.StringToUint64(oid)
+
+	// get id from result[1]
+	prefix = "Deploy Id:"
+	yamlID := strings.TrimPrefix(result[1], prefix)
+	if len(yamlID) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
+		return
+	}
+
+	// get user address from result[3]
+	prefix = "Address:"
+	user := strings.TrimPrefix(result[3], prefix)
+
+	// verify signature
+	if strings.EqualFold(recovered, user) {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "signature error"})
+		return
+	}
+
+	fmt.Println("signature verify ok")
 
 	// get order info with params
 	orderInfo, err := hc.gw.GetOrder(oid64)
