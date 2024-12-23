@@ -194,7 +194,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	// 分割符
 	separator := "\n"
 	// 使用Split函数拆分字符串
-	result := strings.Split(sm, string(separator))
+	result := strings.Split(msg, string(separator))
 	fmt.Println(result)
 
 	// get oid from result[0]
