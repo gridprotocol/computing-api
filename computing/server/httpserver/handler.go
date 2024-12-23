@@ -178,107 +178,118 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	// get token and msg
 	st := c.Request.Header.Get("SignToken")
 	sm := c.Request.Header.Get("SignMessage")
-
-	// 分割符
-	separator := []byte{92, 110}
-	// 使用Split函数拆分字符串
-	result := strings.Split(sm, string(separator))
-	fmt.Println(result)
-
-	// 构造msg
-	msg := fmt.Sprintf("%s\n%s\n%s\n%s", result[0], result[1], result[2], result[3])
-	fmt.Println("msg:", msg)
-
-	// recover address with sign and msg
-	user := recover(st, msg)
-	fmt.Println("recover user:", user)
-
-	// get oid from result[0]
-	prefix := "Order Id:"
-	oid := strings.TrimPrefix(result[0], prefix)
-	oid64, _ := utils.StringToUint64(oid)
-	_ = oid64
-
-	// get id from result[1]
-	prefix = "Deploy Id:"
-	yamlID := strings.TrimPrefix(result[1], prefix)
-	if len(yamlID) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
-		return
-	}
-
-	// get address from result[3]
-	prefix = "Address:"
-	addr := strings.TrimPrefix(result[3], prefix)
-
-	// verify signature
-	if strings.EqualFold(user, addr) {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": "signature error"})
-		return
-	}
-
-	fmt.Println("signature verify ok")
-
-	// if no remote yaml is provided either, response error
-	if len(yamlID) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the request missing yaml id"})
-		return
-	}
-
-	// get yaml path from id in input
-	p, err := utils.GetPathByID(yamlID)
+	// 对字符串进行解码
+	decodedStr, err := url.QueryUnescape(sm)
 	if err != nil {
-		msg := fmt.Sprintf("[Fail] invalid yaml id: %s", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
+		fmt.Println("Error decoding string:", err)
 		return
 	}
+	_ = st
 
-	logger.Info("yaml path from id:", p)
+	fmt.Println("decode: ", decodedStr)
 
-	// parse yaml into deps and svcs
-	deps, svcs, err := deploy.ParseYamlFile(p)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("parse yaml failed:%s", err.Error())})
-		return
-	}
+	/*
+		// 分割符
+		separator := []byte{92, 110}
+		// 使用Split函数拆分字符串
+		result := strings.Split(sm, string(separator))
+		fmt.Println(result)
 
-	// get cp address from config file
-	cp := config.GetConfig().Remote.Wallet
-	logger.Info("cp addr:", cp)
+		// 构造msg
+		msg := fmt.Sprintf("%s\n%s\n%s\n%s", result[0], result[1], result[2], result[3])
+		fmt.Println("msg:", msg)
 
-	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(oid64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
-		return
-	}
-	logger.Debug("order info:", orderInfo)
-	logger.Info("node id: ", orderInfo.NodeId)
+		// recover address with sign and msg
+		user := recover(st, msg)
+		fmt.Println("recover user:", user)
 
-	// set node id for the first deploy
-	deps[0].Spec.Template.Spec.NodeSelector["id"] = utils.Uint64ToString(orderInfo.NodeId)
+		// get oid from result[0]
+		prefix := "Order Id:"
+		oid := strings.TrimPrefix(result[0], prefix)
+		oid64, _ := utils.StringToUint64(oid)
+		_ = oid64
 
-	fmt.Println("deploying..")
-	// deploy deps
-	err = hc.gw.Deploy(deps, svcs, user)
-	if err != nil {
-		deploy.Clean(deps)
+		// get id from result[1]
+		prefix = "Deploy Id:"
+		yamlID := strings.TrimPrefix(result[1], prefix)
+		if len(yamlID) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] missing yaml id in request"})
+			return
+		}
 
-		msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
-		return
-	}
+		// get address from result[3]
+		prefix = "Address:"
+		addr := strings.TrimPrefix(result[3], prefix)
 
-	logger.Info("app name:", deps[0].Name)
-	// set the app name in order
-	err = hc.gw.SetApp(oid64, deps[0].Name)
-	if err != nil {
-		deploy.Clean(deps)
+		// verify signature
+		if strings.EqualFold(user, addr) {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": "signature error"})
+			return
+		}
 
-		msg := fmt.Sprintf("[Fail] Failed to set app: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
-		return
-	}
+		fmt.Println("signature verify ok")
+
+		// if no remote yaml is provided either, response error
+		if len(yamlID) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the request missing yaml id"})
+			return
+		}
+
+		// get yaml path from id in input
+		p, err := utils.GetPathByID(yamlID)
+		if err != nil {
+			msg := fmt.Sprintf("[Fail] invalid yaml id: %s", err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
+			return
+		}
+
+		logger.Info("yaml path from id:", p)
+
+		// parse yaml into deps and svcs
+		deps, svcs, err := deploy.ParseYamlFile(p)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("parse yaml failed:%s", err.Error())})
+			return
+		}
+
+		// get cp address from config file
+		cp := config.GetConfig().Remote.Wallet
+		logger.Info("cp addr:", cp)
+
+		// get order info with params
+		orderInfo, err := hc.gw.GetOrder(oid64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+			return
+		}
+		logger.Debug("order info:", orderInfo)
+		logger.Info("node id: ", orderInfo.NodeId)
+
+		// set node id for the first deploy
+		deps[0].Spec.Template.Spec.NodeSelector["id"] = utils.Uint64ToString(orderInfo.NodeId)
+
+		fmt.Println("deploying..")
+		// deploy deps
+		err = hc.gw.Deploy(deps, svcs, user)
+		if err != nil {
+			deploy.Clean(deps)
+
+			msg := fmt.Sprintf("[Fail] Failed to deploy: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+
+		logger.Info("app name:", deps[0].Name)
+		// set the app name in order
+		err = hc.gw.SetApp(oid64, deps[0].Name)
+		if err != nil {
+			deploy.Clean(deps)
+
+			msg := fmt.Sprintf("[Fail] Failed to set app: %s", err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+			return
+		}
+	*/
 
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy ok"})
 }
