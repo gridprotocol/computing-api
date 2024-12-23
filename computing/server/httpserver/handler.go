@@ -291,20 +291,24 @@ func (hc *handlerCore) handlerClean(c *gin.Context) {
 	// get token and msg
 	st := c.Request.Header.Get("SignToken")
 	sm := c.Request.Header.Get("SignMessage")
+	// 对字符串进行解码
+	msg, err := url.QueryUnescape(sm)
+	if err != nil {
+		fmt.Println("Error decoding string:", err)
+		return
+	}
 
-	// 分割符
-	separator := []byte{92, 110}
-	// 使用Split函数拆分字符串
-	result := strings.Split(sm, string(separator))
-	fmt.Println(result)
-
-	// 构造msg
-	msg := fmt.Sprintf("%s\n%s\n%s\n%s", result[0], result[1], result[2], result[3])
-	fmt.Println("msg:", msg)
+	fmt.Println("msg: ", msg)
 
 	// recover address with sign and msg
-	user := recover(st, msg)
-	fmt.Println("recover user:", user)
+	recovered := recover(st, msg)
+	fmt.Println("recover user:", recovered)
+
+	// 分割符
+	separator := "\n"
+	// 使用Split函数拆分字符串
+	result := strings.Split(msg, string(separator))
+	fmt.Println(result)
 
 	// get oid from result[0]
 	prefix := "Order Id:"
@@ -319,12 +323,12 @@ func (hc *handlerCore) handlerClean(c *gin.Context) {
 		return
 	}
 
-	// get address from result[3]
+	// get user address from result[3]
 	prefix = "Address:"
-	addr := strings.TrimPrefix(result[3], prefix)
+	user := strings.TrimPrefix(result[3], prefix)
 
 	// verify signature
-	if strings.EqualFold(user, addr) {
+	if strings.EqualFold(recovered, user) {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "signature error"})
 		return
 	}
