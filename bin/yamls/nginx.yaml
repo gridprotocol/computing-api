@@ -27,5 +27,3 @@ spec:
           limits:
             memory: "32Mi"
             cpu: "500m"
-      nodeSelector:
-        id: "1"
