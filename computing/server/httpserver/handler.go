@@ -510,12 +510,12 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		return
 	}
 
-	// order expire check
-	ok, err := hc.gw.ExpireCheck(*orderInfo)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order expire check failed: " + err.Error()})
-		return
-	}
+	// // order expire check
+	// ok, err := hc.gw.ExpireCheck(*orderInfo)
+	// if !ok {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order expire check failed: " + err.Error()})
+	// 	return
+	// }
 	logger.Debug("expire check ok")
 
 	// query entrance url(service endpoint) stored in DB with address
