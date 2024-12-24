@@ -19,7 +19,7 @@ spec:
       - image: docker.io/library/nginx:latest
         name: nginx
         ports:
-        - containerPort: 8081
+        - containerPort: 80
         resources:
           requests:
             memory: "16Mi"
