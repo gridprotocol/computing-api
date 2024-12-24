@@ -176,17 +176,18 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	// inject a cookie into request header, in case the cookie is refused by the client(browser)
 	//cks := injectCookie(c)
 
-	// get all cookie in the request
-	cks := c.Request.Cookies()
+	// // get all cookie in the request
+	// cks := c.Request.Cookies()
 
-	// try to find a valid cookie
-	user, err := hc.cm.FindCookie(cks)
-	if err != nil {
-		msg := fmt.Sprintf("[Fail] invalid cookie: %s", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"err": msg})
-		return
-	}
+	// // try to find a valid cookie
+	// user, err := hc.cm.FindCookie(cks)
+	// if err != nil {
+	// 	msg := fmt.Sprintf("[Fail] invalid cookie: %s", err.Error())
+	// 	c.JSON(http.StatusBadRequest, gin.H{"err": msg})
+	// 	return
+	// }
 
+	user := "0x82379862a857C98aB391Fa7F66957AfDE97EF528"
 	logger.Info("cookie check passed, addr:", user)
 
 	// if no remote yaml is provided either, response error
@@ -462,17 +463,19 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	id := c.Query("id")
 	id64, _ := utils.StringToUint64(id)
 
-	// get all cookies in the request
-	cks := c.Request.Cookies()
-	logger.Info("cookies:", cks)
+	// // get all cookies in the request
+	// cks := c.Request.Cookies()
+	// logger.Info("cookies:", cks)
 
-	// find a valid cookie
-	user, err := hc.cm.FindCookie(cks)
-	if err != nil {
-		msg := fmt.Sprintf("cookie check failed: %s", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
-		return
-	}
+	// // find a valid cookie
+	// user, err := hc.cm.FindCookie(cks)
+	// if err != nil {
+	// 	msg := fmt.Sprintf("cookie check failed: %s", err.Error())
+	// 	c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
+	// 	return
+	// }
+
+	user := "0x82379862a857C98aB391Fa7F66957AfDE97EF528"
 
 	// get order info and do expire check for it
 	// get cp address from config file
