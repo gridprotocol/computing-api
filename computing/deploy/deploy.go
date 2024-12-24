@@ -113,16 +113,25 @@ func CreateNodePortSvc(d *appsv1.Deployment) (svc *corev1.Service, err error) {
 	// get deployment name
 	deployName := d.GetObjectMeta().GetName()
 
+	// get labels
+	labels := d.GetObjectMeta().GetLabels()
+	// get selector
+	selector := labels["app.kubernetes.io/name"]
+	fmt.Println("selector: ", selector)
+
+	// k8s service
 	k8s := docker.NewK8sService()
+	// namespace
 	nameSpace := "default"
 	appName := deployName
 	fmt.Println("app name:", deployName)
+
 	// get containerPort from pod's container
 	containerPort := d.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort
 	// service's cluster port is set to containerPort here
 	// it can be customized to a different port.
 	port := containerPort
-	npSvc, err := k8s.CreateNodePortService(context.TODO(), nameSpace, appName, port, containerPort)
+	npSvc, err := k8s.CreateNodePortService(context.TODO(), nameSpace, appName, port, containerPort, selector)
 	if err != nil {
 		return nil, err
 	}

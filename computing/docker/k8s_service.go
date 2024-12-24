@@ -135,7 +135,7 @@ func (s *K8sService) CreateService(ctx context.Context, nameSpace, spaceName str
 }
 
 // create a nodeport service
-func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appName string, port, containerPort int32) (result *coreV1.Service, err error) {
+func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appName string, port, containerPort int32, selector string) (result *coreV1.Service, err error) {
 	service := &coreV1.Service{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Service",
@@ -156,7 +156,7 @@ func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appNa
 			},
 			Selector: map[string]string{
 				//"app.kubernetes.io/name": "load-balancer-example",
-				"app.kubernetes.io/name": "nginx-example",
+				"app.kubernetes.io/name": selector,
 
 				//"app": appName,
 			},
