@@ -155,7 +155,9 @@ func (s *K8sService) CreateNodePortService(ctx context.Context, nameSpace, appNa
 				},
 			},
 			Selector: map[string]string{
-				"app.kubernetes.io/name": "load-balancer-example",
+				//"app.kubernetes.io/name": "load-balancer-example",
+				"app.kubernetes.io/name": "nginx-example",
+
 				//"app": appName,
 			},
 		},
