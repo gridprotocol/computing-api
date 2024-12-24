@@ -151,7 +151,7 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	}
 
 	logger.Debug("deploying app")
-	err = hc.gw.Deploy(deps, svcs, user)
+	err = hc.gw.Deploy(deps, svcs, user, 0)
 	if err != nil {
 		deploy.Clean(deps)
 
