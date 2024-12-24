@@ -24,7 +24,7 @@ type EndPoint struct {
 }
 
 // deploy apps
-func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string) (*EndPoint, error) {
+func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, nodeid uint64) (*EndPoint, error) {
 	// get k8s service
 	k8s := docker.NewK8sService()
 
@@ -52,6 +52,11 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string) (*En
 
 	// create all deployments
 	for _, dep := range deps {
+		// set the nodeselector for this deployment
+		ns := make(map[string]string)
+		ns["id"] = fmt.Sprintf("%d", nodeid)
+		dep.Spec.Template.Spec.NodeSelector = ns
+
 		// the given namespace must match the namespace in the deployment Object
 		_, err := k8s.CreateDeployment(context.Background(), "default", dep)
 		if err != nil {

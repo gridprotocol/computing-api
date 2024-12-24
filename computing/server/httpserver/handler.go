@@ -263,7 +263,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 
 	fmt.Println("deploying..")
 	// deploy deps
-	err = hc.gw.Deploy(deps, svcs, user)
+	err = hc.gw.Deploy(deps, svcs, user, orderInfo.NodeId)
 	if err != nil {
 		deploy.Clean(deps)
 
