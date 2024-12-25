@@ -61,7 +61,7 @@ var runCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:    "chain",
 			Aliases: []string{"c"},
-			Usage:   "chain to interactivate, local: use local test chain, sepo: use sepo test chain",
+			Usage:   "chain to interactivate, local: use local test chain, sepo: use sepo test chain, dev:devvChain, test:testChain",
 			Value:   "local",
 		},
 		&cli.StringFlag{
@@ -165,6 +165,25 @@ var runCmd = &cli.Command{
 			remote.AccessAddr = common.HexToAddress(d.Access)
 			remote.CreditAddr = common.HexToAddress(d.Credit)
 			remote.RegistryAddr = common.HexToAddress(d.Registry)
+
+		case "test":
+			chain_endpoint = eth.TestChain
+
+			// load all addresses from json
+			logger.Debug("load addresses")
+			// loading contracts
+			t := contracts.Test{}
+			t.Load()
+			logger.Debugf("%+v\n", t)
+
+			if t.Market == "" || t.Access == "" || t.Credit == "" || t.Registry == "" {
+				logger.Debug("all contract addresses must exist in json file")
+			}
+			// save address
+			remote.MarketAddr = common.HexToAddress(t.Market)
+			remote.AccessAddr = common.HexToAddress(t.Access)
+			remote.CreditAddr = common.HexToAddress(t.Credit)
+			remote.RegistryAddr = common.HexToAddress(t.Registry)
 
 		default:
 			log.Fatal("unsupport chain")

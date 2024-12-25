@@ -43,7 +43,7 @@ func main() {
 	//------- k8s operations
 	// deploy with yaml file and create a nodePort service for it
 	fmt.Println("deploying and create service")
-	ep, err := deploy.Deploy(deps, svcs, "userAddr")
+	ep, err := deploy.Deploy(deps, svcs, "userAddr", 1)
 	if err != nil {
 		panic(err)
 	}
