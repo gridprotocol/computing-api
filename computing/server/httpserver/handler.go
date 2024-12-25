@@ -185,7 +185,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("msg: ", msg)
+	fmt.Println("decoded msg ", msg)
 
 	// recover address with sign and msg
 	recovered := recover(st, msg)
@@ -298,7 +298,7 @@ func (hc *handlerCore) handlerClean(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("msg: ", msg)
+	fmt.Println("decoded msg: ", msg)
 
 	// recover address with sign and msg
 	recovered := recover(st, msg)
@@ -358,6 +358,16 @@ func (hc *handlerCore) handlerCleanUser(c *gin.Context) {
 	// get token and msg
 	st := c.Request.Header.Get("SignToken")
 	sm := c.Request.Header.Get("SignMessage")
+
+	if st == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "need SignToken in header"})
+		return
+	}
+	if sm == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "need SignMessage in header"})
+		return
+	}
+
 	// 对字符串进行解码
 	msg, err := url.QueryUnescape(sm)
 	if err != nil {
@@ -365,7 +375,7 @@ func (hc *handlerCore) handlerCleanUser(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("msg: ", msg)
+	fmt.Println("decoded msg: ", msg)
 
 	// recover address with sign and msg
 	recovered := recover(st, msg)
