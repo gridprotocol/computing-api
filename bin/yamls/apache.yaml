@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache-web-server-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apache-web-server
+  template:
+    metadata:
+      labels:
+        app: apache-web-server
+    spec:
+      containers:
+      - name: apache-web-server
+        image: docker.io/library/httpd:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
