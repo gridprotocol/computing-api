@@ -45,6 +45,9 @@ type GatewayRemoteProcessAPI interface {
 
 	// provider set the app name when deploy ok
 	SetApp(id uint64, app string) error
+	// provider set the avail status for node
+	SetAvail(nodeid uint64, avail bool) error
+
 	//UserCancel(userAddr string, userSK string) error
 	// user renew an order
 	Extend(userSK string, id uint64, dur string) error

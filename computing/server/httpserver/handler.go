@@ -283,6 +283,16 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 
+	// set avail status to true for node
+	err = hc.gw.SetAvail(orderInfo.NodeId, true)
+	if err != nil {
+		deploy.Clean(deps)
+
+		msg := fmt.Sprintf("[Fail] Failed to set avail for node: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] deploy ok"})
 }
 

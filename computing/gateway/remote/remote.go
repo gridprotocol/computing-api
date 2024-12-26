@@ -184,6 +184,58 @@ func (grp *GatewayRemoteProcess) SetApp(id uint64, app string) error {
 	return nil
 }
 
+// set the avail status for a node
+func (grp *GatewayRemoteProcess) SetAvail(nodeid uint64, avail bool) error {
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(grp.chain_endpoint)
+	logger.Debug("chain id:", chainID)
+
+	// get contract instance
+	regIns, err := registry.NewRegistry(RegistryAddr, backend)
+	if err != nil {
+		return fmt.Errorf("new contract instance failed: %s", err.Error())
+	}
+
+	// get wallet
+	cp := config.GetConfig().Remote.Wallet
+	// get sk with password
+	repo := keystore.Repo
+	pw := com.Password
+	ki, err := repo.Get(cp, pw)
+	if err != nil {
+		return err
+	}
+	sk := ki.SK()
+
+	// make auth for sending transaction
+	authProvider, err := eth.MakeAuth(chainID, sk)
+	if err != nil {
+		return err
+	}
+
+	// gas
+	authProvider.GasLimit = 1000000
+	// 50 gwei
+	authProvider.GasPrice = new(big.Int).SetUint64(50000000000)
+
+	logger.Debug("provider set the app name for this order")
+	tx, err := regIns.SetAvail(authProvider, common.HexToAddress(cp), nodeid, avail)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("waiting for tx to be ok")
+	err = eth.CheckTx(grp.chain_endpoint, tx.Hash(), "")
+	if err != nil {
+		return err
+	}
+
+	receipt := eth.GetTransactionReceipt(grp.chain_endpoint, tx.Hash())
+	logger.Debug("setavail gas used:", receipt.GasUsed)
+
+	return nil
+}
+
 // user extend an order
 func (grp *GatewayRemoteProcess) Extend(userSK string, id uint64, dur string) error {
 
