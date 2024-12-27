@@ -54,7 +54,7 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 		AllowOrigins:     []string{"*"},                                                                   // 允许所有域名使用
 		AllowMethods:     []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "UPDATE"},                   // 允许的方法
 		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type", "SignToken", "SignMessage"}, // 允许的头部信息
-		ExposeHeaders:    []string{"Content-Length"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Cache-Control", "Content-Language", "Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
