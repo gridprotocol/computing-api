@@ -671,6 +671,9 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		return
 	}
 
+	logger.Info("target scheme:", targetURL.Scheme)
+	logger.Info("target host:", targetURL.Host)
+
 	// forward rule func
 	director := func(r *http.Request) {
 		// scheme provided in the target url
