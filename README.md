@@ -1,98 +1,100 @@
 # Computing-API
 
-集群整合算力，节点提供资源服务获取收益。
+Clusters integrate computing power, and nodes provide resource services to earn profits.
 
-与传统云平台不同的关键点：用户、计算节点都不可信，结算和验证也不能依赖有信任要求的第三方。
+Key differences from traditional cloud platforms: neither users nor computing nodes are trustworthy, and settlement and verification cannot rely on third parties with trust requirements.
 
-## 系统结构
+## System Architecture
 
-**整体三层**
+Three-tier structure
 
 ![fig01](./assets/NewComputeStructure.png)
 
-用户层中实际上有两类角色，一个是用户，另一个是平台。平台的存在并不会引入中心化，而是为了方便用户操作，类似交易所，用户随时可以切换平台甚至自己完成操作。对于平台，前端提供用户访问与操作的页面，后端则负责与结算层、计算层的通信。
+### User Layer
 
-- 后端对结算层的操作主要是：获取提供计算服务的节点列表、生成租约合约的交易、相关的合约管理操作。
-- 后端对计算层的操作主要是：调用其对外开放的两个接口 - `Greet`和`Process`。其中`Greet`用于获取访问权限以及部署计算任务，`Process`则是用户通过`HTTP`请求访问部署的服务。
+In the user layer, there are actually two types of roles: one is the user, and the other is the platform. The existence of the platform does not introduce centralization but is convenient for user operations, similar to an exchange. Users can switch platforms at any time or even complete operations on their own. For the platform, the front end provides pages for user access and operations, while the back end is responsible for communication with the settlement layer and the computing layer.
 
-结算层用区块链主要提供两块功能。（1）计算层节点注册，包括自己的域名或IP，资源情况和价格。后续平台可以在注册合约里统计提供服务的节点列表。（2）用户层租约的记录和执行。包括租用资源量、租用时间，定金与收款方。用户可以取消租约，租约的定金随时间释放给收款方。
+- The back end's operations on the settlement layer mainly include: obtaining a list of nodes providing computing services, generating transactions for lease contracts, and related contract management operations.
+- The back end's operations on the computing layer mainly include: calling its two external interfaces - `Greet` and `Process`. `Greet` is used to obtain access permissions and deploy computing tasks, while `Process` is for users to access deployed services via `HTTP` requests.
 
-计算层主要分为两部分，一部分是网关，一部分是k8s管理的计算集群。其中网关负责对外通信，包括（1）与结算层的通信，如注册节点、验证租约。（2）与用户层的通信，提供两个访问与操作的接口，并验证用户权限的合法性。在用户访问其部署的服务时，网关只做请求和响应转发，真正的计算在k8s里运行的容器中完成。
+### Settlement Layer
 
-更多详细信息参考下面计算层的结构图。
+The settlement layer uses blockchain to provide two main functions. (1) Registration of computing layer nodes, including their domain names or IPs, resource status, and prices. Subsequently, the platform can count the list of nodes providing services in the registration contract. (2) Recording and execution of lease contracts at the user layer. This includes the amount of resources rented, rental time, deposits, and the receiving party. Users can cancel leases, and the deposit is released to the receiving party over time.
 
-**计算层**
+The computing layer is mainly divided into two parts, one is the gateway, and the other is the computing cluster managed by k8s. The gateway is responsible for external communication, including (1) communication with the settlement layer, such as registering nodes and verifying leases. (2) Communication with the user layer, providing two interfaces for access and operation, and verifying the legality of user permissions. When users access their deployed services, the gateway only forwards requests and responses, and the actual computing is completed in containers running in k8s.
+
+For more detailed information, refer to the structure diagram of the computing layer below.
 
 ![fig02](./assets/GatewayInterface.png)
 
-## 工作流
+## Workflow
 
 ![fig03](./assets/NewComputeWorkflow.png)
 
-对于用户：
+For users:
 
-1. 用户通过管理合约或工厂合约等能记录上链的方式，根据自己的需求生成一份订单上链。用钱包签署相关交易。（这一步也可以合并到第4步做）
-2. 用户在第三方平台页面上发现可用的计算节点列表，包括这些节点的配置信息和最低单价。
-3. 用户选定计算节点后，与节点直接通信协商。节点检查相关订单信息，通过后会返回`ACK`表示可以接受该订单条件。
-4. 用户在合约内将该计算节点设置为`payee`，质押足够的报酬，并设置服务开始时间，通知计算节点。计算节点检查合约信息，通过后会为用户授权相应的资源和访问权限，并返回`ACK`告知用户。
-5. 用户可根据模板生成计算任务，如使用多少资源、运行或构建什么镜像。计算节点在完成运行后会告知用户。
-6. 后续用户提供`input`如模型的`prompt`和各种参数，计算节点返回`output`给用户。
+1. Users generate an order on the chain according to their needs through management contracts or factory contracts, which can record on the chain. Sign the related transactions with their wallets. (This step can also be merged into step 4)
+2. Users discover a list of available computing nodes on the third-party platform page, including the configuration information and minimum unit price of these nodes.
+3. After the user selects the computing node, they communicate directly with the node to negotiate. The node checks the relevant order information and, if passed, returns `ACK` to indicate that it can accept the order conditions.
+4. The user sets the computing node as `payee` in the contract, pledges enough compensation, and sets the service start time, notifying the computing node. The computing node checks the contract information, and if passed, it will authorize the corresponding resources and access permissions for the user and return `ACK` to inform the user.
+5. Users can generate computing tasks according to templates, such as how many resources to use, what images to run or build. The computing node will inform the user after completing the operation.
+6. Subsequently, the user provides `input` such as the model's `prompt` and various parameters, and the computing node returns `output` to the user.
 
-值得注意的是，这里为了避免引入可信第三方做验证，以及保证结算的公平性：
+It is worth noting that to avoid introducing a trusted third party for verification and to ensure the fairness of the settlement:
 
-- 用户拥有订单的所有权。如果用户认为计算节点的服务不可靠，随时能够结束订单。
-- 订单内质押的报酬随时间释放，保证计算节点的权益。用户结束订单时会自动触发结算，计算节点通过函数也可以手动触发。
-- 为了保证用户的权益和体验，合约逻辑内可以加入一段试用期。试用期内用户取消订单不扣费（除了交易手续费）。
+- Users own the order. If users believe that the service of the computing node is unreliable, they can end the order at any time.
+- The compensation pledged in the order is released over time, ensuring the rights and interests of the computing node. When users end the order, the settlement will be triggered automatically, and the computing node can also trigger it manually through functions.
+- To ensure the rights and experience of users, the contract logic can include a probation period. Within the probation period, users can cancel orders without any fees deducted (except for transaction fees).
 
 ![fig04](./assets/NewComputeWorkflowFail.png)
 
-在没有能力验证双方可信度的情况下，用释放合约来保证用户和计算节点双方的权益。
+In the absence of the ability to verify the trustworthiness of both parties, the release contract is used to protect the rights and interests of both users and computing nodes.
 
-对于平台：
+For platforms:
 
-1. 监听区块链上，专门用于记录计算节点配置的合约。
-2. 在页面上展示这些计算节点，并提供与这些节点交互的方式。
+1. Listen to the blockchain, specifically the contracts used to record the configuration of computing nodes.
+2. Display these computing nodes on the page and provide ways to interact with these nodes.
 
-平台可以把上述提到的用户操作整合到平台页面中，方便用户操作。
+Platforms can integrate the user operations mentioned above into the platform page, making it convenient for users to operate.
 
-对于计算节点：
+For computing nodes:
 
-1. 在本地用k8s统合集群计算资源。
-2. 在合约内注册自己的信息。
-3. 等待用户生成订单并接入。
-4. 提供接口供用户远程调用。接口内部会调用k8s起的相应服务。
+1. Integrate cluster computing resources locally with k8s.
+2. Register their own information in the contract.
+3. Wait for users to generate orders and connect.
+4. Provide interfaces for users to call remotely. The interface internally calls the corresponding services started by k8s.
 
-总的来说，计算节点内部整合算力是通过集群这种中心化的方式，但最后提供的服务是去中心化的形式，不依赖可信第三方，用户可以自由选择提供服务的节点。
+In general, the internal integration of computing power in computing nodes is centralized through clusters, but the services provided in the end are decentralized, not relying on trusted third parties, and users can freely choose the nodes providing services.
 
-## 计算层
+## Computing Layer
 
-前置：通过k8s完成底层资源的整合。前期不考虑复杂任务的情况下，只提供可选的几个镜像或任务列表（可存放在MEFS上），镜像内封装模型和应用、服务。
+Prerequisite: Complete the integration of underlying resources through k8s. In the early stage, without considering complex tasks, only provide a few optional mirrors or task lists (which can be stored on MEFS), with models and applications/services encapsulated within the mirrors.
 
-核心：Computing-Gateway。Gateway只做两件事：用户访问授权与验证、转发用户输入和服务输出。
+Core: Computing-Gateway. The Gateway only does two things: user access authorization and verification, and forwarding user input and service output.
 
-k8s保证节点如何调用算力资源，gateway保证用户使用服务和节点的收益。
+k8s ensures how nodes call computing resources, and the gateway ensures the use of services by users and the benefits of nodes.
 
-实现三块接口：
+Implement three interfaces:
 
-- 本地处理。只依赖本地的事务，如算力统计、授权、验证用户权限、启动/停止计算任务。
-- 远程处理。与链上相关的事务，如注册、验证合约、结算。
-- 计算。负责接收、处理用户的请求，并返回结果。
+- Local processing. Depends only on local transactions, such as computing resource statistics, authorization, verification of user permissions, starting/stopping computing tasks.
+- Remote processing. Transactions related to the chain, such as registration, contract verification, settlement.
+- Computing. Responsible for receiving, processing user requests, and returning results.
 
-## 平台
+## Platform
 
-与用户相关。主要为页面、钱包接入。
+Related to users. Mainly pages, wallet access.
 
-后端接口：
+Backend interfaces:
 
-- 获取计算节点的信息列表并展示。
-- 为用户构建相关的交易内容并发起交易。
-- 将与计算节点之间的交互抽象出来，方便用户操作。
+- Obtain and display the list of computing node information.
+- Construct related transaction content for users and initiate transactions.
+- Abstract the interaction between users and computing nodes, making it easy for users to operate.
 
-平台提供的所有功能在理论上都不需要信任，因为都是可以验证的，且任何人都可以做平台方。
+All functions provided by the platform do not require trust in theory because they are verifiable, and anyone can be the platform party.
 
-## 合约
+## Contracts
 
-不一定是合约的形式，主要能解决两个问题即可：
+It does not necessarily have to be in the form of contracts; as long as it can solve two main issues:
 
-- 注册：计算节点注册相应的资源信息。后续用于提供给用户选择。
-- 结算：用户生成订单，完成双方的结算。
+- Registration: Computing nodes register corresponding resource information. Subsequently used for users to choose.
+- Settlement: Users generate orders and complete the settlement between both parties.
