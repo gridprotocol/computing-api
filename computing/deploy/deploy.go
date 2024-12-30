@@ -37,8 +37,18 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 
 	// append user address for each dep and svc to prevent object name conflict
 	for _, dep := range deps {
+		// 获取字符串长度
+		length := len(lower)
+		// 截取字符串的后8位
+		last8Chars := lower[length-8:]
+
 		// append lower user address to dep name
-		dep.Name = fmt.Sprintf("%s-%s", dep.Name, lower)
+		dep.Name = fmt.Sprintf("%s-%s", dep.Name, last8Chars)
+
+		// check svc length
+		if len(dep.Name) > 63 {
+			return nil, fmt.Errorf("length of svc too long, must less than 63 chars: %s", dep.Name)
+		}
 	}
 
 	// check if svc exists for the first deploy
