@@ -14,7 +14,7 @@ const (
 	entrancePrefix = "e"
 )
 
-func prefixKey(key, prefix string) []byte {
+func prefixKey(prefix, key string) []byte {
 	return []byte(prefix + key)
 }
 

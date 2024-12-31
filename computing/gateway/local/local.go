@@ -122,9 +122,9 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 	entrance := fmt.Sprintf("http://localhost:%d", ep.NodePort)
 	fmt.Println("entrance:", entrance)
 
-	user_oid := fmt.Sprintf("%s-%d-", user, oid)
-	key := prefixKey(user_oid, entrancePrefix)
-	fmt.Printf("key: %x", key)
+	user_oid := fmt.Sprintf("%s-%d", user, oid)
+	key := prefixKey(entrancePrefix, user_oid)
+	fmt.Printf("key: %s", key)
 	// record entrance
 	err = glp.DB.Put(key, []byte(entrance))
 	if err != nil {
@@ -135,8 +135,8 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 }
 
 func (glp *GatewayLocalProcess) GetEntrance(user string, oid uint64) (string, error) {
-	user_oid := fmt.Sprintf("%s-%d-", user, oid)
-	ent, err := glp.DB.Get(prefixKey(user_oid, entrancePrefix))
+	user_oid := fmt.Sprintf("%s-%d", user, oid)
+	ent, err := glp.DB.Get(prefixKey(entrancePrefix, user_oid))
 	if err != nil {
 		return "", err
 	}
