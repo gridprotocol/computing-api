@@ -100,7 +100,7 @@ func (es *EntranceService) Process(ctx context.Context, gfc *proto.Request) (*pr
 	}
 
 	// acquire entrance from recording
-	entrance, err := es.gw.GetEntrance(addr)
+	entrance, err := es.gw.GetEntrance(addr, 0)
 	if err != nil {
 		logger.Error("No Entrance: ", err)
 		return &proto.Response{Response: nil}, err
