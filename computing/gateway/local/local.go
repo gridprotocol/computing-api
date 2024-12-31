@@ -123,8 +123,10 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 	fmt.Println("entrance:", entrance)
 
 	user_oid := fmt.Sprintf("%s-%d-", user, oid)
+	key := prefixKey(user_oid, entrancePrefix)
+	fmt.Println("key: ", key)
 	// record entrance
-	err = glp.DB.Put(prefixKey(user_oid, entrancePrefix), []byte(entrance))
+	err = glp.DB.Put(key, []byte(entrance))
 	if err != nil {
 		// should delete deployment or pod
 		return err
