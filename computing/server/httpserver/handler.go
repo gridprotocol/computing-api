@@ -151,7 +151,7 @@ func (hc *handlerCore) handlerDeployUrl(c *gin.Context) {
 	}
 
 	logger.Debug("deploying app")
-	err = hc.gw.Deploy(deps, svcs, user, 0)
+	err = hc.gw.Deploy(deps, svcs, user, 0, 0)
 	if err != nil {
 		deploy.Clean(deps)
 
@@ -256,6 +256,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 	logger.Debug("order info:", orderInfo)
+	logger.Info("order id: ", orderInfo.Id)
 	logger.Info("node id: ", orderInfo.NodeId)
 
 	// // check deploy exists
@@ -272,7 +273,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 
 	fmt.Println("deploying..")
 	// deploy deps
-	err = hc.gw.Deploy(deps, svcs, user, orderInfo.NodeId)
+	err = hc.gw.Deploy(deps, svcs, user, orderInfo.Id, orderInfo.NodeId)
 	if err != nil {
 		deploy.Clean(deps)
 
@@ -662,7 +663,7 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	logger.Debug("expire check ok")
 
 	// query entrance url(service endpoint) stored in DB with address
-	ent, err := hc.gw.GetEntrance(user)
+	ent, err := hc.gw.GetEntrance(user, oid64)
 	if err != nil {
 		logger.Error("No Entrance: ", err)
 		msg := fmt.Sprintf("[Fail] have not deployed before or something went wrong: %s", err.Error())

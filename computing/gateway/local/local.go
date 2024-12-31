@@ -104,7 +104,7 @@ func (glp *GatewayLocalProcess) Authorize(user string, lease model.Lease) error 
 // (flexiable, enable image change in the future, describe in the task file)
 // TODO: 1. consider the edge case: already deployed, but fail to put into database
 // TODO: 2. user -> lease -> resources -> yaml, which limits the resources a deployment uses
-func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, nodeid uint64) error {
+func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, oid uint64, nodeid uint64) error {
 	// k8s deploy service
 
 	var ep *deploy.EndPoint
@@ -122,8 +122,9 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 	entrance := fmt.Sprintf("http://localhost:%d", ep.NodePort)
 	fmt.Println("entrance:", entrance)
 
+	user_oid := fmt.Sprintf("%s-%d-", user, oid)
 	// record entrance
-	err = glp.DB.Put(prefixKey(user, entrancePrefix), []byte(entrance))
+	err = glp.DB.Put(prefixKey(user_oid, entrancePrefix), []byte(entrance))
 	if err != nil {
 		// should delete deployment or pod
 		return err
@@ -131,8 +132,9 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 	return nil
 }
 
-func (glp *GatewayLocalProcess) GetEntrance(user string) (string, error) {
-	ent, err := glp.DB.Get(prefixKey(user, entrancePrefix))
+func (glp *GatewayLocalProcess) GetEntrance(user string, oid uint64) (string, error) {
+	user_oid := fmt.Sprintf("%s-%d-", user, oid)
+	ent, err := glp.DB.Get(prefixKey(user_oid, entrancePrefix))
 	if err != nil {
 		return "", err
 	}

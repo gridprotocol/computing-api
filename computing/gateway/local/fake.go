@@ -38,13 +38,13 @@ func (filp *FakeImplementofLocalProcess) Authorize(user string, lease model.Leas
 	return nil
 }
 
-func (filp *FakeImplementofLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, nodeid uint64) error {
+func (filp *FakeImplementofLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, oid uint64, nodeid uint64) error {
 	//key := prefixKey(user, entrancePrefix)
 	//filp.put(string(key), task)
 	return nil
 }
 
-func (filp *FakeImplementofLocalProcess) GetEntrance(user string) (string, error) {
+func (filp *FakeImplementofLocalProcess) GetEntrance(user string, oid uint64) (string, error) {
 	key := prefixKey(user, entrancePrefix)
 	if ent, ok := filp.get(string(key)); !ok {
 		return "", fmt.Errorf("entrance is not found in test map")
