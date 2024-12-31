@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: facefusion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: facefusion
+  template:
+    metadata:
+      labels:
+        app: facefusion
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: m20      
+      containers:
+      - name: facefusion
+        image: face_fusion:k8s  # Use your Docker image
+        resources:
+          limits:
+            nvidia.com/gpu: 1 # Enable GPU if available
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+            nvidia.com/gpu: 1  
