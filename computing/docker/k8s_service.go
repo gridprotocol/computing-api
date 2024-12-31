@@ -18,6 +18,7 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 
 	networkingv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -90,6 +91,24 @@ func (s *K8sService) DeleteDeployRs(ctx context.Context, namespace, spaceName st
 	return s.Clientset.AppsV1().ReplicaSets(namespace).DeleteCollection(ctx, *metaV1.NewDeleteOptions(0), metaV1.ListOptions{
 		LabelSelector: fmt.Sprintf("lad_app=%s", spaceName),
 	})
+}
+
+// check if a deploy exists
+func (s *K8sService) CheckDeployExists(ctx context.Context, namespace, deploymentName string) (bool, error) {
+	// 获取 Deployment
+	_, err := s.Clientset.AppsV1().Deployments(namespace).Get(ctx, deploymentName, metaV1.GetOptions{})
+	if err != nil {
+		fmt.Println("err:", err)
+		// 检查错误是否为 metav1.StatusError 类型
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metaV1.StatusReasonNotFound {
+			fmt.Printf("Deployment %s in namespace %s does not exist.\n", deploymentName, namespace)
+		} else {
+			fmt.Printf("Failed to get Deployment %s in namespace %s: %v\n", deploymentName, namespace, err)
+		}
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (s *K8sService) GetDeploymentImages(ctx context.Context, namespace, deploymentName string) ([]string, error) {

@@ -258,6 +258,16 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	logger.Debug("order info:", orderInfo)
 	logger.Info("node id: ", orderInfo.NodeId)
 
+	// check deploy exists
+	k8s := docker.NewK8sService()
+	exist, err := k8s.CheckDeployExists(context.Background(), "default", "asdf")
+	// check if app name exists and already deployed
+	if orderInfo.AppName != "" && exist {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] : app already deployed" + err.Error()})
+		return
+
+	}
+
 	// set node id for the first deploy
 	//deps[0].Spec.Template.Spec.NodeSelector["id"] = utils.Uint64ToString(orderInfo.NodeId)
 
