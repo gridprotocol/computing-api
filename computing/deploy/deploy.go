@@ -51,6 +51,11 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 		}
 	}
 
+	// check deploy
+	if len(deps) == 0 {
+		return nil, fmt.Errorf("no deployment in yaml")
+	}
+
 	// check if svc exists for the first deploy
 	dep0 := deps[0]
 	svcName := fmt.Sprintf("svc-%s", dep0.Name)
@@ -79,14 +84,16 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 		k8s.Clientset.CoreV1().Services("default").Create(context.Background(), svc, metav1.CreateOptions{})
 	}
 
-	// create a node port service for the first dep with name: svc-appName, port: port
-	npSvc, err := CreateNodePortSvc(deps[0])
-	if err != nil {
-		return nil, err
-	}
+	var npSvc *corev1.Service
+	var err error
 
 	// if port set in yaml, create svc for it
 	if len(deps[0].Spec.Template.Spec.Containers) > 0 && len(deps[0].Spec.Template.Spec.Containers[0].Ports) > 0 {
+		// create a node port service for the first dep with name: svc-appName, port: port
+		npSvc, err = CreateNodePortSvc(deps[0])
+		if err != nil {
+			return nil, err
+		}
 		// get svc name
 		svcName = npSvc.GetObjectMeta().GetName()
 		fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
@@ -94,9 +101,6 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 			npSvc.Spec.Ports[0].Port,
 			npSvc.Spec.Ports[0].TargetPort.IntVal,
 			npSvc.Spec.Ports[0].NodePort)
-	} else {
-		// no svc
-		npSvc = nil
 	}
 
 	// wait for all deployments to be ready
@@ -260,14 +264,14 @@ func DelDeploy(depName string) error {
 	k8s := docker.NewK8sService()
 
 	// delete deployment
-	logger.Debug("delete dep: ", depName)
+	logger.Info("delete dep: ", depName)
 	err := k8s.DeleteDeployment(context.Background(), "default", depName)
 	if err != nil {
 		return err
 	}
 
 	// delete svc
-	logger.Debug("delete svc: ", "svc-", depName)
+	logger.Info("delete svc: ", "svc-", depName)
 	err = k8s.DeleteService(context.Background(), "default", fmt.Sprintf("svc-%s", depName))
 	if err != nil {
 		return err

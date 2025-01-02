@@ -285,9 +285,11 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	}
 
 	logger.Info("app name:", deps[0].Name)
+
 	// set the app name in order
 	err = hc.gw.SetApp(oid64, deps[0].Name)
 	if err != nil {
+		logger.Info("setapp error, clean deploy")
 		deploy.Clean(deps)
 
 		msg := fmt.Sprintf("[Fail] Failed to set app: %s", err.Error())
@@ -298,6 +300,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	// set avail status to true for node
 	err = hc.gw.SetAvail(orderInfo.NodeId, true)
 	if err != nil {
+		logger.Info("setavail error, clean deploy")
 		deploy.Clean(deps)
 
 		msg := fmt.Sprintf("[Fail] Failed to set avail for node: %s", err.Error())
