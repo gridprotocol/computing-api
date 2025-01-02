@@ -133,6 +133,10 @@ func CreateNodePortSvc(d *appsv1.Deployment) (svc *corev1.Service, err error) {
 	// get selector
 	selector := labels["app.kubernetes.io/name"]
 	fmt.Println("selector: ", selector)
+	// check deploy selector
+	if selector == "" {
+		return nil, fmt.Errorf("nil selector in deploy")
+	}
 
 	// k8s service
 	k8s := docker.NewK8sService()

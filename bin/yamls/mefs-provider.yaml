@@ -6,11 +6,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mefs-provider
+      app.kubernetes.io/name: mefs-provider
   template:
     metadata:
       labels:
-        app: mefs-provider
+        app.kubernetes.io/name: mefs-provider
     spec:
       nodeSelector:
         kubernetes.io/hostname: m20      

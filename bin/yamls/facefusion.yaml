@@ -6,11 +6,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: facefusion
+      app.kubernetes.io/name: facefusion
   template:
     metadata:
       labels:
-        app: facefusion
+        app.kubernetes.io/name: facefusion
     spec:
       nodeSelector:
         kubernetes.io/hostname: m20      
