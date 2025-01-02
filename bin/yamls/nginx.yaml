@@ -18,6 +18,7 @@ spec:
       containers:
       - image: docker.io/library/nginx:latest
         name: nginx
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         resources:
