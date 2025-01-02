@@ -224,6 +224,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 
 	// if no remote yaml is provided either, response error
 	if len(yamlID) == 0 {
+		logger.Debug("yaml id: ", yamlID)
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the request missing yaml id"})
 		return
 	}
@@ -231,6 +232,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	// get yaml path from id in input
 	p, err := utils.GetPathByID(yamlID)
 	if err != nil {
+		logger.Debug("get path by id failed: ", err.Error())
 		msg := fmt.Sprintf("[Fail] invalid yaml id: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
 		return
