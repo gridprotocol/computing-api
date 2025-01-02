@@ -145,6 +145,14 @@ func CreateNodePortSvc(d *appsv1.Deployment) (svc *corev1.Service, err error) {
 	appName := deployName
 	fmt.Println("app name:", deployName)
 
+	// check container and port
+	if len(d.Spec.Template.Spec.Containers) == 0 {
+		return nil, fmt.Errorf("no containers in deploy, create svc cancelled")
+	}
+	if len(d.Spec.Template.Spec.Containers[0].Ports) == 0 {
+		return nil, fmt.Errorf("no ports in container, create svc cancelled")
+	}
+
 	// get containerPort from pod's container
 	containerPort := d.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort
 	// service's cluster port is set to containerPort here
