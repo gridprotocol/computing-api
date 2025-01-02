@@ -112,10 +112,15 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 
 	// deploy and create NodePort service
 	ep, err = deploy.Deploy(deps, svcs, user, nodeid)
-
 	if err != nil {
 		logger.Error("fail to deploy: ", err)
 		return err
+	}
+
+	// check svc
+	if ep == nil {
+		logger.Info("no svc for this deploy, skip endpoint store")
+		return nil
 	}
 
 	// use the service's NodePort to make an entrance
@@ -131,6 +136,7 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 		// should delete deployment or pod
 		return err
 	}
+
 	return nil
 }
 

@@ -84,13 +84,20 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	if err != nil {
 		return nil, err
 	}
-	// get svc name
-	svcName = npSvc.GetObjectMeta().GetName()
-	fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
-		svcName,
-		npSvc.Spec.Ports[0].Port,
-		npSvc.Spec.Ports[0].TargetPort.IntVal,
-		npSvc.Spec.Ports[0].NodePort)
+
+	// if port set in yaml, create svc for it
+	if len(deps[0].Spec.Template.Spec.Containers) > 0 && len(deps[0].Spec.Template.Spec.Containers[0].Ports) > 0 {
+		// get svc name
+		svcName = npSvc.GetObjectMeta().GetName()
+		fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
+			svcName,
+			npSvc.Spec.Ports[0].Port,
+			npSvc.Spec.Ports[0].TargetPort.IntVal,
+			npSvc.Spec.Ports[0].NodePort)
+	} else {
+		// no svc
+		npSvc = nil
+	}
 
 	// wait for all deployments to be ready
 	var allReady bool
@@ -111,13 +118,17 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	// if all apps is ready, return service endpoint
 	if allReady {
 		fmt.Println("all app is ready")
-		// endpoint of service
-		ep := &EndPoint{
-			IPs:      npSvc.Spec.ExternalIPs,
-			NodePort: npSvc.Spec.Ports[0].NodePort,
+		// check if svc created
+		if npSvc == nil {
+			return nil, nil
+		} else {
+			// endpoint of service
+			ep := &EndPoint{
+				IPs:      npSvc.Spec.ExternalIPs,
+				NodePort: npSvc.Spec.Ports[0].NodePort,
+			}
+			return ep, nil
 		}
-
-		return ep, nil
 	} else {
 		return nil, fmt.Errorf("deployment is failed to be ready after retrys")
 	}
@@ -144,14 +155,6 @@ func CreateNodePortSvc(d *appsv1.Deployment) (svc *corev1.Service, err error) {
 	nameSpace := "default"
 	appName := deployName
 	fmt.Println("app name:", deployName)
-
-	// check container and port
-	if len(d.Spec.Template.Spec.Containers) == 0 {
-		return nil, fmt.Errorf("no containers in deploy, create svc cancelled")
-	}
-	if len(d.Spec.Template.Spec.Containers[0].Ports) == 0 {
-		return nil, fmt.Errorf("no ports in container, create svc cancelled")
-	}
 
 	// get containerPort from pod's container
 	containerPort := d.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort
