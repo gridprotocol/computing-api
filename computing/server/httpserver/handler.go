@@ -291,8 +291,8 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	if err != nil {
 		//deploy.Clean(deps)
 
-		msg := fmt.Sprintf("[Fail] Failed to set app: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+		msg := fmt.Sprintf("[Caution] deploy ok, but failed to set app: %s", err.Error())
+		c.JSON(http.StatusOK, gin.H{"msg": msg})
 		return
 	}
 
@@ -301,8 +301,8 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	if err != nil {
 		//deploy.Clean(deps)
 
-		msg := fmt.Sprintf("[Fail] Failed to set avail for node: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg})
+		msg := fmt.Sprintf("[Caution] deploy ok, but failed to set avail for node: %s", err.Error())
+		c.JSON(http.StatusOK, gin.H{"msg": msg})
 		return
 	}
 
