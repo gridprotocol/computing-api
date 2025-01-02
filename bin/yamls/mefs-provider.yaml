@@ -19,6 +19,8 @@ spec:
       containers:
       - name: mefs-provider
         image: memoio/mefs-provider:latest  # Use your Docker image
+        ports:
+        - containerPort: 4001
         imagePullPolicy: IfNotPresent
         env:
            - name: PASSWORD
