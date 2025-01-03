@@ -19,6 +19,8 @@ spec:
       containers:
       - name: facefusion
         image: face_fusion:k8s  # Use your Docker image
+        ports:
+        - containerPort: 7860
         resources:
           limits:
             nvidia.com/gpu: 1 # Enable GPU if available
