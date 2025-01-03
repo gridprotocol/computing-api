@@ -1,5 +1,5 @@
 *.exe
-*db
+kvdb
 computing-api-rpc
 computing-api
 user-example

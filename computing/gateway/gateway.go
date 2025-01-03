@@ -21,7 +21,7 @@ var logger = logc.Logger("gateway")
 // func NewComputingGateway(glp GatewayLocalProcessAPI, grp GatewayRemoteProcessAPI) *ComputingGateway {
 func NewComputingGateway(ep string, test bool) *ComputingGateway {
 	// new kv db for gw
-	db, err := kv.NewDatabase(config.GetConfig().Local.DBPath)
+	db, err := kv.NewDatabase(config.GetConfig().Local.KVDBPath)
 	if err != nil {
 		logger.Error("Fail to open up the database, err: ", err)
 		panic(err)

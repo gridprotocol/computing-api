@@ -20,7 +20,7 @@ type GatewayConfig struct {
 }
 
 type Local struct {
-	DBPath     string
+	KVDBPath   string
 	SignExpire int // signature expire time in second, 60s is suggested
 }
 
