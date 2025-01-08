@@ -104,7 +104,7 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Http", "HSKey"},
 		{"Http", "CookieExpire"},
 
-		{"Local", "DBPath"},
+		{"Local", "KVDBPath"},
 		{"Local", "SignExpire"},
 
 		{"Remote", "KeyStore"},
