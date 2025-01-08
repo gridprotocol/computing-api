@@ -292,8 +292,8 @@ func checkOnline() {
 			// 打印每个节点的状态
 			for _, node := range nodes.Items {
 				for _, condition := range node.Status.Conditions {
-					if condition.Type == corev1.NodeNetworkUnavailable {
-						if condition.Status == corev1.ConditionFalse {
+					if condition.Type == corev1.NodeReady {
+						if condition.Status == corev1.ConditionTrue {
 							fmt.Printf("Node Name: %s, Online\n", node.Name)
 						} else {
 							fmt.Printf("Node Name: %s, Offline\n", node.Name)
@@ -301,7 +301,6 @@ func checkOnline() {
 						break
 					}
 				}
-
 			}
 		}
 	}
