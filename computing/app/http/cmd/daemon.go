@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"os/signal"
 	"path"
 	"runtime"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -95,6 +97,7 @@ var runCmd = &cli.Command{
 		com.SK = ki.SK()
 
 		validator_url := config.GetConfig().Validator.Url
+		platform_url := config.GetConfig().Platform.Url
 
 		// check version
 		if version.CheckVersion() {
@@ -109,6 +112,9 @@ var runCmd = &cli.Command{
 			log.Fatalf("new light node prover: %s\n", err)
 		}
 		go prover.Start(context.Background())
+
+		// check node online
+		go checkOnline(platform_url, wallet)
 
 		// chain select for remote gw
 		var chain_endpoint string
@@ -193,9 +199,6 @@ var runCmd = &cli.Command{
 			log.Fatal("unsupport chain")
 		}
 
-		// check node online
-		go checkOnline()
-
 		// make a gw object
 		gw := gateway.NewComputingGateway(chain_endpoint, test)
 		// close db
@@ -271,7 +274,7 @@ func kill(pid string) error {
 }
 
 // check if k8s nodes are online and set status in db
-func checkOnline() {
+func checkOnline(platform_url string, wallet string) {
 	// 创建 Kubernetes 客户端
 	clientset := docker.NewK8sService()
 
@@ -291,17 +294,59 @@ func checkOnline() {
 
 			// 打印每个节点的状态
 			for _, node := range nodes.Items {
+				var online bool
+				// check online
 				for _, condition := range node.Status.Conditions {
 					if condition.Type == corev1.NodeReady {
 						if condition.Status == corev1.ConditionTrue {
 							fmt.Printf("Node Name: %s, Online\n", node.Name)
+							online = true
 						} else {
 							fmt.Printf("Node Name: %s, Offline\n", node.Name)
+							online = false
 						}
 						break
 					}
 				}
+
+				// get node id from label
+				nid, ok := node.Labels["id"]
+				if ok {
+					// 尝试将标签值转换为数字
+					num, err := strconv.Atoi(nid)
+					if err != nil {
+						logger.Info("Label value is not a valid number: %s\n", nid)
+						continue
+					}
+					logger.Info("node id:", num)
+					// 指定 URL
+					url := fmt.Sprintf("%s/v1/node/%s/%d/%s", platform_url, wallet, num, online)
+					fmt.Println("url:", url)
+					sendPost(url)
+				}
 			}
 		}
 	}
+}
+
+// send post to platform
+func sendPost(url string) {
+
+	// 创建 HTTP POST 请求
+	resp, err := http.Post(url, "application/json", nil)
+	if err != nil {
+		fmt.Printf("Error making HTTP POST request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// 读取响应内容
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error reading response body: %v\n", err)
+		return
+	}
+
+	// 打印响应内容
+	fmt.Printf("Response: %s\n", body)
 }

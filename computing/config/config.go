@@ -17,6 +17,7 @@ type GatewayConfig struct {
 	Local     Local
 	Remote    Remote
 	Validator Validator
+	Platform  Platform
 }
 
 type Local struct {
@@ -39,6 +40,10 @@ type Http struct {
 	CookieExpire int // cookie expire time in second
 }
 type Validator struct {
+	Url string
+}
+
+type Platform struct {
 	Url string
 }
 
@@ -111,6 +116,7 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"Remote", "Wallet"},
 
 		{"Validator", "Url"},
+		{"Platform", "Url"},
 	}
 
 	for _, v := range requiredFields {
