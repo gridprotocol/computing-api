@@ -1,6 +1,8 @@
 package gateway
 
 import (
+	"fmt"
+
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/gateway/local"
 	"github.com/gridprotocol/computing-api/computing/gateway/remote"
@@ -20,6 +22,8 @@ var logger = logc.Logger("gateway")
 
 // func NewComputingGateway(glp GatewayLocalProcessAPI, grp GatewayRemoteProcessAPI) *ComputingGateway {
 func NewComputingGateway(ep string, test bool) *ComputingGateway {
+	fmt.Println("kvdb path:", config.GetConfig().Local.KVDBPath)
+
 	// new kv db for gw
 	db, err := kv.NewDatabase(config.GetConfig().Local.KVDBPath)
 	if err != nil {
