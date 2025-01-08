@@ -320,7 +320,7 @@ func checkOnline(platform_url string, wallet string) {
 					}
 					logger.Info("node id:", num)
 					// 指定 URL
-					url := fmt.Sprintf("%s/v1/node/%s/%d/%v", platform_url, wallet, num, online)
+					url := fmt.Sprintf("%s/v1/node/%s/%d/online/%v", platform_url, wallet, num, online)
 					fmt.Println("url:", url)
 					sendPost(url)
 				}
