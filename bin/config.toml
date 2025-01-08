@@ -7,7 +7,7 @@
   CookieExpire = 86400
 
 [Local]
-  DBPath = "./kvdb"
+  KVDBPath = "./kvdb"
   SignExpire = 86400
 
 [Remote]
