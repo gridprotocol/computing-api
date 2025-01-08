@@ -115,6 +115,7 @@ var runCmd = &cli.Command{
 
 		// check node online
 		go checkOnline(platform_url, wallet)
+		go checkOrders(platform_url, wallet)
 
 		// chain select for remote gw
 		var chain_endpoint string
@@ -273,13 +274,13 @@ func kill(pid string) error {
 	}
 }
 
-// check if k8s nodes are online and set status in db
+// check if k8s nodes are online and set status with platform
 func checkOnline(platform_url string, wallet string) {
 	// 创建 Kubernetes 客户端
 	clientset := docker.NewK8sService()
 
 	// 设置定时器，每隔 1 分钟查询一次
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
 	for {
@@ -319,7 +320,7 @@ func checkOnline(platform_url string, wallet string) {
 						continue
 					}
 					logger.Info("node id:", num)
-					// 指定 URL
+					// 请求平台设置节点online状态
 					url := fmt.Sprintf("%s/v1/node/%s/%d/online/%v", platform_url, wallet, num, online)
 					fmt.Println("url:", url)
 					sendPost(url)
@@ -329,9 +330,16 @@ func checkOnline(platform_url string, wallet string) {
 	}
 }
 
+// check orders of this cp, and if order is end, request platform to set order status=4
+func checkOrders(platform_url string, wallet string) {
+	// 请求平台设置节点online状态
+	url := fmt.Sprintf("%s/v1/check/order/%s", platform_url, wallet)
+	fmt.Println("url:", url)
+	sendPost(url)
+}
+
 // send post to platform
 func sendPost(url string) {
-
 	// 创建 HTTP POST 请求
 	resp, err := http.Post(url, "application/json", nil)
 	if err != nil {
