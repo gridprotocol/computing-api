@@ -19,6 +19,7 @@ import (
 	com "github.com/gridprotocol/computing-api/common"
 	"github.com/gridprotocol/computing-api/common/version"
 	"github.com/gridprotocol/computing-api/computing/config"
+	"github.com/gridprotocol/computing-api/computing/docker"
 	"github.com/gridprotocol/computing-api/computing/gateway"
 	"github.com/gridprotocol/computing-api/computing/gateway/remote"
 	"github.com/gridprotocol/computing-api/computing/server/httpserver"
@@ -27,6 +28,9 @@ import (
 	"github.com/gridprotocol/computing-api/prover"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli/v2"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -189,6 +193,9 @@ var runCmd = &cli.Command{
 			log.Fatal("unsupport chain")
 		}
 
+		// check node online
+		go checkOnline()
+
 		// make a gw object
 		gw := gateway.NewComputingGateway(chain_endpoint, test)
 		// close db
@@ -260,5 +267,42 @@ func kill(pid string) error {
 		return exec.Command("taskkill", "/F", "/T", "/PID", pid).Run()
 	default:
 		return fmt.Errorf("unsupported platform %s", runtime.GOOS)
+	}
+}
+
+// check if k8s nodes are online and set status in db
+func checkOnline() {
+	// 创建 Kubernetes 客户端
+	clientset := docker.NewK8sService()
+
+	// 设置定时器，每隔 1 分钟查询一次
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// 获取所有节点
+			nodes, err := clientset.Clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+			if err != nil {
+				fmt.Printf("Error fetching node list: %v\n", err)
+				continue
+			}
+
+			// 打印每个节点的状态
+			for _, node := range nodes.Items {
+				for _, condition := range node.Status.Conditions {
+					if condition.Type == corev1.NodeNetworkUnavailable {
+						if condition.Status == corev1.ConditionFalse {
+							fmt.Printf("Node Name: %s, Online\n", node.Name)
+						} else {
+							fmt.Printf("Node Name: %s, Offline\n", node.Name)
+						}
+						break
+					}
+				}
+
+			}
+		}
 	}
 }
