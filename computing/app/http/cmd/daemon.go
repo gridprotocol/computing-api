@@ -332,10 +332,19 @@ func checkOnline(platform_url string, wallet string) {
 
 // check orders of this cp, and if order is end, request platform to set order status=4
 func checkOrders(platform_url string, wallet string) {
-	// 请求平台设置节点online状态
-	url := fmt.Sprintf("%s/v1/check/order/%s", platform_url, wallet)
-	fmt.Println("url:", url)
-	sendPost(url)
+	// 设置定时器，每隔 1 分钟查询一次
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// 请求平台设置节点online状态
+			url := fmt.Sprintf("%s/v1/check/order/%s", platform_url, wallet)
+			fmt.Println("url:", url)
+			sendPost(url)
+		}
+	}
 }
 
 // send post to platform
