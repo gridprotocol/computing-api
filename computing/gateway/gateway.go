@@ -13,13 +13,16 @@ type ComputingGateway struct {
 	GatewayLocalProcessAPI
 	GatewayRemoteProcessAPI
 
+	// cp address
+	Wallet string
+
 	DB *kv.Database
 }
 
 var logger = logc.Logger("gateway")
 
 // func NewComputingGateway(glp GatewayLocalProcessAPI, grp GatewayRemoteProcessAPI) *ComputingGateway {
-func NewComputingGateway(ep string, test bool) *ComputingGateway {
+func NewComputingGateway(ep string, pl_url string, wallet string, test bool) *ComputingGateway {
 	// new kv db for gw
 	db, err := kv.NewDatabase(config.GetConfig().Local.KVDBPath)
 	if err != nil {
@@ -36,7 +39,7 @@ func NewComputingGateway(ep string, test bool) *ComputingGateway {
 	if test {
 		glp = local.NewFakeImplementofLocalProcess()
 	} else {
-		glp = local.NewGatewayLocalProcess(db)
+		glp = local.NewGatewayLocalProcess(db, pl_url, wallet)
 	}
 
 	return &ComputingGateway{

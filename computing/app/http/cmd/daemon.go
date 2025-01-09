@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -27,6 +26,7 @@ import (
 	"github.com/gridprotocol/computing-api/computing/server/httpserver"
 	"github.com/gridprotocol/computing-api/keystore"
 	"github.com/gridprotocol/computing-api/lib/logc"
+	"github.com/gridprotocol/computing-api/lib/utils"
 	"github.com/gridprotocol/computing-api/prover"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli/v2"
@@ -114,8 +114,8 @@ var runCmd = &cli.Command{
 		go prover.Start(context.Background())
 
 		// check node online
-		go checkOnline(platform_url, wallet)
-		go checkOrders(platform_url, wallet)
+		go CheckOnline(platform_url, wallet)
+		go CheckOrders(platform_url, wallet)
 
 		// chain select for remote gw
 		var chain_endpoint string
@@ -201,7 +201,7 @@ var runCmd = &cli.Command{
 		}
 
 		// make a gw object
-		gw := gateway.NewComputingGateway(chain_endpoint, test)
+		gw := gateway.NewComputingGateway(chain_endpoint, platform_url, wallet, test)
 		// close db
 		defer gw.Close()
 
@@ -275,7 +275,7 @@ func kill(pid string) error {
 }
 
 // check if k8s nodes are online and set status with platform
-func checkOnline(platform_url string, wallet string) {
+func CheckOnline(platform_url string, wallet string) {
 	// 创建 Kubernetes 客户端
 	clientset := docker.NewK8sService()
 
@@ -323,7 +323,7 @@ func checkOnline(platform_url string, wallet string) {
 					// 请求平台设置节点online状态
 					url := fmt.Sprintf("%s/v1/node/%s/%d/online/%v", platform_url, wallet, num, online)
 					fmt.Println("url:", url)
-					sendPost(url)
+					utils.SendPost(url)
 				}
 			}
 		}
@@ -331,7 +331,7 @@ func checkOnline(platform_url string, wallet string) {
 }
 
 // check orders of this cp, and if order is end, request platform to set order status=4
-func checkOrders(platform_url string, wallet string) {
+func CheckOrders(platform_url string, wallet string) {
 	// 设置定时器，每隔 1 分钟查询一次
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
@@ -342,28 +342,7 @@ func checkOrders(platform_url string, wallet string) {
 			// 请求平台设置节点online状态
 			url := fmt.Sprintf("%s/v1/check/order/%s", platform_url, wallet)
 			fmt.Println("url:", url)
-			sendPost(url)
+			utils.SendPost(url)
 		}
 	}
-}
-
-// send post to platform
-func sendPost(url string) {
-	// 创建 HTTP POST 请求
-	resp, err := http.Post(url, "application/json", nil)
-	if err != nil {
-		fmt.Printf("Error making HTTP POST request: %v\n", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	// 读取响应内容
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Error reading response body: %v\n", err)
-		return
-	}
-
-	// 打印响应内容
-	fmt.Printf("Response: %s\n", body)
 }

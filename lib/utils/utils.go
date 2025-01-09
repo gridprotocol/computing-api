@@ -3,6 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strconv"
 )
@@ -80,4 +82,25 @@ func StringToUint64(s string) (uint64, error) {
 func Uint64ToString(u uint64) string {
 	res := strconv.FormatUint(u, 10) //uint64转字符串
 	return res
+}
+
+// send post to platform
+func SendPost(url string) {
+	// 创建 HTTP POST 请求
+	resp, err := http.Post(url, "application/json", nil)
+	if err != nil {
+		fmt.Printf("Error making HTTP POST request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// 读取响应内容
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error reading response body: %v\n", err)
+		return
+	}
+
+	// 打印响应内容
+	fmt.Printf("Response: %s\n", body)
 }

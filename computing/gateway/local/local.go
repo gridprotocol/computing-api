@@ -6,8 +6,10 @@ import (
 	"github.com/gridprotocol/computing-api/computing/config"
 	"github.com/gridprotocol/computing-api/computing/deploy"
 	"github.com/gridprotocol/computing-api/computing/model"
+
 	"github.com/gridprotocol/computing-api/lib/kv"
 	"github.com/gridprotocol/computing-api/lib/logc"
+	"github.com/gridprotocol/computing-api/lib/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -22,14 +24,18 @@ const (
 type GatewayLocalProcess struct {
 	signExpire int64
 
+	Platfor_Url string
+	Wallet      string
+
 	DB *kv.Database
 }
 
-func NewGatewayLocalProcess(db *kv.Database) *GatewayLocalProcess {
+func NewGatewayLocalProcess(db *kv.Database, pl_url string, wallet string) *GatewayLocalProcess {
 	glp := new(GatewayLocalProcess)
 
 	glp.signExpire = int64(config.GetConfig().Local.SignExpire)
 	glp.DB = db
+	glp.Wallet = wallet
 
 	return glp
 }
@@ -116,6 +122,11 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 		logger.Error("fail to deploy: ", err)
 		return err
 	}
+
+	// if deploy ok, set this node to avail=true
+	url := fmt.Sprintf("%s/v1/node/%s/%d/avail/true", glp.Platfor_Url, glp.Wallet, nodeid)
+	fmt.Println("url:", url)
+	utils.SendPost(url)
 
 	// check svc
 	if ep == nil {
