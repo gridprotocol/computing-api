@@ -3,6 +3,7 @@ package gateway
 import (
 	"github.com/grid/contracts/go/market"
 	"github.com/gridprotocol/computing-api/computing/model"
+	"github.com/gridprotocol/computing-api/lib/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -33,9 +34,9 @@ type GatewayRemoteProcessAPI interface {
 	Register(ability model.Resources) error
 
 	// Check the settlement contract to decide whether to offer the service.
-	StaticCheck(orderInfo market.IMarketOrder) (bool, error)
+	//StaticCheck(orderInfo market.IMarketOrder) (bool, error)
 	// check expire
-	ExpireCheck(orderInfo market.IMarketOrder) (bool, error)
+	//ExpireCheck(orderInfo utils.Order) (bool, error)
 	// provider confirm an order
 	//Confirm(user string) error
 
@@ -53,17 +54,17 @@ type GatewayRemoteProcessAPI interface {
 	Extend(userSK string, id uint64, dur string) error
 
 	// reset an order
-	Reset(id uint64, prob string, dur string) error
+	//Reset(id uint64, prob string, dur string) error
 
 	// provider settle an order to retrieve remueration
-	Settle(id uint64) error
+	//Settle(id uint64) error
 
 	// check the order's payee to be the provider itself
 	PayeeCheck(orderInfo market.IMarketOrder) (bool, error)
 	SetWatcher(contract string) error
 
 	// get order with user and cp
-	GetOrder(id uint64) (*market.IMarketOrder, error)
+	GetOrder(id uint64) (*utils.Order, error)
 
 	// check order
 	OrderCheck(id uint64) (bool, error)

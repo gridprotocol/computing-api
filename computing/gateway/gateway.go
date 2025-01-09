@@ -31,7 +31,7 @@ func NewComputingGateway(ep string, pl_url string, wallet string, test bool) *Co
 	}
 
 	// remote gw
-	grp := remote.NewGatewayRemoteProcess(ep, db)
+	grp := remote.NewGatewayRemoteProcess(ep, db, pl_url)
 
 	// local gw
 	var glp GatewayLocalProcessAPI
@@ -39,7 +39,7 @@ func NewComputingGateway(ep string, pl_url string, wallet string, test bool) *Co
 	if test {
 		glp = local.NewFakeImplementofLocalProcess()
 	} else {
-		glp = local.NewGatewayLocalProcess(db, pl_url, wallet)
+		glp = local.NewGatewayLocalProcess(db, pl_url)
 	}
 
 	return &ComputingGateway{

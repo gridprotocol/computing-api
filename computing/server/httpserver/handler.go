@@ -258,8 +258,8 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 	logger.Debug("order info:", orderInfo)
-	logger.Info("order id: ", orderInfo.Id)
-	logger.Info("node id: ", orderInfo.NodeId)
+	logger.Info("order id: ", orderInfo.ID)
+	logger.Info("node id: ", orderInfo.NodeID)
 
 	// // check deploy exists
 	// k8s := docker.NewK8sService()
@@ -275,7 +275,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 
 	fmt.Println("deploying..")
 	// deploy deps
-	err = hc.gw.Deploy(deps, svcs, user, orderInfo.Id, orderInfo.NodeId)
+	err = hc.gw.Deploy(deps, svcs, user, orderInfo.ID, orderInfo.NodeID)
 	if err != nil {
 		deploy.Clean(deps)
 
@@ -297,7 +297,7 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 	}
 
 	// set avail status to true for node
-	err = hc.gw.SetAvail(orderInfo.NodeId, true)
+	err = hc.gw.SetAvail(orderInfo.NodeID, true)
 	if err != nil {
 		//deploy.Clean(deps)
 
@@ -561,6 +561,7 @@ func (hc *handlerCore) handlerExtend(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order renewed"})
 }
 
+/*
 func (hc *handlerCore) handlerReset(c *gin.Context) {
 	// order id
 	oid := c.Query("oid")
@@ -589,7 +590,8 @@ func (hc *handlerCore) handlerReset(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order reset to status 2 (active)"})
 }
-
+*/
+/*
 func (hc *handlerCore) handlerSettle(c *gin.Context) {
 	// order id
 	oid := c.Query("oid")
@@ -612,6 +614,7 @@ func (hc *handlerCore) handlerSettle(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] order settle ok"})
 }
+*/
 
 // for all other requests, forward them to a proxy, and return the response from the proxy to the client
 func (hc *handlerCore) handlerCompute(c *gin.Context) {
@@ -632,11 +635,19 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	logger.Info("cp: ", cp)
 
 	// get order info with params
-	orderInfo, err := hc.gw.GetOrder(oid64)
+	// orderInfo, err := hc.gw.GetOrder(oid64)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+	// 	return
+	// }
+
+	// get order info from platform
+	orderInfo, err := utils.SendGetOrderRequest(oid64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
 		return
 	}
+
 	logger.Debug("order info:", orderInfo)
 
 	// check status must be activated
@@ -656,14 +667,6 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] order not active: " + status})
 		return
 	}
-
-	// order expire check
-	ok, err := hc.gw.ExpireCheck(*orderInfo)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] the order expire check failed: " + err.Error()})
-		return
-	}
-	logger.Debug("expire check ok")
 
 	// query entrance url(service endpoint) stored in DB with address
 	ent, err := hc.gw.GetEntrance(user, oid64)

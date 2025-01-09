@@ -104,3 +104,46 @@ func SendPost(url string) {
 	// 打印响应内容
 	fmt.Printf("Response: %s\n", body)
 }
+
+// for responsedata
+type Order struct {
+	ID       uint64 `json:"id"`
+	User     string `json:"user"`
+	Provider string `json:"provider"`
+	NodeID   uint64 `json:"node_id"`
+	AppName  string `json:"app_name"`
+	// TotalValue      uint256  `json:"total_value"` // Go 语言中没有 uint256 类型，可以使用 big.Int
+	Remain         string `json:"remain"`       // 使用 string 类型存储大整数
+	Remuneration   string `json:"remuneration"` // 使用 string 类型存储大整数
+	ActivateTime   uint64 `json:"activate_time"`
+	LastSettleTime uint64 `json:"last_settle_time"`
+	Probation      uint64 `json:"probation"`
+	Duration       uint64 `json:"duration"`
+	Status         uint8  `json:"status"`
+}
+
+// SendGetOrderRequest 发送 HTTP GET 请求并解析响应内容为 Order 结构体
+func SendGetOrderRequest(id uint64) (*Order, error) {
+	url := fmt.Sprintf("http://localhost:8002/v1/order/%d/info", id)
+
+	// 发送 GET 请求
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error sending GET request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// 读取响应内容
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %w", err)
+	}
+
+	// 解析响应内容为 Order 结构体
+	var order Order
+	if err := json.Unmarshal(body, &order); err != nil {
+		return nil, fmt.Errorf("error unmarshalling response body: %w", err)
+	}
+
+	return &order, nil
+}

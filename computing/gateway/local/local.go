@@ -30,12 +30,12 @@ type GatewayLocalProcess struct {
 	DB *kv.Database
 }
 
-func NewGatewayLocalProcess(db *kv.Database, pl_url string, wallet string) *GatewayLocalProcess {
+func NewGatewayLocalProcess(db *kv.Database, pl_url string) *GatewayLocalProcess {
 	glp := new(GatewayLocalProcess)
 
 	glp.signExpire = int64(config.GetConfig().Local.SignExpire)
 	glp.DB = db
-	glp.Wallet = wallet
+	glp.Wallet = config.GetConfig().Remote.Wallet
 
 	return glp
 }
