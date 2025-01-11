@@ -126,6 +126,8 @@ type Order struct {
 func SendGetOrderRequest(id uint64) (*Order, error) {
 	url := fmt.Sprintf("http://localhost:8002/v1/order/%d/info", id)
 
+	fmt.Println("url:", url)
+
 	// 发送 GET 请求
 	resp, err := http.Get(url)
 	if err != nil {
@@ -134,6 +136,7 @@ func SendGetOrderRequest(id uint64) (*Order, error) {
 	defer resp.Body.Close()
 
 	// 读取响应内容
+	fmt.Print("reading response")
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %w", err)
@@ -144,6 +147,8 @@ func SendGetOrderRequest(id uint64) (*Order, error) {
 	if err := json.Unmarshal(body, &order); err != nil {
 		return nil, fmt.Errorf("error unmarshalling response body: %w", err)
 	}
+
+	fmt.Println("order info from response body: ", order)
 
 	return &order, nil
 }
