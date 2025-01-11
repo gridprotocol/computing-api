@@ -294,7 +294,7 @@ func kill(pid string) error {
 	}
 }
 
-// check if k8s nodes are online and set status with platform
+// check if k8s nodes are online and set status by request to platform
 func CheckOnline(platform_url string, wallet string) {
 	// 创建 Kubernetes 客户端
 	clientset := docker.NewK8sService()
@@ -303,48 +303,47 @@ func CheckOnline(platform_url string, wallet string) {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			// 获取所有节点
-			nodes, err := clientset.Clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-			if err != nil {
-				fmt.Printf("Error fetching node list: %v\n", err)
-				continue
+	// send request to platform every min
+	for range ticker.C {
+		// 获取所有节点
+		nodes, err := clientset.Clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			fmt.Printf("Error fetching node list: %v\n", err)
+			continue
+		}
+
+		// 打印每个节点的状态
+		for _, node := range nodes.Items {
+			var online bool
+			// check online
+			for _, condition := range node.Status.Conditions {
+				if condition.Type == corev1.NodeReady {
+					if condition.Status == corev1.ConditionTrue {
+						fmt.Printf("Node Name: %s, Online\n", node.Name)
+						online = true
+					} else {
+						fmt.Printf("Node Name: %s, Offline\n", node.Name)
+						online = false
+					}
+					break
+				}
 			}
 
-			// 打印每个节点的状态
-			for _, node := range nodes.Items {
-				var online bool
-				// check online
-				for _, condition := range node.Status.Conditions {
-					if condition.Type == corev1.NodeReady {
-						if condition.Status == corev1.ConditionTrue {
-							fmt.Printf("Node Name: %s, Online\n", node.Name)
-							online = true
-						} else {
-							fmt.Printf("Node Name: %s, Offline\n", node.Name)
-							online = false
-						}
-						break
-					}
+			// get node id from label
+			nid, ok := node.Labels["id"]
+			if ok {
+				// 尝试将标签值转换为数字
+				num, err := strconv.Atoi(nid)
+				if err != nil {
+					logger.Info("Label value is not a valid number: %s\n", nid)
+					continue
 				}
+				logger.Info("node id:", num)
 
-				// get node id from label
-				nid, ok := node.Labels["id"]
-				if ok {
-					// 尝试将标签值转换为数字
-					num, err := strconv.Atoi(nid)
-					if err != nil {
-						logger.Info("Label value is not a valid number: %s\n", nid)
-						continue
-					}
-					logger.Info("node id:", num)
-					// 请求平台设置节点online状态
-					url := fmt.Sprintf("%s/v1/node/%s/%d/online/%v", platform_url, wallet, num, online)
-					fmt.Println("url:", url)
-					utils.SendPost(url)
-				}
+				// 请求平台设置节点online状态
+				url := fmt.Sprintf("%s/v1/node/%s/%d/online/%v", platform_url, wallet, num, online)
+				fmt.Println("url:", url)
+				utils.SendPost(url)
 			}
 		}
 	}
@@ -356,13 +355,11 @@ func CheckOrders(platform_url string, wallet string) {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			// 请求平台设置节点online状态
-			url := fmt.Sprintf("%s/v1/check/order/%s", platform_url, wallet)
-			fmt.Println("url:", url)
-			utils.SendPost(url)
-		}
+	// send request to platform every min
+	for range ticker.C {
+		// 请求平台设置节点online状态
+		url := fmt.Sprintf("%s/v1/check/order/%s", platform_url, wallet)
+		fmt.Println("url:", url)
+		utils.SendPost(url)
 	}
 }
