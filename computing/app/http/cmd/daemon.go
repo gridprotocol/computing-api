@@ -165,12 +165,32 @@ var runCmd = &cli.Command{
 			logger.Debug("load addresses")
 			// loading contracts
 			d := contracts.Dev{}
-			d.Load()
+			d.Load("dev")
 			logger.Debugf("%+v\n", d)
 
 			if d.Market == "" || d.Access == "" || d.Credit == "" || d.Registry == "" {
 				logger.Debug("all contract addresses must exist in json file")
 			}
+			// save address
+			remote.MarketAddr = common.HexToAddress(d.Market)
+			remote.AccessAddr = common.HexToAddress(d.Access)
+			remote.CreditAddr = common.HexToAddress(d.Credit)
+			remote.RegistryAddr = common.HexToAddress(d.Registry)
+
+		case "product":
+			chain_endpoint = eth.DevChain
+
+			// load all addresses from json
+			logger.Debug("load addresses")
+			// loading contracts
+			d := contracts.Dev{}
+			d.Load("product")
+			logger.Debugf("%+v\n", d)
+
+			if d.Market == "" || d.Access == "" || d.Credit == "" || d.Registry == "" {
+				logger.Debug("all contract addresses must exist in json file")
+			}
+
 			// save address
 			remote.MarketAddr = common.HexToAddress(d.Market)
 			remote.AccessAddr = common.HexToAddress(d.Access)
