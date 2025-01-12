@@ -87,20 +87,23 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	var npSvc *corev1.Service
 	var err error
 
-	// if port set in yaml, create svc for it
-	if len(deps[0].Spec.Template.Spec.Containers) > 0 && len(deps[0].Spec.Template.Spec.Containers[0].Ports) > 0 {
-		// create a node port service for the first dep with name: svc-appName, port: port
-		npSvc, err = CreateNodePortSvc(deps[0])
-		if err != nil {
-			return nil, err
+	// if no service defined in yaml, create a nodePort svc for the deploy[0] on containerport[0]
+	if len(svcs) == 0 {
+		// if port set in yaml, create svc for it
+		if len(deps[0].Spec.Template.Spec.Containers) > 0 && len(deps[0].Spec.Template.Spec.Containers[0].Ports) > 0 {
+			// create a node port service for the first dep with name: svc-appName, port: port
+			npSvc, err = CreateNodePortSvc(deps[0])
+			if err != nil {
+				return nil, err
+			}
+			// get svc name
+			svcName = npSvc.GetObjectMeta().GetName()
+			fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
+				svcName,
+				npSvc.Spec.Ports[0].Port,
+				npSvc.Spec.Ports[0].TargetPort.IntVal,
+				npSvc.Spec.Ports[0].NodePort)
 		}
-		// get svc name
-		svcName = npSvc.GetObjectMeta().GetName()
-		fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
-			svcName,
-			npSvc.Spec.Ports[0].Port,
-			npSvc.Spec.Ports[0].TargetPort.IntVal,
-			npSvc.Spec.Ports[0].NodePort)
 	}
 
 	// wait for all deployments to be ready
@@ -143,11 +146,11 @@ func CreateNodePortSvc(d *appsv1.Deployment) (svc *corev1.Service, err error) {
 	// get deployment name
 	deployName := d.GetObjectMeta().GetName()
 
-	// get labels
+	// get deploy labels
 	labels := d.GetObjectMeta().GetLabels()
-	// get selector
+	// get deploy selector
 	selector := labels["app.kubernetes.io/name"]
-	fmt.Println("selector: ", selector)
+	fmt.Println("deployment selector: ", selector)
 	// check deploy selector
 	if selector == "" {
 		return nil, fmt.Errorf("nil selector in deploy")
@@ -165,6 +168,8 @@ func CreateNodePortSvc(d *appsv1.Deployment) (svc *corev1.Service, err error) {
 	// service's cluster port is set to containerPort here
 	// it can be customized to a different port.
 	port := containerPort
+
+	// create a nodeport svc for a deployment
 	npSvc, err := k8s.CreateNodePortService(context.TODO(), nameSpace, appName, port, containerPort, selector)
 	if err != nil {
 		return nil, err
