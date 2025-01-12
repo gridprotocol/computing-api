@@ -247,6 +247,11 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 
+	logger.Debugf("num services in yaml: ", len(svcs))
+	for i, s := range svcs {
+		logger.Debugf("service %d name: %s, targetPort:%d", i, s.Name, s.Spec.Ports[0].TargetPort.IntVal)
+	}
+
 	// get cp address from config file
 	cp := config.GetConfig().Remote.Wallet
 	logger.Info("cp addr:", cp)
