@@ -45,6 +45,8 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 		// append lower user address to dep name
 		dep.Name = fmt.Sprintf("%s-%s", dep.Name, last8Chars)
 
+		logger.Debug("deploy, name: ", dep.Name)
+
 		// check svc length
 		if len(dep.Name) > 63 {
 			return nil, fmt.Errorf("length of svc too long, must less than 63 chars: %s", dep.Name)
@@ -61,16 +63,20 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	svcName := fmt.Sprintf("svc-%s", dep0.Name)
 	result, _ := k8s.GetServiceByName(context.Background(), "default", svcName, metav1.GetOptions{})
 	if result.Name == svcName {
-		logger.Debug("svc exists")
+		logger.Debug("svc already exists, cancel deploy")
 		return nil, fmt.Errorf("svc exists:%s, deploy cancelled", svcName)
 	}
 
 	// create all deployments
-	for _, dep := range deps {
+	for i, dep := range deps {
+		logger.Debugf("dep num inyaml: %d", len(deps))
+		logger.Debugf("create deploy index: %d", i)
 		// set the nodeselector for this deployment
 		ns := make(map[string]string)
 		ns["id"] = fmt.Sprintf("%d", nodeid)
 		dep.Spec.Template.Spec.NodeSelector = ns
+
+		logger.Debugf("create deploy, nodeSelector: id=%d", nodeid)
 
 		// the given namespace must match the namespace in the deployment Object
 		_, err := k8s.CreateDeployment(context.Background(), "default", dep)
@@ -80,6 +86,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	}
 
 	// create all services
+	logger.Debug("creating all svcs")
 	for _, svc := range svcs {
 		k8s.Clientset.CoreV1().Services("default").Create(context.Background(), svc, metav1.CreateOptions{})
 	}
@@ -89,6 +96,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 
 	// if no service defined in yaml, create a nodePort svc for the deploy[0] on containerport[0]
 	if len(svcs) == 0 {
+		logger.Debug("no service in yaml, create svc for this deploy")
 		// if port set in yaml, create svc for it
 		if len(deps[0].Spec.Template.Spec.Containers) > 0 && len(deps[0].Spec.Template.Spec.Containers[0].Ports) > 0 {
 			// create a node port service for the first dep with name: svc-appName, port: port
@@ -106,10 +114,12 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 				npSvc.Spec.Ports[0].NodePort)
 		}
 	} else { // choose a right nodePort service to return
+		logger.Debug("1 service in yaml, use it for entrance")
 		// if only 1 service in yaml, return it
 		if len(svcs) == 1 {
 			npSvc = svcs[0]
 		} else {
+			logger.Debug("multiple service found in yaml, use the svc with 8081 port")
 			// find 8081 target port for mefs-user or mefs-provider
 			for _, svc := range svcs {
 				if svc.Spec.Ports[0].TargetPort.IntVal == 8081 {
