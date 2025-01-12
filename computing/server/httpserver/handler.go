@@ -683,6 +683,7 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": msg})
 		return
 	}
+
 	logger.Info("entrance:", ent)
 
 	// parse the entrance url into an URL struct

@@ -148,9 +148,14 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 	return nil
 }
 
+// get entrance with user and oid
 func (glp *GatewayLocalProcess) GetEntrance(user string, oid uint64) (string, error) {
 	user_oid := fmt.Sprintf("%s-%d", user, oid)
-	ent, err := glp.DB.Get(prefixKey(entrancePrefix, user_oid))
+	key := prefixKey(entrancePrefix, user_oid)
+	logger.Debug("key:", string(key))
+
+	// get entrance with key
+	ent, err := glp.DB.Get(key)
 	if err != nil {
 		return "", err
 	}
