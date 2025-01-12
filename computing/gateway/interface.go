@@ -23,9 +23,21 @@ type GatewayLocalProcessAPI interface {
 	Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, oid uint64, nodeid uint64) error
 	GetEntrance(user string, oid uint64) (string, error)
 	// compute app after deployed
-	Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error
+	//Compute(entrance string, input *model.ComputingInput, output *model.ComputingOutput) error
 	Terminate(user string) error
 	Close() error
+
+	// provider set the app name when deploy ok
+	SetAppName(id uint64, app string) error
+
+	// get order with user and cp
+	GetOrder(id uint64) (*utils.Order, error)
+
+	// check order
+	OrderCheck(id uint64) (bool, error)
+
+	// provider set the avail status for node
+	SetNodeAvail(nodeid uint64, avail string) error
 }
 
 // Blockchain related. Mainly relate to smart contract.
@@ -44,11 +56,6 @@ type GatewayRemoteProcessAPI interface {
 	//Activate(user string) error
 	//Deactivate(user string) error
 
-	// provider set the app name when deploy ok
-	SetApp(id uint64, app string) error
-	// provider set the avail status for node
-	SetAvail(nodeid uint64, avail bool) error
-
 	//UserCancel(userAddr string, userSK string) error
 	// user renew an order
 	Extend(userSK string, id uint64, dur string) error
@@ -62,10 +69,4 @@ type GatewayRemoteProcessAPI interface {
 	// check the order's payee to be the provider itself
 	PayeeCheck(orderInfo market.IMarketOrder) (bool, error)
 	SetWatcher(contract string) error
-
-	// get order with user and cp
-	GetOrder(id uint64) (*utils.Order, error)
-
-	// check order
-	OrderCheck(id uint64) (bool, error)
 }

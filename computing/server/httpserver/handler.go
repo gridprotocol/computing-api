@@ -284,24 +284,26 @@ func (hc *handlerCore) handlerDeployID(c *gin.Context) {
 		return
 	}
 
-	logger.Info("app name:", deps[0].Name)
-
+	logger.Info("set app name:", deps[0].Name)
 	// set the app name in order
-	err = hc.gw.SetApp(oid64, deps[0].Name)
+	err = hc.gw.SetAppName(oid64, deps[0].Name)
 	if err != nil {
+		// clean when fail
 		//deploy.Clean(deps)
 
-		msg := fmt.Sprintf("[Caution] deploy ok, but failed to set app: %s", err.Error())
+		msg := fmt.Sprintf("[Caution] deployed ok, but failed to set app: %s. cleaned", err.Error())
 		c.JSON(http.StatusOK, gin.H{"msg": msg})
 		return
 	}
 
+	logger.Info("set this node to avail when deploy ok")
 	// set avail status to true for node
-	err = hc.gw.SetAvail(orderInfo.NodeID, true)
+	err = hc.gw.SetNodeAvail(orderInfo.NodeID, "true")
 	if err != nil {
+		// clean when fail
 		//deploy.Clean(deps)
 
-		msg := fmt.Sprintf("[Caution] deploy ok, but failed to set avail for node: %s", err.Error())
+		msg := fmt.Sprintf("[Caution] deploy ok, but failed to set avail for node: %s. cleaned", err.Error())
 		c.JSON(http.StatusOK, gin.H{"msg": msg})
 		return
 	}

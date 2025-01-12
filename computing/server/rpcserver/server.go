@@ -88,30 +88,30 @@ func (es *EntranceService) Greet(ctx context.Context, gfc *proto.GreetFromClient
 	}
 }
 
-// Process for service usage
-func (es *EntranceService) Process(ctx context.Context, gfc *proto.Request) (*proto.Response, error) {
-	logger.Debug("Process")
+// // Process for service usage
+// func (es *EntranceService) Process(ctx context.Context, gfc *proto.Request) (*proto.Response, error) {
+// 	logger.Debug("Process")
 
-	addr := gfc.GetAddress()
-	// check authority
-	// TODO: temp ignore this part
-	if ok := es.gw.CheckAuthInfo(&model.AuthInfo{Address: addr, Msg: gfc.GetApiKey()}); !ok {
-		return &proto.Response{Response: nil}, fmt.Errorf("[Fail] Failed to verify your account %s", addr)
-	}
+// 	addr := gfc.GetAddress()
+// 	// check authority
+// 	// TODO: temp ignore this part
+// 	if ok := es.gw.CheckAuthInfo(&model.AuthInfo{Address: addr, Msg: gfc.GetApiKey()}); !ok {
+// 		return &proto.Response{Response: nil}, fmt.Errorf("[Fail] Failed to verify your account %s", addr)
+// 	}
 
-	// acquire entrance from recording
-	entrance, err := es.gw.GetEntrance(addr, 0)
-	if err != nil {
-		logger.Error("No Entrance: ", err)
-		return &proto.Response{Response: nil}, err
-	}
-	in := model.ComputingInput{Request: gfc.Request}
-	out := model.ComputingOutput{Response: nil}
-	err = es.gw.Compute(entrance, &in, &out)
-	if err != nil {
-		logger.Error("Bad request: ", err)
-		return &proto.Response{Response: nil}, err
-	}
+// 	// acquire entrance from recording
+// 	entrance, err := es.gw.GetEntrance(addr, 0)
+// 	if err != nil {
+// 		logger.Error("No Entrance: ", err)
+// 		return &proto.Response{Response: nil}, err
+// 	}
+// 	in := model.ComputingInput{Request: gfc.Request}
+// 	out := model.ComputingOutput{Response: nil}
+// 	err = es.gw.Compute(entrance, &in, &out)
+// 	if err != nil {
+// 		logger.Error("Bad request: ", err)
+// 		return &proto.Response{Response: nil}, err
+// 	}
 
-	return &proto.Response{Response: out.Response}, nil
-}
+// 	return &proto.Response{Response: out.Response}, nil
+// }

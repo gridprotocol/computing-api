@@ -37,7 +37,7 @@ func NewComputingGateway(ep string, pl_url string, wallet string, test bool) *Co
 	var glp GatewayLocalProcessAPI
 	// check for fake
 	if test {
-		glp = local.NewFakeImplementofLocalProcess()
+		//glp = local.NewFakeImplementofLocalProcess()
 	} else {
 		glp = local.NewGatewayLocalProcess(db, pl_url)
 	}
