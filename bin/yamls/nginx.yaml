@@ -28,3 +28,20 @@ spec:
         #   limits:
         #     memory: "32Mi"
         #     cpu: "500m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+     app.kubernetes.io/name: nginx-example
+  ports:
+   - name: webserver
+     protocol: TCP
+     port: 80
+     targetPort: 80
+     nodePort: 32180
+  type: NodePort
