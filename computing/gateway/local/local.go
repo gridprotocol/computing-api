@@ -137,7 +137,7 @@ func (glp *GatewayLocalProcess) Deploy(deps []*appsv1.Deployment, svcs []*corev1
 
 	user_oid := fmt.Sprintf("%s-%d", user, oid)
 	key := prefixKey(entrancePrefix, user_oid)
-	fmt.Printf("key: %s", key)
+	fmt.Printf("key for entrance: %s\n", key)
 	// record entrance
 	err = glp.DB.Put(key, []byte(entrance))
 	if err != nil {
