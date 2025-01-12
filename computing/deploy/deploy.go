@@ -71,12 +71,13 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	for i, dep := range deps {
 		logger.Debugf("dep num inyaml: %d", len(deps))
 		logger.Debugf("create deploy index: %d", i)
-		// set the nodeselector for this deployment
-		ns := make(map[string]string)
-		ns["id"] = fmt.Sprintf("%d", nodeid)
-		dep.Spec.Template.Spec.NodeSelector = ns
 
-		logger.Debugf("create deploy, nodeSelector: id=%d", nodeid)
+		// set the nodeselector for this deployment
+		// ns := make(map[string]string)
+		// ns["id"] = fmt.Sprintf("%d", nodeid)
+		// dep.Spec.Template.Spec.NodeSelector = ns
+
+		// logger.Debugf("create deploy, nodeSelector: id=%d", nodeid)
 
 		// the given namespace must match the namespace in the deployment Object
 		_, err := k8s.CreateDeployment(context.Background(), "default", dep)
@@ -210,7 +211,7 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 	logger.Debugf("wait deploy ready: %s", deployName)
 
 	var retry uint
-	for retry = 0; retry < 60; retry++ {
+	for retry = 0; retry < 600; retry++ {
 		// get current version of deployment
 		deploymentsClient := k8s.Clientset.AppsV1().Deployments(corev1.NamespaceDefault)
 		result, getErr := deploymentsClient.Get(context.TODO(), deployName, metav1.GetOptions{})
