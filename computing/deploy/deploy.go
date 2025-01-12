@@ -95,7 +95,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 		k8s.Clientset.CoreV1().Services("default").Create(context.Background(), svc, metav1.CreateOptions{})
 	}
 
-	var npSvc *corev1.Service
+	var npSvc = new(corev1.Service)
 	var err error
 
 	// if no service defined in yaml, create a nodePort svc for the deploy[0] on containerport[0]
@@ -117,10 +117,25 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 				npSvc.Spec.Ports[0].TargetPort.IntVal,
 				npSvc.Spec.Ports[0].NodePort)
 		}
-	} else { // choose a right nodePort service to return
-		logger.Debug("1 service in yaml, use it for entrance")
-		// if only 1 service in yaml, return it
-		if len(svcs) == 1 {
+	} else { // use existing svc's port
+		logger.Debug("choose a nodeport for entrance")
+
+		// user or provider: use the 8081 port's nodeport
+		if svcs[0].Name == "provider-service" || svcs[0].Name == "user-service" {
+			// choose the nodeport with 8081 targetPort
+			for _, port := range svcs[0].Spec.Ports {
+				if port.TargetPort.IntVal == 8081 {
+					npSvc.Spec.Ports[0].NodePort = port.NodePort
+					break
+				}
+			}
+		} else {
+			// otherwise, use the first nodeport
+			npSvc.Spec.Ports[0].NodePort = svcs[0].Spec.Ports[0].NodePort
+		}
+
+		// if only 1 port in svc[0], return it
+		if len(svcs[0].Spec.Ports) == 1 {
 			npSvc = svcs[0]
 		} else {
 			logger.Debug("multiple service found in yaml, use the svc with 8081 port")
