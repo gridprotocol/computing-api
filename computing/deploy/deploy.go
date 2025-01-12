@@ -96,6 +96,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	}
 
 	var npSvc = new(corev1.Service)
+	var nodePort int32
 	var err error
 
 	// if no service defined in yaml, create a nodePort svc for the deploy[0] on containerport[0]
@@ -116,6 +117,8 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 				npSvc.Spec.Ports[0].Port,
 				npSvc.Spec.Ports[0].TargetPort.IntVal,
 				npSvc.Spec.Ports[0].NodePort)
+
+			nodePort = npSvc.Spec.Ports[0].NodePort
 		}
 	} else { // use existing svc's port
 		logger.Debug("choose a nodeport for entrance")
@@ -125,28 +128,28 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 			// choose the nodeport with 8081 targetPort
 			for _, port := range svcs[0].Spec.Ports {
 				if port.TargetPort.IntVal == 8081 {
-					npSvc.Spec.Ports[0].NodePort = port.NodePort
+					nodePort = port.NodePort
 					break
 				}
 			}
 		} else {
 			// otherwise, use the first nodeport
-			npSvc.Spec.Ports[0].NodePort = svcs[0].Spec.Ports[0].NodePort
+			nodePort = svcs[0].Spec.Ports[0].NodePort
 		}
 
-		// if only 1 port in svc[0], return it
-		if len(svcs[0].Spec.Ports) == 1 {
-			npSvc = svcs[0]
-		} else {
-			logger.Debug("multiple service found in yaml, use the svc with 8081 port")
-			// find 8081 target port for mefs-user or mefs-provider
-			for _, svc := range svcs {
-				if svc.Spec.Ports[0].TargetPort.IntVal == 8081 {
-					npSvc = svc
-					break
-				}
-			}
-		}
+		// // if only 1 port in svc[0], return it
+		// if len(svcs[0].Spec.Ports) == 1 {
+		// 	npSvc = svcs[0]
+		// } else {
+		// 	logger.Debug("multiple service found in yaml, use the svc with 8081 port")
+		// 	// find 8081 target port for mefs-user or mefs-provider
+		// 	for _, svc := range svcs {
+		// 		if svc.Spec.Ports[0].TargetPort.IntVal == 8081 {
+		// 			npSvc = svc
+		// 			break
+		// 		}
+		// 	}
+		// }
 	}
 
 	// wait for all deployments to be ready
@@ -175,7 +178,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 			// endpoint of service
 			ep := &EndPoint{
 				IPs:      npSvc.Spec.ExternalIPs,
-				NodePort: npSvc.Spec.Ports[0].NodePort,
+				NodePort: nodePort,
 			}
 			return ep, nil
 		}
