@@ -220,7 +220,8 @@ var runCmd = &cli.Command{
 			log.Fatal("unsupport chain")
 		}
 
-		fmt.Println("platform url:", platform_url)
+		logger.Debug("platform url:", platform_url)
+
 		// make a gw object
 		gw := gateway.NewComputingGateway(chain_endpoint, platform_url, wallet, test)
 		// close db

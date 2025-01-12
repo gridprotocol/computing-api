@@ -37,6 +37,8 @@ func NewGatewayLocalProcess(db *kv.Database, pl_url string) *GatewayLocalProcess
 	glp.DB = db
 	glp.Wallet = config.GetConfig().Remote.Wallet
 
+	glp.Platfor_Url = pl_url
+
 	return glp
 }
 
