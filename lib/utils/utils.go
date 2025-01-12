@@ -134,13 +134,11 @@ func SendGetOrderRequest(id uint64) (*Order, error) {
 	defer resp.Body.Close()
 
 	// 读取响应内容
-	fmt.Println("reading response")
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %w", err)
 	}
-
-	fmt.Printf("response body: %x", body)
 
 	// 解析响应内容为 Order 结构体
 	var order Order
