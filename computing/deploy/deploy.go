@@ -96,6 +96,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 			if err != nil {
 				return nil, err
 			}
+
 			// get svc name
 			svcName = npSvc.GetObjectMeta().GetName()
 			fmt.Printf("nodePort service is created.\nservice name: %s\nport:%d\ntargetPort:%d\nNodePort: %d\n",
@@ -103,6 +104,19 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 				npSvc.Spec.Ports[0].Port,
 				npSvc.Spec.Ports[0].TargetPort.IntVal,
 				npSvc.Spec.Ports[0].NodePort)
+		}
+	} else { // choose a right nodePort service to return
+		// if only 1 service in yaml, return it
+		if len(svcs) == 1 {
+			npSvc = svcs[0]
+		} else {
+			// find 8081 target port for mefs-user or mefs-provider
+			for _, svc := range svcs {
+				if svc.Spec.Ports[0].TargetPort.IntVal == 8081 {
+					npSvc = svc
+					break
+				}
+			}
 		}
 	}
 
