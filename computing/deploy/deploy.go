@@ -73,9 +73,12 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 		logger.Debugf("create deploy index: %d", i)
 
 		// set the nodeselector for this deployment
-		// ns := make(map[string]string)
-		// ns["id"] = fmt.Sprintf("%d", nodeid)
-		// dep.Spec.Template.Spec.NodeSelector = ns
+		ns := make(map[string]string)
+		//ns["id"] = fmt.Sprintf("%d", nodeid)
+		ns["id"] = "0" // for test
+
+		// set selector for this deployment
+		dep.Spec.Template.Spec.NodeSelector = ns
 
 		// logger.Debugf("create deploy, nodeSelector: id=%d", nodeid)
 
