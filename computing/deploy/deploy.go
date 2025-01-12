@@ -207,12 +207,15 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 	k8s := docker.NewK8sService()
 	deployName := d.GetObjectMeta().GetName()
 
+	logger.Debugf("wait deploy ready: %s", deployName)
+
 	var retry uint
 	for retry = 0; retry < 60; retry++ {
 		// get current version of deployment
 		deploymentsClient := k8s.Clientset.AppsV1().Deployments(corev1.NamespaceDefault)
 		result, getErr := deploymentsClient.Get(context.TODO(), deployName, metav1.GetOptions{})
 		if getErr != nil {
+			logger.Debug("in wait ready, error get deployment with name:%s, err: %v ", deployName, getErr)
 			return false, fmt.Errorf("failed to get latest version of deployment: %v", getErr)
 		}
 
@@ -234,6 +237,7 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 			return true, nil
 		}
 
+		logger.Debug("waiting ready..")
 		// wait to retry
 		time.Sleep(1 * time.Second)
 	}
