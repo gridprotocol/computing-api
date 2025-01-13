@@ -706,6 +706,9 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	// forward rule func
 	director := func(r *http.Request) {
 		logger.Debug("request url in dirctor: ", r.URL)
+		r.URL.Path = "/info"
+		logger.Debug("url now: ", r.URL)
+
 		// scheme provided in the target url
 		if len(targetURL.Scheme) != 0 {
 			r.URL.Scheme = targetURL.Scheme
