@@ -631,6 +631,7 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 
 	// 检查请求参数是否完整
 	if oid == "" || user == "" {
+		logger.Debug("lack params, try get params from cookie")
 		// 尝试从 Cookie 中获取参数
 		oidCookie, err1 := c.Request.Cookie("OrderId")
 		userCookie, err2 := c.Request.Cookie("UserAddress")
@@ -684,6 +685,7 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		return
 	}
 
+	logger.Debug("save params into cookie")
 	// 订单有效，将参数保存到 Cookie 中
 	c.SetCookie("OrderId", oid, 3600, "/", "", false, true)
 	c.SetCookie("UserAddress", user, 3600, "/", "", false, true)
