@@ -86,7 +86,7 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 	r.GET("/greet/show", hc.handlerShow)
 	r.GET("/greet/modellist", hc.handlerModelList)
 
-	r.Any("/", hc.handlerCompute)
+	r.Any("/*path", hc.handlerCompute)
 }
 
 // // for the cross domain access
