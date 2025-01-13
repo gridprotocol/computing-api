@@ -638,6 +638,7 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 
 	// type transfer
 	oid64, _ := utils.StringToUint64(oid)
+	logger.Debug("oid64:", oid64)
 
 	// get order info and do expire check for it
 	// get cp address from config file
