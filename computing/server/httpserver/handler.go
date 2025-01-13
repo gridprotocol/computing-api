@@ -629,14 +629,33 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	oid := c.Query("OrderId")
 	user := c.Query("UserAddress")
 
+	// 检查请求参数是否完整
+	if oid == "" || user == "" {
+		// 尝试从 Cookie 中获取参数
+		oidCookie, err1 := c.Request.Cookie("OrderId")
+		userCookie, err2 := c.Request.Cookie("UserAddress")
+
+		// 如果从 Cookie 中获取失败，返回错误响应
+		if err1 != nil || err2 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "缺少必要的参数 'OrderId' 和 'UserAddress'",
+			})
+			return
+		}
+
+		// save
+		oid = oidCookie.Value
+		user = userCookie.Value
+	}
+
 	// type transfer
 	oid64, _ := utils.StringToUint64(oid)
 
 	// get cp address from config file
 	cp := config.GetConfig().Remote.Wallet
 
-	logger.Info("user: ", user)
-	logger.Info("cp: ", cp)
+	logger.Debug("user: ", user)
+	logger.Debug("cp: ", cp)
 
 	// get order info from platform
 	orderInfo, err := utils.SendGetOrderRequest(oid64)
@@ -664,6 +683,10 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] order not active: " + status})
 		return
 	}
+
+	// 订单有效，将参数保存到 Cookie 中
+	c.SetCookie("OrderId", oid, 3600, "/", "", false, true)
+	c.SetCookie("UserAddress", user, 3600, "/", "", false, true)
 
 	// query entrance url(service endpoint) stored in DB with address
 	ent, err := hc.gw.GetEntrance(user, oid64)
