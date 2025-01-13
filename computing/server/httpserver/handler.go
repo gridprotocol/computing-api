@@ -625,31 +625,18 @@ func (hc *handlerCore) handlerSettle(c *gin.Context) {
 
 // for all other requests, forward them to a proxy, and return the response from the proxy to the client
 func (hc *handlerCore) handlerCompute(c *gin.Context) {
-	// inject a cookie into request header, in case the cookie is refused by the client(browser)
-	//cks := injectCookie(c)
-
 	// order id
 	oid := c.Query("OrderId")
 	user := c.Query("UserAddress")
 
 	// type transfer
 	oid64, _ := utils.StringToUint64(oid)
-	logger.Debug("oid:", oid)
-	logger.Debug("oid64:", oid64)
 
-	// get order info and do expire check for it
 	// get cp address from config file
 	cp := config.GetConfig().Remote.Wallet
 
 	logger.Info("user: ", user)
 	logger.Info("cp: ", cp)
-
-	// get order info with params
-	// orderInfo, err := hc.gw.GetOrder(oid64)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
-	// 	return
-	// }
 
 	// get order info from platform
 	orderInfo, err := utils.SendGetOrderRequest(oid64)
@@ -698,11 +685,12 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		return
 	}
 
-	logger.Info("target scheme:", targetURL.Scheme)
-	logger.Info("target host:", targetURL.Host)
+	logger.Debug("target scheme:", targetURL.Scheme)
+	logger.Debug("target host:", targetURL.Host)
 
 	// forward rule func
 	director := func(r *http.Request) {
+		logger.Debug("full url in dirctor: ", r.URL.String())
 		logger.Debug("request url path in dirctor: ", r.URL.Path)
 
 		// scheme provided in the target url
