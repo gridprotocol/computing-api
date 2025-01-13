@@ -627,10 +627,46 @@ func (hc *handlerCore) handlerSettle(c *gin.Context) {
 func (hc *handlerCore) handlerCompute(c *gin.Context) {
 	// order id
 	oid := c.Query("OrderId")
+	var oid64 uint64
 	user := c.Query("UserAddress")
 
-	// 检查请求参数是否完整
-	if oid == "" || user == "" {
+	// if params provided, check if the order is active
+	if oid != "" && user != "" {
+		// type transfer
+		oid64, _ = utils.StringToUint64(oid)
+		// get order info from platform
+		orderInfo, err := utils.SendGetOrderRequest(oid64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
+			return
+		}
+
+		logger.Debug("order info:", orderInfo)
+
+		// check status must be activated
+		if orderInfo.Status != 2 {
+			var status string
+			switch orderInfo.Status {
+			case 0:
+				status = "order not exist"
+			case 1:
+				status = "order unactive"
+			case 3:
+				status = "order cancelled"
+			case 4:
+				status = "order completed"
+			}
+
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] order not active: " + status})
+			return
+		}
+
+		logger.Debug("save params into cookie")
+
+		// 参数有效，保存到 Cookie 中
+		c.SetCookie("OrderId", oid, 3600, "/", "", false, true)
+		c.SetCookie("UserAddress", user, 3600, "/", "", false, true)
+	} else { // no params given, try get them from cookie
 		logger.Debug("lack params, try get params from cookie")
 		// 尝试从 Cookie 中获取参数
 		oidCookie, err1 := c.Request.Cookie("OrderId")
@@ -639,56 +675,16 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		// 如果从 Cookie 中获取失败，返回错误响应
 		if err1 != nil || err2 != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "缺少必要的参数 'OrderId' 和 'UserAddress'",
+				"error": "lack params: 'OrderId' and 'UserAddress'",
 			})
 			return
 		}
 
 		// save
 		oid = oidCookie.Value
+		oid64, _ = utils.StringToUint64(oid)
 		user = userCookie.Value
 	}
-
-	// type transfer
-	oid64, _ := utils.StringToUint64(oid)
-
-	// get cp address from config file
-	cp := config.GetConfig().Remote.Wallet
-
-	logger.Debug("user: ", user)
-	logger.Debug("cp: ", cp)
-
-	// get order info from platform
-	orderInfo, err := utils.SendGetOrderRequest(oid64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] get order info from contract failed: " + err.Error()})
-		return
-	}
-
-	logger.Debug("order info:", orderInfo)
-
-	// check status must be activated
-	if orderInfo.Status != 2 {
-		var status string
-		switch orderInfo.Status {
-		case 0:
-			status = "order not exist"
-		case 1:
-			status = "order unactive"
-		case 3:
-			status = "order cancelled"
-		case 4:
-			status = "order completed"
-		}
-
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "[Fail] order not active: " + status})
-		return
-	}
-
-	logger.Debug("save params into cookie")
-	// 订单有效，将参数保存到 Cookie 中
-	c.SetCookie("OrderId", oid, 3600, "/", "", false, true)
-	c.SetCookie("UserAddress", user, 3600, "/", "", false, true)
 
 	// query entrance url(service endpoint) stored in DB with address
 	ent, err := hc.gw.GetEntrance(user, oid64)
