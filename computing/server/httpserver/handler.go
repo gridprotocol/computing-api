@@ -630,9 +630,14 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 
 	// order id
 	oid := c.Query("OrderId")
-	oid64, _ := utils.StringToUint64(oid)
-
 	user := c.Query("UserAddress")
+
+	// for test
+	oid = "1"
+	user = "0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+
+	// type transfer
+	oid64, _ := utils.StringToUint64(oid)
 
 	// get order info and do expire check for it
 	// get cp address from config file
