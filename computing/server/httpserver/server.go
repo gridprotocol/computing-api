@@ -86,7 +86,23 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 	r.GET("/greet/show", hc.handlerShow)
 	r.GET("/greet/modellist", hc.handlerModelList)
 
-	r.Any("/*path", hc.handlerCompute)
+	// 定义中间件处理除了指定路径外的其他所哟u请求
+	r.Use(func(c *gin.Context) {
+		// 检查请求的路径是否是特定路径
+		if c.Request.URL.Path != "/greet/deployid" &&
+			c.Request.URL.Path != "/greet/clean" &&
+			c.Request.URL.Path != "/greet/cleanuser" &&
+			c.Request.URL.Path != "/greet/modellist" {
+			// 调用 handlerCompute 处理所有其他请求
+			logger.Debug("handle all other requests")
+			hc.handlerCompute(c)
+			c.Abort() // 阻止后续路由处理
+			return
+		}
+		// 如果是特定路径，直接执行后续路由处理
+		logger.Debug("handle specific request")
+		c.Next()
+	})
 }
 
 // // for the cross domain access
