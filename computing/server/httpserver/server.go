@@ -75,10 +75,10 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 	//r.GET("/greet/confirm", hc.handlerConfirm)
 	//r.GET("/greet/activate", hc.handlerActivate)
 	//r.GET("/greet/deactivate", hc.handlerDeactivate)
-	r.GET("/greet/cookie", hc.handlerCookie)
-	r.GET("/greet/deployurl", hc.handlerDeployUrl)
+	//r.GET("/greet/cookie", hc.handlerCookie)
+	//r.GET("/greet/deployurl", hc.handlerDeployUrl)
 	r.GET("/greet/deployid", hc.handlerDeployID)
-	r.GET("/greet/extend", hc.handlerExtend)
+	//r.GET("/greet/extend", hc.handlerExtend)
 	//r.GET("/greet/reset", hc.handlerReset)
 	//r.GET("/greet/settle", hc.handlerSettle)
 	r.GET("/greet/clean", hc.handlerClean)
@@ -92,6 +92,7 @@ func registerAllRoutes(gw gateway.ComputingGatewayAPI, r *gin.Engine) {
 		if c.Request.URL.Path != "/greet/deployid" &&
 			c.Request.URL.Path != "/greet/clean" &&
 			c.Request.URL.Path != "/greet/cleanuser" &&
+			c.Request.URL.Path != "/greet/show" &&
 			c.Request.URL.Path != "/greet/modellist" {
 			// 调用 handlerCompute 处理所有其他请求
 			logger.Debug("handle all other requests")
