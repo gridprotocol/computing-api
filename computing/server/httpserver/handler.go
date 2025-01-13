@@ -684,6 +684,9 @@ func (hc *handlerCore) handlerCompute(c *gin.Context) {
 		oid = oidCookie.Value
 		oid64, _ = utils.StringToUint64(oid)
 		user = userCookie.Value
+
+		logger.Debug("oid from cookie:", oid)
+		logger.Debug("user from cookie:", user)
 	}
 
 	// query entrance url(service endpoint) stored in DB with address
