@@ -58,7 +58,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 		return nil, fmt.Errorf("no deployment in yaml")
 	}
 
-	// check if svc exists for the first deploy
+	// check if svc exists
 	dep0 := deps[0]
 	svcName := fmt.Sprintf("svc-%s", dep0.Name)
 	result, _ := k8s.GetServiceByName(context.Background(), "default", svcName, metav1.GetOptions{})
@@ -123,16 +123,25 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 	} else { // use existing svc's port
 		logger.Debug("choose a nodeport for entrance")
 
-		// user or provider: use the 8081 port's nodeport
-		if svcs[0].Name == "provider-service" || svcs[0].Name == "user-service" {
-			// choose the nodeport with 8081 targetPort
+		// use different nodePort for different app
+		switch svcs[0].Name {
+		case "provider-service":
+			// choose the nodeport with 8081 targetport for provider
 			for _, port := range svcs[0].Spec.Ports {
 				if port.TargetPort.IntVal == 8081 {
 					nodePort = port.NodePort
 					break
 				}
 			}
-		} else {
+		case "user-service":
+			// choose the nodeport with 8080 targetport for user
+			for _, port := range svcs[0].Spec.Ports {
+				if port.TargetPort.IntVal == 8080 {
+					nodePort = port.NodePort
+					break
+				}
+			}
+		default:
 			// otherwise, use the first nodeport
 			nodePort = svcs[0].Spec.Ports[0].NodePort
 		}

@@ -1,0 +1,102 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:       
+      app.kubernetes.io/name: mefs-user
+      app/clean: label-for-clean
+  name: user    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mefs-user
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mefs-user
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: m20
+      initContainers:
+      - name: init-user
+        image: webserver_user:latest  # Use your Docker image
+        imagePullPolicy: IfNotPresent
+        command: [ "sh", "-c" ]
+        args:
+        - |
+          /app/init_user.sh > /root/log ;  # 执行脚本
+        volumeMounts:
+        - name: memo-user-volume
+          mountPath: /root  # 容器内部的挂载路径
+        - name: user-data-volume
+          mountPath: /root/data  # 容器内部的挂载路径   
+     
+      containers:
+      - name: mefs-user
+        image: webserver_user:latest  # Use your Docker image
+        imagePullPolicy: IfNotPresent        
+        ports:
+           - containerPort: 8080  # Replace with the first port you want to expose
+           - containerPort: 4002
+        env:
+           - name: PASSWORD
+             value: "memoriae"     
+           - name: PRICE
+             value: "250000"
+           - name: GROUP
+             value: "4"    
+           - name: SWARM_PORT
+             value: "4002"
+           - name: DATA_PATH
+             value: "/root/data"
+           - name: MEFS_PATH
+             value: "/root/.memo-user"
+           - name: GATEWAY
+             value: "true"
+           - name: GATEWAY_USERNAME
+             value: "admin"
+           - name: GATEWAY_PASSWORD
+             value: "memoriae"
+           - name: BIND_ADDRESS
+             value: "0.0.0.0"
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+        volumeMounts:
+        - name: memo-user-volume
+          mountPath: /root  # 容器内部的挂载路径
+        - name: user-data-volume
+          mountPath: /root/data  # 容器内部的挂载路径       
+      volumes:
+        - name:  memo-user-volume
+          hostPath:
+            path: /root/memo_user  # Host path to models
+            type: DirectoryOrCreate
+        - name: user-data-volume
+          hostPath:
+            path: /root/memo_user_data  # Host path for outputs
+            type: DirectoryOrCreate
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app.kubernetes.io/name: mefs-user
+  ports:
+    - name: mefs-user
+      protocol: TCP
+      port: 4002
+      targetPort: 4002
+      nodePort: 32042
+    - name: gateway
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 32080 
+  type: NodePort

@@ -18,6 +18,20 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: m20
+      initContainers:
+      - name: init-provider
+        image: webserver_provider:latest
+        imagePullPolicy: IfNotPresent
+        command: [ "sh", "-c" ]
+        args:
+        - |
+          /app/init_provider.sh > /root/log ;  # 执行脚本
+        volumeMounts:
+        - name: memo-provider-volume
+          mountPath: /root  # 容器内部的挂载路径
+        - name: provider-data-volume
+          mountPath: /root/data  # 容器内部的挂载路径
+      
       containers:
       - name: mefs-provider
         image: webserver_provider:latest  # Use your Docker image
@@ -43,22 +57,22 @@ spec:
             memory: "4Gi"
             cpu: "2"
         volumeMounts:
-            - name: mefs-path
+            - name: memo-provider-volume
               mountPath: /root  # Path inside the container for models
-            - name: mefs-data
+            - name: provider-data-volume
               mountPath: /root/data  # Path inside the container for outputs
       volumes:
-        - name: mefs-path
+        - name: memo-provider-volume
           hostPath:
             path: /root/memo_provider  # Host path to models
-            type: Directory
-        - name: mefs-data
+            type: DirectoryOrCreate
+        - name: provider-data-volume
           hostPath:
             path: /root/memo_provider_data  # Host path for outputs
-            type: Directory
+            type: DirectoryOrCreate
+
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
