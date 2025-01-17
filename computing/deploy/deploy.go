@@ -127,7 +127,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 
 		// use different nodePort for different app
 		switch svcs[0].Name {
-		case "provider-service":
+		case "mefs-provider-service":
 			// choose the nodeport with 8081 targetport for provider
 			for _, port := range svcs[0].Spec.Ports {
 				if port.TargetPort.IntVal == 8081 {
@@ -135,7 +135,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 					break
 				}
 			}
-		case "user-service":
+		case "mefs-user-service":
 			// choose the nodeport with 8080 targetport for user
 			for _, port := range svcs[0].Spec.Ports {
 				if port.TargetPort.IntVal == 8080 {

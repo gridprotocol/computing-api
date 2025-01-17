@@ -76,7 +76,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: provider-service
+  name: mefs-provider-service
 spec:
   selector:
      app.kubernetes.io/name: mefs-provider
