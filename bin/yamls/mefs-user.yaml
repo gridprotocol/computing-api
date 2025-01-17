@@ -17,7 +17,7 @@ spec:
         app.kubernetes.io/name: mefs-user
     spec:
       nodeSelector:
-        kubernetes.io/hostname: m20
+        kubernetes.io/hostname: m21
       initContainers:
       - name: init-user
         image: webserver_user:latest  # Use your Docker image

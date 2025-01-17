@@ -17,7 +17,7 @@ spec:
         app.kubernetes.io/name: mefs-provider
     spec:
       nodeSelector:
-        kubernetes.io/hostname: m20
+        kubernetes.io/hostname: m21
       initContainers:
       - name: init-provider
         image: webserver_provider:latest
