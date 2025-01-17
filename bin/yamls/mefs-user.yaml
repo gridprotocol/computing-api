@@ -84,7 +84,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mefs-user-service
+  name: user-service
 spec:
   selector:
     app.kubernetes.io/name: mefs-user
