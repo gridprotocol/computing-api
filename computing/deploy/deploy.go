@@ -76,7 +76,7 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 		ns := make(map[string]string)
 		//ns["id"] = fmt.Sprintf("%d", nodeid)
 		//ns["id"] = "0" // for test
-		ns["kubernetes.io/hostname"] = "m21" // for test
+		ns["kubernetes.io/hostname"] = "k8s-slave3" // for test
 
 		// set selector for this deployment
 		dep.Spec.Template.Spec.NodeSelector = ns
