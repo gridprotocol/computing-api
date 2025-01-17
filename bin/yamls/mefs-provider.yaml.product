@@ -17,10 +17,10 @@ spec:
         app.kubernetes.io/name: mefs-provider
     spec:
       nodeSelector:
-        kubernetes.io/hostname: m20
+        kubernetes.io/hostname: k8s-slave3
       initContainers:
       - name: init-provider
-        image: webserver_provider_test:latest
+        image: webserver_provider:latest
         imagePullPolicy: IfNotPresent
         command: [ "sh", "-c" ]
         args:
@@ -34,7 +34,7 @@ spec:
       
       containers:
       - name: mefs-provider
-        image: webserver_provider_test:latest  # Use your Docker image
+        image: webserver_provider:latest  # Use your Docker image
         imagePullPolicy: IfNotPresent
         ports:
            - containerPort: 4001
@@ -45,7 +45,7 @@ spec:
            - name: PRICE
              value: "250000"
            - name: GROUP
-             value: "1"    
+             value: "4"    
            - name: MEFS_PATH
              value: "/root/.memo-provider"
            - name: SWARM_PORT

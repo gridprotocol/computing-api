@@ -17,10 +17,10 @@ spec:
         app.kubernetes.io/name: mefs-user
     spec:
       nodeSelector:
-        kubernetes.io/hostname: m20
+        kubernetes.io/hostname: k8s-slave3
       initContainers:
       - name: init-user
-        image: webserver_user_test:latest  # Use your Docker image
+        image: webserver_user:latest  # Use your Docker image
         imagePullPolicy: IfNotPresent
         command: [ "sh", "-c" ]
         args:
@@ -34,7 +34,7 @@ spec:
      
       containers:
       - name: mefs-user
-        image: webserver_user_test:latest  # Use your Docker image
+        image: webserver_user:latest  # Use your Docker image
         imagePullPolicy: IfNotPresent        
         ports:
            - containerPort: 8080  # Replace with the first port you want to expose
@@ -45,7 +45,7 @@ spec:
            - name: PRICE
              value: "250000"
            - name: GROUP
-             value: "1"    
+             value: "4"    
            - name: SWARM_PORT
              value: "4002"
            - name: DATA_PATH
@@ -66,7 +66,7 @@ spec:
             cpu: "2"
         volumeMounts:
         - name: memo-user-volume
-          mountPath: /root  # 容器内部的挂载路���
+          mountPath: /root  # 容器内部的挂载路径
         - name: user-data-volume
           mountPath: /root/data  # 容器内部的挂载路径       
       volumes:
@@ -84,7 +84,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mefs-user-service
+  name: user-service
 spec:
   selector:
     app.kubernetes.io/name: mefs-user
