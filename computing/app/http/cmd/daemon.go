@@ -346,6 +346,8 @@ func CheckOnline(platform_url string, wallet string) {
 				url := fmt.Sprintf("%s/v1/node/%s/%d/online/%v", platform_url, wallet, num, online)
 				fmt.Println("url:", url)
 				utils.SendPost(url)
+			} else {
+				logger.Infof("No node label id=? exist for node %s\n", node.Name)
 			}
 		}
 	}
