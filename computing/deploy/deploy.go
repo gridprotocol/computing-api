@@ -240,7 +240,7 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 	k8s := docker.NewK8sService()
 	deployName := d.GetObjectMeta().GetName()
 
-	logger.Debugf("wait deploy ready: %s", deployName)
+	logger.Infof("wait deploy ready: %s", deployName)
 
 	var retry uint
 	for retry = 0; retry < 60000; retry++ {
