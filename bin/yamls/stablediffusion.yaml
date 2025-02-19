@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stable-diffusion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stable-diffusion
+  template:
+    metadata:
+      labels:
+        app: stable-diffusion
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: m20      
+      containers:
+      - name: stable-diffusion
+        image: stablediffusion:k8s  # Use your Docker image
+        resources:
+          limits:
+            nvidia.com/gpu: 1 # Enable GPU if available
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+            nvidia.com/gpu: 1  
+        volumeMounts:
+            - name: models-volume
+              mountPath: /app/models  # Path inside the container for models
+            - name: outputs-volume
+              mountPath: /app/outputs  # Path inside the container for outputs
+      volumes:
+        - name: models-volume
+          hostPath:
+            path: /root/stablediffusion_k8s/models  # Host path to models
+            type: Directory
+        - name: outputs-volume
+          hostPath:
+            path: /root/stablediffusion_k8s/outputs  # Host path for outputs
+            type: Directory
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stable-diffusion
+spec:
+  selector:
+    app: stable-diffusion
+  ports:
+  - protocol: TCP
+    port: 7880
+    targetPort: 7860
+    nodePort: 32091
+  type: NodePort

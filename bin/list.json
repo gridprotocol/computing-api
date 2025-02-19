@@ -3,6 +3,7 @@
     {"name": "nginx", "id": 1,"path":"./yamls/nginx.yaml","desc":"an nginx server app","gpu":"A800","mem":"16G","disk":"1T"},
     {"name": "ubuntu", "id": 2,"path":"./yamls/ubuntu.yaml","desc":"a ubuntu os","gpu":"A800","mem":"16G","disk":"1T"},
     {"name": "facefusion", "id": 3,"path":"./yamls/facefusion.yaml","desc":"an ai application","gpu":"A800","mem":"16G","disk":"1T"},
-    {"name": "mefs-provider", "id": 4,"path":"./yamls/mefs-provider.yaml","desc":"a mefs provider","gpu":"A800","mem":"16G","disk":"1T"},
-    {"name": "mefs-user", "id": 5,"path":"./yamls/mefs-user.yaml","desc":"a mefs user","gpu":"A800","mem":"16G","disk":"1T"}
+    {"name": "stablediffusion", "id": 4,"path":"./yamls/stablediffusion.yaml","desc":"an ai application","gpu":"A800","mem":"16G","disk":"1T"},
+    {"name": "mefs-provider", "id": 5,"path":"./yamls/mefs-provider.yaml","desc":"a mefs provider","gpu":"A800","mem":"16G","disk":"1T"},
+    {"name": "mefs-user", "id": 6,"path":"./yamls/mefs-user.yaml","desc":"a mefs user","gpu":"A800","mem":"16G","disk":"1T"}
 ]
