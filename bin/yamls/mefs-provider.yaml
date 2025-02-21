@@ -20,7 +20,7 @@ spec:
         kubernetes.io/hostname: m20
       initContainers:
       - name: init-provider
-        image: webserver_provider_test:latest
+        image: webserver_provider_test_auto:latest
         imagePullPolicy: IfNotPresent
         command: [ "sh", "-c" ]
         args:
@@ -34,7 +34,7 @@ spec:
       
       containers:
       - name: mefs-provider
-        image: webserver_provider_test:latest  # Use your Docker image
+        image: webserver_provider_test_auto:latest  # Use your Docker image
         imagePullPolicy: IfNotPresent
         ports:
            - containerPort: 4001
