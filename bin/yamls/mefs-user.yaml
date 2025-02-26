@@ -34,7 +34,7 @@ spec:
      
       containers:
       - name: mefs-user
-        image: webserver_user_test:latest  # Use your Docker image
+        image: webserver_user_test_auto:latest  # Use your Docker image
         imagePullPolicy: IfNotPresent        
         ports:
            - containerPort: 8080  # Replace with the first port you want to expose
