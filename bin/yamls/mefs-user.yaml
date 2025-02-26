@@ -20,7 +20,7 @@ spec:
         kubernetes.io/hostname: m20
       initContainers:
       - name: init-user
-        image: webserver_user_test:latest  # Use your Docker image
+        image: webserver_user_test_auto:latest  # Use your Docker image
         imagePullPolicy: IfNotPresent
         command: [ "sh", "-c" ]
         args:
