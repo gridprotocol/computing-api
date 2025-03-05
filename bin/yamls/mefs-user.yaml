@@ -39,6 +39,12 @@ spec:
         ports:
            - containerPort: 8080  # Replace with the first port you want to expose
            - containerPort: 4002
+
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "rm -rf /root/* /root/data/*"]
+              
         env:
            - name: PASSWORD
              value: "memoriae"     
