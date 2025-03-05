@@ -451,7 +451,11 @@ func (hc *handlerCore) handlerCleanUser(c *gin.Context) {
 	logger.Debug("order info:", orderInfo)
 
 	// delete app
-	deploy.DelDeploy(orderInfo.AppName)
+	err = deploy.DelDeploy(orderInfo.AppName)
+	if err != nil {
+		logger.Debug("del deploy failed:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": fmt.Sprintf("[ERR] %s", err.Error())})
+	}
 
 	c.JSON(http.StatusOK, gin.H{"msg": "[ACK] clean ok"})
 }

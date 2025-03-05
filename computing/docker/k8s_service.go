@@ -559,8 +559,8 @@ func parseKubernetesVersion(version string) (*kubernetesVersion, error) {
 	return v, nil
 }
 
-type collectGpuInfo struct {
-	index     int
-	count     int
-	remainNum int
-}
+// type collectGpuInfo struct {
+// 	index     int
+// 	count     int
+// 	remainNum int
+// }

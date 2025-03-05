@@ -3,6 +3,9 @@ package deploy
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -330,10 +333,32 @@ func DelDeploy(depName string) error {
 	k8s := docker.NewK8sService()
 
 	// delete deployment
-	logger.Info("delete dep: ", depName)
+	logger.Info("delete deploy: ", depName)
 	err := k8s.DeleteDeployment(context.Background(), "default", depName)
 	if err != nil {
 		return err
+	}
+
+	// remove dir for mefs-user
+	if strings.HasPrefix(depName, "mefs-user") {
+		// 删除文件夹
+		err := deleteFolders("mefs-user")
+		if err != nil {
+			fmt.Println("mefs-user 删除文件夹失败:", err)
+		} else {
+			fmt.Println("mefs-user 文件夹删除成功")
+		}
+	}
+
+	// remove dir for mefs-provider
+	if strings.HasPrefix(depName, "mefs-provider") {
+		// 删除文件夹
+		err := deleteFolders("mefs-provider")
+		if err != nil {
+			fmt.Println("mefs-provider 删除文件夹失败:", err)
+		} else {
+			fmt.Println("mefs-provider 文件夹删除成功")
+		}
 	}
 
 	// delete svc
@@ -353,6 +378,46 @@ func Clean(deps []*appsv1.Deployment) error {
 		err := DelDeploy(dep.Name)
 		return err
 	}
+
+	return nil
+}
+
+// 删除 ~/memo_user 和 ~/memo_user_data 文件夹
+func deleteFolders(role string) error {
+	// 获取当前用户的主目录
+	usr, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("获取用户主目录失败: %v", err)
+	}
+
+	fmt.Println("current user::", usr)
+
+	// 构建文件夹路径
+	var folder1 string
+	var folder2 string
+
+	switch role {
+	case "mefs-user":
+		folder1 = filepath.Join(usr.HomeDir, "memo_user")
+		folder2 = filepath.Join(usr.HomeDir, "memo_user_data")
+	case "mefs-provider":
+		folder1 = filepath.Join(usr.HomeDir, "memo_provider")
+		folder2 = filepath.Join(usr.HomeDir, "memo_provider_data")
+	}
+
+	// 删除第一个文件夹
+	err = os.RemoveAll(folder1)
+	if err != nil {
+		return fmt.Errorf("rm dir %s failed: %v", folder1, err)
+	}
+	fmt.Printf("dir removed: %s\n", folder1)
+
+	// 删除第二个文件夹
+	err = os.RemoveAll(folder2)
+	if err != nil {
+		return fmt.Errorf("rm dir %s failed: %v", folder2, err)
+	}
+	fmt.Printf("dir removed: %s\n", folder2)
 
 	return nil
 }
