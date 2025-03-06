@@ -79,11 +79,11 @@ spec:
       volumes:
         - name:  memo-user-volume
           hostPath:
-            path: /root/memo_user  # Host path to models
+            path: /root/memo/memo_user  # Host path to models
             type: DirectoryOrCreate
         - name: user-data-volume
           hostPath:
-            path: /root/memo_user_data  # Host path for outputs
+            path: /root/memo/memo_user_data  # Host path for outputs
             type: DirectoryOrCreate
 
 
