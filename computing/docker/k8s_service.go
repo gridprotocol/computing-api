@@ -77,8 +77,14 @@ func (s *K8sService) CreateDeployment(ctx context.Context, nameSpace string, dep
 	return s.Clientset.AppsV1().Deployments(nameSpace).Create(ctx, deploy, metaV1.CreateOptions{})
 }
 
+// delete deployment with a grace period
 func (s *K8sService) DeleteDeployment(ctx context.Context, namespace, deploymentName string) error {
-	return s.Clientset.AppsV1().Deployments(namespace).Delete(ctx, deploymentName, metaV1.DeleteOptions{})
+	gracePeriod := int64(30) // 与 Pod 的 terminationGracePeriodSeconds 一致
+	deleteOptions := metaV1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriod, // 关键参数
+	}
+
+	return s.Clientset.AppsV1().Deployments(namespace).Delete(ctx, deploymentName, deleteOptions)
 }
 
 func (s *K8sService) DeletePod(ctx context.Context, namespace, spaceName string) error {

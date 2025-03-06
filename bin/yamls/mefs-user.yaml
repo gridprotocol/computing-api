@@ -32,6 +32,7 @@ spec:
         - name: user-data-volume
           mountPath: /root/data  # 容器内部的挂载路径   
      
+      terminationGracePeriodSeconds: 60
       containers:
       - name: mefs-user
         image: webserver_user_test_auto:latest  # Use your Docker image
@@ -44,7 +45,7 @@ spec:
           preStop:
             exec:
               command: ["/bin/sh", "-c", "rm -rf /root/* /root/data/*"]
-              
+
         env:
            - name: PASSWORD
              value: "memoriae"     
