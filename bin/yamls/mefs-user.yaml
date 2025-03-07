@@ -28,8 +28,8 @@ spec:
         - |
           # 容器启动时创建目录
           mkdir -p /root/memo_user && 
-          mkdir -p /root/memo_user/data && 
-          echo "/root/memo_user and /root/memo_user/data directory created!" && 
+          mkdir -p /root/memo_user_data && 
+          echo "/root/memo_user and /root/memo_user_data directory created!" && 
           /app/init_user.sh > /root/memo_user/log ;  # 执行脚本
         volumeMounts:
         - name: host-memo-volumn
