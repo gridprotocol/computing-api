@@ -25,13 +25,15 @@ spec:
         command: [ "sh", "-c" ]
         args:
         - |
-          /app/init_provider.sh > /root/log ;  # 执行脚本
+          mkdir -p /root/memo_provider &&
+          mkdir -p /root/memo_provider_data &&
+           echo "/root/memo_provider and /root/memo_provider_data directory created!" &&
+          /app/init_provider.sh > /root/memo_provider/log ;  # 执行脚本
         volumeMounts:
         - name: memo-provider-volume
           mountPath: /root  # 容器内部的挂载路径
-        - name: provider-data-volume
-          mountPath: /root/data  # 容器内部的挂载路径
       
+      terminationGracePeriodSeconds: 60    
       containers:
       - name: mefs-provider
         image: webserver_provider_test_auto:latest  # Use your Docker image
@@ -39,6 +41,12 @@ spec:
         ports:
            - containerPort: 4001
            - containerPort: 8081
+
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "rm -rf /root/memo_provider && rm -rf /root/memo_provider_data"]     
+
         env:
            - name: PASSWORD
              value: "memoriae"     
@@ -47,11 +55,11 @@ spec:
            - name: GROUP
              value: "1"    
            - name: MEFS_PATH
-             value: "/root/.memo-provider"
+             value: "/root/memo_provider/.memo-provider"
            - name: SWARM_PORT
              value: "4001"
            - name: DATA_PATH
-             value: "/root/data"
+             value: "/root/memo_provider_data"
         resources:
           requests:
             memory: "4Gi"
@@ -59,16 +67,10 @@ spec:
         volumeMounts:
             - name: memo-provider-volume
               mountPath: /root  # Path inside the container for models
-            - name: provider-data-volume
-              mountPath: /root/data  # Path inside the container for outputs
       volumes:
         - name: memo-provider-volume
           hostPath:
-            path: /root/memo_provider  # Host path to models
-            type: DirectoryOrCreate
-        - name: provider-data-volume
-          hostPath:
-            path: /root/memo_provider_data  # Host path for outputs
+            path: /root/memo  # Host path to models
             type: DirectoryOrCreate
 
 
