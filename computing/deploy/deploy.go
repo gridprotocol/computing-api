@@ -3,6 +3,7 @@ package deploy
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -69,8 +70,25 @@ func Deploy(deps []*appsv1.Deployment, svcs []*corev1.Service, user string, node
 
 	// create all deployments
 	for i, dep := range deps {
-		logger.Debugf("dep num inyaml: %d", len(deps))
+		logger.Debugf("dep num in yaml: %d", len(deps))
 		logger.Debugf("create deploy index: %d", i)
+
+		// 1. 检查 Deployment 名称是否以 mefs- 开头
+		if strings.HasPrefix(dep.ObjectMeta.Name, "mefs-") {
+			// 2. 定义目标目录路径
+			dirPath := "/root/memo"
+
+			// 3. 检查目录是否存在
+			if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+				// 4. 创建目录（包括父目录，权限设置为 0755）
+				if err := os.MkdirAll(dirPath, 0755); err != nil {
+					return nil, err
+				}
+			} else if err != nil {
+				// 处理其他错误（如权限不足）
+				return nil, err
+			}
+		}
 
 		// set the nodeselector for this deployment
 		ns := make(map[string]string)
