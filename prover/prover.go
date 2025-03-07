@@ -90,7 +90,7 @@ func (p *GRIDProver) Start(ctx context.Context) {
 			continue
 		}
 
-		logger.Info("order count for provider: ", cnt)
+		logger.Debug("order count for provider: ", cnt)
 
 		if cnt <= 0 {
 			fmt.Println("no order for this provider, skip proof generation")
@@ -119,9 +119,9 @@ func (p *GRIDProver) Start(ctx context.Context) {
 		}
 
 		if success {
-			logger.Infof("Proof of Work Generation Successfully result[%d]", res)
+			logger.Debugf("Proof of Work Generation Successfully result[%d]", res)
 		} else {
-			logger.Info("Proof of Work Generation Falied")
+			logger.Debug("Proof of Work Generation Falied")
 		}
 
 		p.last = nextTime

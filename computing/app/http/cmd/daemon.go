@@ -340,14 +340,14 @@ func CheckOnline(platform_url string, wallet string) {
 					logger.Info("Label value is not a valid number: %s\n", nid)
 					continue
 				}
-				logger.Info("node id:", num)
+				logger.Debug("node id:", num)
 
 				// 请求平台设置节点online状态
 				url := fmt.Sprintf("%s/v1/node/%s/%d/online/%v", platform_url, wallet, num, online)
-				fmt.Println("url:", url)
+				logger.Debug("url:", url)
 				utils.SendPost(url)
 			} else {
-				logger.Infof("No node label id=? exist for node: %s", node.Name)
+				logger.Debugf("No node label id=? exist for node: %s", node.Name)
 			}
 		}
 	}
