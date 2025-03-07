@@ -288,7 +288,7 @@ func WaitReady(d *appsv1.Deployment) (bool, error) {
 			return true, nil
 		}
 
-		logger.Debug("waiting ready..")
+		logger.Info("waiting ready..")
 		// wait to retry
 		time.Sleep(1 * time.Second)
 	}
