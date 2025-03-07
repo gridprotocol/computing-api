@@ -27,7 +27,7 @@ spec:
         - |
           mkdir -p /root/memo_provider &&
           mkdir -p /root/memo_provider_data &&
-           echo "/root/memo_provider and /root/memo_provider_data directory created!" &&
+          echo "/root/memo_provider and /root/memo_provider_data directory created!" &&
           /app/init_provider.sh > /root/memo_provider/log ;  # 执行脚本
         volumeMounts:
         - name: memo-provider-volume
