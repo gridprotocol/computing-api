@@ -83,7 +83,7 @@ func (p *GRIDProver) Start(ctx context.Context) {
 		case <-time.After(wait):
 		}
 
-		logger.Info("provider: ", p.nodeID.Address)
+		logger.Debug("provider: ", p.nodeID.Address)
 		cnt, err := p.Client.GetV1OrderCount(ctx, p.nodeID.Address)
 		if err != nil {
 			logger.Error(err.Error())

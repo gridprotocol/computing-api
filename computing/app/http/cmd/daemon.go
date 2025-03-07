@@ -310,7 +310,7 @@ func CheckOnline(platform_url string, wallet string) {
 		// 获取所有节点
 		nodes, err := clientset.Clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			fmt.Printf("Error fetching node list: %v\n", err)
+			logger.Debugf("Error fetching node list: %v\n", err)
 			continue
 		}
 
@@ -321,10 +321,10 @@ func CheckOnline(platform_url string, wallet string) {
 			for _, condition := range node.Status.Conditions {
 				if condition.Type == corev1.NodeReady {
 					if condition.Status == corev1.ConditionTrue {
-						fmt.Printf("Node Name: %s, Online\n", node.Name)
+						logger.Debugf("Node Name: %s, Online\n", node.Name)
 						online = true
 					} else {
-						fmt.Printf("Node Name: %s, Offline\n", node.Name)
+						logger.Debugf("Node Name: %s, Offline\n", node.Name)
 						online = false
 					}
 					break

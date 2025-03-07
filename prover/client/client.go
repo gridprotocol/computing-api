@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -138,7 +137,7 @@ func (c *Client) GetV1OrderCount(ctx context.Context, provider string) (int64, e
 	//var url = c.baseUrl + "/provider/:address/count"
 	var url = c.baseUrl + "/v1/provider/" + provider + "/count"
 
-	fmt.Println("url: ", url)
+	//fmt.Println("url: ", url)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
