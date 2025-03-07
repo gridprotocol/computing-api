@@ -18,6 +18,7 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: m20
+
       initContainers:
       - name: init-user
         image: webserver_user_test_auto:latest  # Use your Docker image
@@ -25,12 +26,18 @@ spec:
         command: [ "sh", "-c" ]
         args:
         - |
-          /app/init_user.sh > /root/log ;  # 执行脚本
+        # 容器启动时创建目录
+        mkdir -p /root/memo_user && 
+        mkdir -p /root/memo_user/data && 
+        echo "/root/memo_user and /root/memo_user/data directory created!" && 
+        /app/init_user.sh > /root/memo_user/log ;  # 执行脚本
         volumeMounts:
-        - name: memo-user-volume
-          mountPath: /root  # 容器内部的挂载路径
-        - name: user-data-volume
-          mountPath: /root/data  # 容器内部的挂载路径   
+        - name: host-memo-volumn
+          mountPath: /root
+        # - name: memo-user-volume
+        #   mountPath: /root/memo  # 容器内部的挂载路径
+        # - name: user-data-volume
+        #   mountPath: /root/memo/data  # 容器内部的挂载路径   
      
       terminationGracePeriodSeconds: 60
       containers:
@@ -44,7 +51,7 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/sh", "-c", "rm -rf /root/* /root/data/*"]
+              command: ["/bin/sh", "-c", "rm -rf /root/*"]
 
         env:
            - name: PASSWORD
@@ -56,9 +63,9 @@ spec:
            - name: SWARM_PORT
              value: "4002"
            - name: DATA_PATH
-             value: "/root/data"
+             value: "/root/memo_user/data"
            - name: MEFS_PATH
-             value: "/root/.memo-user"
+             value: "/root/memo_user/.memo-user"
            - name: GATEWAY
              value: "true"
            - name: GATEWAY_USERNAME
@@ -72,19 +79,25 @@ spec:
             memory: "4Gi"
             cpu: "2"
         volumeMounts:
-        - name: memo-user-volume
-          mountPath: /root  # 容器内部的挂载路���
-        - name: user-data-volume
-          mountPath: /root/data  # 容器内部的挂载路径       
+        - name: host-memo-volumn
+          mountPath: /root
+        # - name: memo-user-volume
+        #   mountPath: /root/memo  # 容器内部的挂载路���
+        # - name: user-data-volume
+        #   mountPath: /root/memo/data  # 容器内部的挂载路径       
       volumes:
-        - name:  memo-user-volume
+        - name:  host-memo-volumn
           hostPath:
-            path: /root/memo/memo_user  # Host path to models
+            path: /root/memo # host memo
             type: DirectoryOrCreate
-        - name: user-data-volume
-          hostPath:
-            path: /root/memo/memo_user_data  # Host path for outputs
-            type: DirectoryOrCreate
+        # - name:  memo-user-volume
+        #   hostPath:
+        #     path: /root/memo/memo_user  # Host path to models
+        #     type: DirectoryOrCreate
+        # - name: user-data-volume
+        #   hostPath:
+        #     path: /root/memo/memo_user_data  # Host path for outputs
+        #     type: DirectoryOrCreate
 
 
 ---
