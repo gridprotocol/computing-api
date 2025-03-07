@@ -51,7 +51,7 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/sh", "-c", "rm -rf /root/*"]
+              command: ["/bin/sh", "-c", "rm -rf /root/memo_user && rm -rf /root/memo_user_data && rm -rf /root/.mefs_gw rm -rf /root/.minio"]
 
         env:
            - name: PASSWORD
